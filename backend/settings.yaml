@@ -1,0 +1,10 @@
+app:
+  save_path: "./storage/avatars"
+  server:
+    host: "0.0.0.0"
+    port: 3000
+  database:
+    driver: "sqlite"
+    sqlite_params:
+      url: "file:./prisma/storage/database.sqlite"
+
