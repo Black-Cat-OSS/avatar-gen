@@ -1,0 +1,55 @@
+{
+  "name": "avatar-gen",
+  "version": "0.0.1",
+  "description": "Avatar Generator API with frontend and backend",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspaces",
+    "dev": "npm run dev --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test --workspaces",
+    "prepare": "husky install",
+    "commit": "git-cz",
+    "commitlint": "commitlint --edit"
+  },
+  "keywords": [
+    "avatar",
+    "generator",
+    "api",
+    "nestjs",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "backend/**/*.{ts,js}": [
+      "eslint --config backend/eslint.config.mjs --fix",
+      "prettier --write"
+    ],
+    "frontend/**/*.{ts,js,tsx,jsx,vue}": [
+      "eslint --config frontend/eslint.config.js --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

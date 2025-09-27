@@ -1,0 +1,138 @@
+{
+  "common": {
+    "home": "Главная",
+    "about": "О нас",
+    "signIn": "Войти",
+    "login": "Вход",
+    "menu": "Меню",
+    "theme": "Тема",
+    "language": "Язык",
+    "close": "Закрыть"
+  },
+  "header": {
+    "brand": "Web2Bizz",
+    "toggleMenu": "Открыть мобильное меню"
+  },
+  "mobileMenu": {
+    "title": "Web2Bizz",
+    "closeMenu": "Закрыть меню"
+  },
+  "themeToggle": {
+    "switchToDark": "Переключить на темную тему",
+    "switchToLight": "Переключить на светлую тему"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Выберите язык",
+    "english": "English",
+    "russian": "Русский",
+    "spanish": "Español"
+  },
+  "pages": {
+    "about": {
+      "title": "О Web2Bizz",
+      "subtitle": "Современное веб-приложение, построенное с чистой архитектурой",
+      "fsdArchitecture": {
+        "title": "FSD Архитектура",
+        "description": "Построено с использованием методологии Feature-Sliced Design для масштабируемой и поддерживаемой структуры кода."
+      },
+      "themeSystem": {
+        "title": "Система тем",
+        "description": "Полная поддержка темной/светлой темы с автоматическим определением системы и плавными переходами."
+      },
+      "technologyStack": {
+        "title": "Технологический стек",
+        "items": [
+          "React 19 с TypeScript",
+          "Vite для быстрой разработки",
+          "Tailwind CSS для стилизации",
+          "React Router для навигации",
+          "Zod для валидации",
+          "React Hook Form для форм"
+        ],
+        "viewDetails": "Подробнее"
+      }
+    },
+    "devStack": {
+      "title": "Стек разработки",
+      "subtitle": "Полный обзор технологий и инструментов, используемых в этом проекте",
+      "frontend": {
+        "title": "Frontend технологии",
+        "technologies": [
+          "React 19 с TypeScript",
+          "Vite для инструментов сборки",
+          "Tailwind CSS для стилизации",
+          "TanStack Router для маршрутизации",
+          "React Hook Form для форм",
+          "Zod для валидации",
+          "React i18next для интернационализации",
+          "Storybook для разработки компонентов"
+        ]
+      },
+      "backend": {
+        "title": "Backend технологии",
+        "technologies": [
+          ".NET 8 с C#",
+          "ASP.NET Core Web API",
+          "Entity Framework Core",
+          "База данных PostgreSQL",
+          "Keycloak для аутентификации",
+          "Docker для контейнеризации",
+          "OpenAPI/Swagger для документации"
+        ]
+      },
+      "devops": {
+        "title": "DevOps и инструменты",
+        "technologies": [
+          "Docker и Docker Compose",
+          "Обратный прокси Nginx",
+          "Git для контроля версий",
+          "pnpm для управления пакетами",
+          "ESLint для линтинга кода",
+          "TypeScript для типобезопасности",
+          "Jest для тестирования"
+        ]
+      },
+      "architecture": {
+        "title": "Обзор архитектуры",
+        "description": "Этот проект следует современным архитектурным паттернам с четким разделением ответственности и масштабируемыми принципами проектирования.",
+        "frontend": {
+          "title": "Frontend архитектура",
+          "description": "Построена с использованием методологии Feature-Sliced Design, обеспечивая поддерживаемые и масштабируемые React компоненты с правильным разделением ответственности."
+        },
+        "backend": {
+          "title": "Backend архитектура",
+          "description": "Модульная .NET архитектура с четким разделением между модулями, сервисами и слоями доступа к данным для оптимальной поддерживаемости."
+        }
+      },
+      "backToAbout": "Назад к О нас"
+    }
+  },
+  "features": {
+    "counter": {
+      "count": "Счетчик",
+      "increment": "Увеличить счетчик"
+    }
+  },
+  "login": {
+    "title": "Вход в систему",
+    "subtitle": "Добро пожаловать! Пожалуйста, войдите в свой аккаунт.",
+    "fields": {
+      "email": "Адрес электронной почты",
+      "emailPlaceholder": "Введите ваш email",
+      "password": "Пароль",
+      "passwordPlaceholder": "Введите ваш пароль"
+    },
+    "rememberMe": "Запомнить меня",
+    "forgotPassword": "Забыли пароль?",
+    "signIn": "Войти",
+    "signingIn": "Вход в систему...",
+    "noAccount": "Нет аккаунта?",
+    "signUp": "Зарегистрироваться",
+    "validation": {
+      "emailRequired": "Email обязателен",
+      "emailInvalid": "Пожалуйста, введите корректный email",
+      "passwordRequired": "Пароль обязателен",
+      "passwordTooShort": "Пароль должен содержать минимум 6 символов"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+when creating a react component, add the appropriate JSDoc documentation to it. 
+
+Also, if the component is created in directories:
+- features
+- shared/ui/components
+- shared/ui/layouts
+- widgets
+, then create a story for Storybook.
+
+If necessary, wrap the component in the necessary contexts or generate a mock (without duplications in the project)

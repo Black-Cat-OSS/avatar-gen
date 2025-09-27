@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+when creating a react hook, you need to write documentation for it using JSDoc.

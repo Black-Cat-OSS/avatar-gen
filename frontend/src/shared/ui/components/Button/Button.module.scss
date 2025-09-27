@@ -1,0 +1,525 @@
+// Button Component Variables - Default Light Theme
+:root:not(.dark) {
+  // Info Button (Dark Blue)
+  --button-info-bg: var(--color-sky-600);
+  --button-info-border: var(--color-sky-600);
+  --button-info-text: white;
+  --button-info-text-ghost: var(--color-sky-700);
+  --button-info-text-link: var(--color-sky-600);
+  --button-info-hover-bg: var(--color-sky-700);
+
+  // Warning Button (Amber)
+  --button-warning-bg: var(--color-amber-500);
+  --button-warning-border: var(--color-amber-500);
+  --button-warning-text: white;
+  --button-warning-text-ghost: var(--color-amber-600);
+  --button-warning-text-link: var(--color-amber-500);
+  --button-warning-hover-bg: var(--color-amber-600);
+
+  // Error Button (Red)
+  --button-error-bg: var(--color-red-500);
+  --button-error-border: var(--color-red-500);
+  --button-error-text: white;
+  --button-error-text-ghost: var(--color-red-600);
+  --button-error-text-link: var(--color-red-500);
+  --button-error-hover-bg: var(--color-red-600);
+
+  // Tips Button (Cyan)
+  --button-tips-bg: var(--color-cyan-500);
+  --button-tips-border: var(--color-cyan-500);
+  --button-tips-text: white;
+  --button-tips-text-ghost: var(--color-cyan-600);
+  --button-tips-text-link: var(--color-cyan-500);
+  --button-tips-hover-bg: var(--color-cyan-600);
+
+  // Success Button (Green)
+  --button-success-bg: var(--color-green-500);
+  --button-success-border: var(--color-green-500);
+  --button-success-text: white;
+  --button-success-text-ghost: var(--color-green-600);
+  --button-success-text-link: var(--color-green-500);
+  --button-success-hover-bg: var(--color-green-600);
+
+  // Quote Button (Purple/Violet)
+  --button-quote-bg: var(--color-violet-500);
+  --button-quote-border: var(--color-violet-500);
+  --button-quote-text: white;
+  --button-quote-text-ghost: var(--color-violet-600);
+  --button-quote-text-link: var(--color-violet-500);
+  --button-quote-hover-bg: var(--color-violet-600);
+}
+
+// Base Button Styles
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+
+  &:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// SCSS Mixins for Button Themes
+@mixin button-theme(
+  $bg-var,
+  $border-var,
+  $text-var,
+  $hover-bg-var
+) {
+  background-color: var($bg-var);
+  border-color: var($border-var);
+  color: var($text-var);
+
+  &:hover:not(:disabled) {
+    background-color: var($hover-bg-var);
+    border-color: var($hover-bg-var);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var($bg-var);
+  }
+}
+
+// SCSS Mixins for Button Variants
+@mixin button-outline-theme($color-var) {
+  background-color: transparent;
+  border-color: var($color-var);
+  color: var($color-var);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: var($color-var);
+    border-color: var($color-var);
+    color: white;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var($color-var);
+  }
+}
+
+@mixin button-ghost-theme($text-var, $hover-bg-var) {
+  background-color: transparent;
+  border-color: transparent;
+  color: var($text-var);
+
+  &:hover:not(:disabled) {
+    background-color: var($hover-bg-var);
+    color: white;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var($text-var);
+  }
+}
+
+@mixin button-link-theme($text-link-var) {
+  background-color: transparent !important;
+  border: none !important;
+  color: var($text-link-var) !important;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  box-shadow: none !important;
+  padding: 0 !important;
+
+  &:hover:not(:disabled) {
+    background-color: transparent !important;
+    text-decoration: underline;
+    opacity: 0.8;
+    transform: none !important;
+  }
+
+  &:active:not(:disabled) {
+    background-color: transparent !important;
+    transform: none !important;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var($text-link-var) !important;
+  }
+}
+
+@mixin button-secondary-theme(
+  $bg-var,
+  $text-var,
+  $hover-bg-var
+) {
+  background-color: var($bg-var);
+  border-color: var($bg-var);
+  color: var($text-var);
+
+  &:hover:not(:disabled) {
+    background-color: var($hover-bg-var);
+    border-color: var($hover-bg-var);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var($bg-var);
+  }
+}
+
+// Button Theme Implementations (Default variant)
+.buttonInfo {
+  @include button-theme(
+    --button-info-bg,
+    --button-info-border,
+    --button-info-text,
+    --button-info-hover-bg
+  );
+}
+
+.buttonWarning {
+  @include button-theme(
+    --button-warning-bg,
+    --button-warning-border,
+    --button-warning-text,
+    --button-warning-hover-bg
+  );
+}
+
+.buttonError {
+  @include button-theme(
+    --button-error-bg,
+    --button-error-border,
+    --button-error-text,
+    --button-error-hover-bg
+  );
+}
+
+.buttonTips {
+  @include button-theme(
+    --button-tips-bg,
+    --button-tips-border,
+    --button-tips-text,
+    --button-tips-hover-bg
+  );
+}
+
+.buttonSuccess {
+  @include button-theme(
+    --button-success-bg,
+    --button-success-border,
+    --button-success-text,
+    --button-success-hover-bg
+  );
+}
+
+.buttonQuote {
+  @include button-theme(
+    --button-quote-bg,
+    --button-quote-border,
+    --button-quote-text,
+    --button-quote-hover-bg
+  );
+}
+
+// Info Theme Variants
+.buttonInfoOutline {
+  @include button-outline-theme(--button-info-bg);
+}
+
+.buttonInfoGhost {
+  @include button-ghost-theme(
+    --button-info-text-ghost,
+    --button-info-hover-bg
+  );
+}
+
+.buttonInfoLink {
+  @include button-link-theme(--button-info-text-link);
+}
+
+.buttonInfoSecondary {
+  @include button-secondary-theme(
+    --button-info-bg,
+    --button-info-text,
+    --button-info-hover-bg
+  );
+}
+
+// Warning Theme Variants
+.buttonWarningOutline {
+  @include button-outline-theme(--button-warning-bg);
+}
+
+.buttonWarningGhost {
+  @include button-ghost-theme(
+    --button-warning-text-ghost,
+    --button-warning-hover-bg
+  );
+}
+
+.buttonWarningLink {
+  @include button-link-theme(--button-warning-text-link);
+}
+
+.buttonWarningSecondary {
+  @include button-secondary-theme(
+    --button-warning-bg,
+    --button-warning-text,
+    --button-warning-hover-bg
+  );
+}
+
+// Error Theme Variants
+.buttonErrorOutline {
+  @include button-outline-theme(--button-error-bg);
+}
+
+.buttonErrorGhost {
+  @include button-ghost-theme(
+    --button-error-text-ghost,
+    --button-error-hover-bg
+  );
+}
+
+.buttonErrorLink {
+  @include button-link-theme(--button-error-text-link);
+}
+
+.buttonErrorSecondary {
+  @include button-secondary-theme(
+    --button-error-bg,
+    --button-error-text,
+    --button-error-hover-bg
+  );
+}
+
+// Tips Theme Variants
+.buttonTipsOutline {
+  @include button-outline-theme(--button-tips-bg);
+}
+
+.buttonTipsGhost {
+  @include button-ghost-theme(
+    --button-tips-text-ghost,
+    --button-tips-hover-bg
+  );
+}
+
+.buttonTipsLink {
+  @include button-link-theme(--button-tips-text-link);
+}
+
+.buttonTipsSecondary {
+  @include button-secondary-theme(
+    --button-tips-bg,
+    --button-tips-text,
+    --button-tips-hover-bg
+  );
+}
+
+// Success Theme Variants
+.buttonSuccessOutline {
+  @include button-outline-theme(--button-success-bg);
+}
+
+.buttonSuccessGhost {
+  @include button-ghost-theme(
+    --button-success-text-ghost,
+    --button-success-hover-bg
+  );
+}
+
+.buttonSuccessLink {
+  @include button-link-theme(--button-success-text-link);
+}
+
+.buttonSuccessSecondary {
+  @include button-secondary-theme(
+    --button-success-bg,
+    --button-success-text,
+    --button-success-hover-bg
+  );
+}
+
+// Quote Theme Variants
+.buttonQuoteOutline {
+  @include button-outline-theme(--button-quote-bg);
+}
+
+.buttonQuoteGhost {
+  @include button-ghost-theme(
+    --button-quote-text-ghost,
+    --button-quote-hover-bg
+  );
+}
+
+.buttonQuoteLink {
+  @include button-link-theme(--button-quote-text-link);
+}
+
+.buttonQuoteSecondary {
+  @include button-secondary-theme(
+    --button-quote-bg,
+    --button-quote-text,
+    --button-quote-hover-bg
+  );
+}
+
+// Additional overrides for link variants to ensure transparency
+[class*='Link'] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  &:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+    transform: none !important;
+  }
+
+  &:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    transform: none !important;
+  }
+
+  &:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
+
+// Dark Theme Media Query - Override variables
+@media (prefers-color-scheme: dark) {
+  :root {
+    // Info Button Dark Theme
+    --button-info-bg: var(--color-sky-600);
+    --button-info-border: var(--color-sky-600);
+    --button-info-text: white;
+    --button-info-text-ghost: white;
+    --button-info-text-link: var(--color-sky-600);
+    --button-info-hover-bg: var(--color-sky-500);
+
+    // Warning Button Dark Theme
+    --button-warning-bg: var(--color-amber-500);
+    --button-warning-border: var(--color-amber-500);
+    --button-warning-text: white;
+    --button-warning-text-ghost: white;
+    --button-warning-text-link: var(--color-amber-500);
+    --button-warning-hover-bg: var(--color-amber-400);
+
+    // Error Button Dark Theme
+    --button-error-bg: var(--color-red-500);
+    --button-error-border: var(--color-red-500);
+    --button-error-text: white;
+    --button-error-text-ghost: white;
+    --button-error-text-link: var(--color-red-500);
+    --button-error-hover-bg: var(--color-red-400);
+
+    // Tips Button Dark Theme
+    --button-tips-bg: var(--color-cyan-500);
+    --button-tips-border: var(--color-cyan-500);
+    --button-tips-text: white;
+    --button-tips-text-ghost: white;
+    --button-tips-text-link: var(--color-cyan-500);
+    --button-tips-hover-bg: var(--color-cyan-400);
+
+    // Success Button Dark Theme
+    --button-success-bg: var(--color-green-500);
+    --button-success-border: var(--color-green-500);
+    --button-success-text: white;
+    --button-success-text-ghost: white;
+    --button-success-text-link: var(--color-green-500);
+    --button-success-hover-bg: var(--color-green-400);
+
+    // Quote Button Dark Theme
+    --button-quote-bg: var(--color-violet-500);
+    --button-quote-border: var(--color-violet-500);
+    --button-quote-text: white;
+    --button-quote-text-ghost: white;
+    --button-quote-text-link: var(--color-violet-500);
+    --button-quote-hover-bg: var(--color-violet-400);
+  }
+}
+
+// Dark class override (for manual dark mode toggle)
+.dark {
+  --button-info-bg: var(--color-sky-600);
+  --button-info-border: var(--color-sky-600);
+  --button-info-text: white;
+  --button-info-text-ghost: white;
+  --button-info-text-link: var(--color-sky-600);
+  --button-info-hover-bg: var(--color-sky-500);
+
+  --button-warning-bg: var(--color-amber-500);
+  --button-warning-border: var(--color-amber-500);
+  --button-warning-text: white;
+  --button-warning-text-ghost: white;
+  --button-warning-text-link: var(--color-amber-500);
+  --button-warning-hover-bg: var(--color-amber-400);
+
+  --button-error-bg: var(--color-red-500);
+  --button-error-border: var(--color-red-500);
+  --button-error-text: white;
+  --button-error-text-ghost: white;
+  --button-error-text-link: var(--color-red-500);
+  --button-error-hover-bg: var(--color-red-400);
+
+  --button-tips-bg: var(--color-cyan-500);
+  --button-tips-border: var(--color-cyan-500);
+  --button-tips-text: white;
+  --button-tips-text-ghost: white;
+  --button-tips-text-link: var(--color-cyan-500);
+  --button-tips-hover-bg: var(--color-cyan-400);
+
+  --button-success-bg: var(--color-green-500);
+  --button-success-border: var(--color-green-500);
+  --button-success-text: white;
+  --button-success-text-ghost: white;
+  --button-success-text-link: var(--color-green-500);
+  --button-success-hover-bg: var(--color-green-400);
+
+  --button-quote-bg: var(--color-violet-500);
+  --button-quote-border: var(--color-violet-500);
+  --button-quote-text: white;
+  --button-quote-text-ghost: white;
+  --button-quote-text-link: var(--color-violet-500);
+  --button-quote-hover-bg: var(--color-violet-400);
+}
+
+// Light mode media query to ensure proper ghost text colors
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --button-info-text-ghost: var(--color-sky-700);
+    --button-warning-text-ghost: var(--color-amber-600);
+    --button-error-text-ghost: var(--color-red-600);
+    --button-tips-text-ghost: var(--color-cyan-600);
+    --button-success-text-ghost: var(--color-green-600);
+    --button-quote-text-ghost: var(--color-violet-600);
+  }
+}

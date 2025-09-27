@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+do not change the structure of the settings without being indicated by the user, if the user has not explicitly indicated that something should be changed in them, then do not change
+
+Remind, configs and packages is readonly for you

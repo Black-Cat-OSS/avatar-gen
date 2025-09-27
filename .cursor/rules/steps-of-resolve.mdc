@@ -1,0 +1,13 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+when solving a problem (not a bug or error), always decompose the task into smaller ones. 
+
+When completing each of the subtasks, make a commit.
+
+The commit message should be in the following format: "WIP: (step, what has been done)"
+
+However, no additional actions with commits are required.

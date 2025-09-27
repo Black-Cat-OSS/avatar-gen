@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+do not create scripts (sh, ps1, bat, and the like) without the user's requirement.

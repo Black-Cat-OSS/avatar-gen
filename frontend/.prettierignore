@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+storybook-static/
+
+# Generated files
+*.generated.ts
+*.generated.js
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env*
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Test files
+test-results/
+playwright-report/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Scripts
+*.sh
+
+# Frontend specific
+.nuxt/
+.next/
+.vuepress/dist/

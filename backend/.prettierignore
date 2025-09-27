@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Generated files
+*.generated.ts
+*.generated.js
+
+# Database
+prisma/storage/
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Documentation
+docs/build/
+
+# Test files
+test-results/
+playwright-report/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Scripts
+*.sh
+
+# Config files that should not be formatted
+nest-cli.json
+jest.config.js

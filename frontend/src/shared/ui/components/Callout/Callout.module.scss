@@ -1,0 +1,315 @@
+// Callout Component Variables - Default Light Theme
+:root {
+  // Default text color - Lighter for better visibility in light mode
+  --callout-text-color: oklch(
+    0.6 0 0
+  ); // Medium gray for better visibility
+
+  // Info Callout (Dark Blue)
+  --callout-info-bg: var(--color-sky-600);
+  --callout-info-border: var(--color-sky-600);
+  --callout-info-text: var(--color-sky-600);
+  --callout-info-content-text: var(--color-sky-800);
+
+  // Warning Callout (Amber)
+  --callout-warning-bg: var(--color-amber-400);
+  --callout-warning-border: var(--color-amber-400);
+  --callout-warning-text: var(--color-amber-600);
+  --callout-warning-content-text: var(--color-amber-700);
+
+  // Error Callout (Red)
+  --callout-error-bg: var(--color-red-500);
+  --callout-error-border: var(--color-red-500);
+  --callout-error-text: var(--color-red-500);
+  --callout-error-content-text: var(--color-red-700);
+
+  // Tips Callout (Cyan)
+  --callout-tips-bg: var(--color-cyan-400);
+  --callout-tips-border: var(--color-cyan-400);
+  --callout-tips-text: var(--color-cyan-400);
+  --callout-tips-content-text: var(--color-cyan-700);
+
+  // Success Callout (Green)
+  --callout-success-bg: var(--color-green-500);
+  --callout-success-border: var(--color-green-500);
+  --callout-success-text: var(--color-green-500);
+  --callout-success-content-text: var(--color-green-700);
+
+  // Quote Callout (Purple/Violet - Math color)
+  --callout-quote-bg: var(--color-violet-500);
+  --callout-quote-border: var(--color-violet-500);
+  --callout-quote-text: var(--color-violet-500);
+  --callout-quote-content-text: var(--color-violet-700);
+}
+
+// Base Callout Styles
+.callout {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  .calloutHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .calloutTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .calloutSubtitle {
+    color: var(--callout-text-color);
+    margin-bottom: 1rem;
+  }
+
+  .calloutContent {
+    color: var(--callout-text-color);
+
+    &.compact {
+      & > * + * {
+        margin-top: 0.5rem;
+      }
+    }
+
+    &.default {
+      & > * + * {
+        margin-top: 0.75rem;
+      }
+    }
+
+    &.detailed {
+      & > * + * {
+        margin-top: 1rem;
+      }
+    }
+  }
+}
+
+// SCSS Mixins for Callout Types
+@mixin callout-type(
+  $bg-var,
+  $border-var,
+  $text-var,
+  $content-text-var
+) {
+  background-color: var($bg-var);
+  border-color: var($border-var);
+
+  .calloutTitle {
+    color: var($text-var);
+  }
+
+  .calloutIcon {
+    color: var($text-var);
+  }
+
+  .calloutSubtitle,
+  .calloutContent {
+    color: var($content-text-var);
+  }
+}
+
+@mixin callout-default {
+  background-color: var(--card);
+  border-color: var(--border);
+
+  .calloutTitle {
+    color: var(--card-foreground);
+  }
+}
+
+// Callout Type Implementations
+.calloutInfo {
+  @include callout-type(
+    --callout-info-bg,
+    --callout-info-border,
+    --callout-info-text,
+    --callout-info-content-text
+  );
+}
+
+.calloutWarning {
+  @include callout-type(
+    --callout-warning-bg,
+    --callout-warning-border,
+    --callout-warning-text,
+    --callout-warning-content-text
+  );
+}
+
+.calloutError {
+  @include callout-type(
+    --callout-error-bg,
+    --callout-error-border,
+    --callout-error-text,
+    --callout-error-content-text
+  );
+}
+
+.calloutTips {
+  @include callout-type(
+    --callout-tips-bg,
+    --callout-tips-border,
+    --callout-tips-text,
+    --callout-tips-content-text
+  );
+}
+
+.calloutSuccess {
+  @include callout-type(
+    --callout-success-bg,
+    --callout-success-border,
+    --callout-success-text,
+    --callout-success-content-text
+  );
+}
+
+.calloutQuote {
+  @include callout-type(
+    --callout-quote-bg,
+    --callout-quote-border,
+    --callout-quote-text,
+    --callout-quote-content-text
+  );
+}
+
+.calloutDefault {
+  @include callout-default;
+}
+
+// Dark Theme Media Query - Override variables
+@media (prefers-color-scheme: dark) {
+  :root {
+    // Text Colors - Almost white but not pure white
+    --callout-text-color: oklch(
+      0.7 0 0
+    ); // Very light gray, almost white
+
+    // Info Callout Dark Theme (Dark Blue)
+    --callout-info-bg: color-mix(
+      in oklab,
+      var(--color-sky-600) 30%,
+      transparent
+    );
+    --callout-info-border: var(--color-sky-600);
+    --callout-info-text: var(--color-sky-600);
+    --callout-info-content-text: var(--color-sky-600);
+
+    // Warning Callout Dark Theme (Amber)
+    --callout-warning-bg: color-mix(
+      in oklab,
+      var(--color-amber-500) 30%,
+      transparent
+    );
+    --callout-warning-border: var(--color-amber-500);
+    --callout-warning-text: var(--color-amber-500);
+    --callout-warning-content-text: var(--color-amber-500);
+
+    // Error Callout Dark Theme (Red)
+    --callout-error-bg: color-mix(
+      in oklab,
+      var(--color-red-500) 30%,
+      transparent
+    );
+    --callout-error-border: var(--color-red-500);
+    --callout-error-text: var(--color-red-500);
+    --callout-error-content-text: var(--color-red-500);
+
+    // Tips Callout Dark Theme (Cyan)
+    --callout-tips-bg: color-mix(
+      in oklab,
+      var(--color-cyan-500) 30%,
+      transparent
+    );
+    --callout-tips-border: var(--color-cyan-500);
+    --callout-tips-text: var(--color-cyan-500);
+    --callout-tips-content-text: var(--color-cyan-500);
+
+    // Success Callout Dark Theme (Green)
+    --callout-success-bg: color-mix(
+      in oklab,
+      var(--color-green-500) 30%,
+      transparent
+    );
+    --callout-success-border: var(--color-green-500);
+    --callout-success-text: var(--color-green-500);
+    --callout-success-content-text: var(--color-green-500);
+
+    // Quote Callout Dark Theme (Purple/Violet)
+    --callout-quote-bg: color-mix(
+      in oklab,
+      var(--color-violet-500) 30%,
+      transparent
+    );
+    --callout-quote-border: var(--color-violet-500);
+    --callout-quote-text: var(--color-violet-500);
+    --callout-quote-content-text: var(--color-violet-500);
+  }
+}
+
+// Dark class override (for manual dark mode toggle) - Override variables
+.dark {
+  // Text Colors - Almost white but not pure white
+  --callout-text-color: oklch(
+    0.95 0 0
+  ); // Very light gray, almost white
+
+  --callout-info-bg: color-mix(
+    in oklab,
+    var(--color-sky-500) 30%,
+    transparent
+  );
+  --callout-info-border: var(--color-sky-600);
+  --callout-info-text: var(--color-sky-600);
+  --callout-info-content-text: var(--color-sky-600);
+
+  --callout-warning-bg: color-mix(
+    in oklab,
+    var(--color-amber-500) 30%,
+    transparent
+  );
+  --callout-warning-border: var(--color-amber-500);
+  --callout-warning-text: var(--color-amber-500);
+  --callout-warning-content-text: var(--color-amber-500);
+
+  --callout-error-bg: color-mix(
+    in oklab,
+    var(--color-red-500) 30%,
+    transparent
+  );
+  --callout-error-border: var(--color-red-500);
+  --callout-error-text: var(--color-red-500);
+  --callout-error-content-text: var(--color-red-500);
+
+  --callout-tips-bg: color-mix(
+    in oklab,
+    var(--color-cyan-500) 30%,
+    transparent
+  );
+  --callout-tips-border: var(--color-cyan-500);
+  --callout-tips-text: var(--color-cyan-500);
+  --callout-tips-content-text: var(--color-cyan-500);
+
+  --callout-success-bg: color-mix(
+    in oklab,
+    var(--color-green-500) 30%,
+    transparent
+  );
+  --callout-success-border: var(--color-green-500);
+  --callout-success-text: var(--color-green-500);
+  --callout-success-content-text: var(--color-green-500);
+
+  --callout-quote-bg: color-mix(
+    in oklab,
+    var(--color-violet-500) 30%,
+    transparent
+  );
+  --callout-quote-border: var(--color-violet-500);
+  --callout-quote-text: var(--color-violet-500);
+  --callout-quote-content-text: var(--color-violet-500);
+}

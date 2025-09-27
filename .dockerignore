@@ -1,0 +1,71 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist
+build
+storybook-static
+
+# Development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+docs/
+
+# Testing
+coverage
+.nyc_output
+
+# Linting and formatting
+.eslintcache
+.prettierignore
+
+# Storybook
+.storybook
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Config files that shouldn't be in production
+eslint.config.js
+prettier.config.js
+commitlint.config.cjs
+
+# Static files are needed for error pages
+# static/ - KEEP for error pages (403.html, 404.html, 50x.html)
+
+# Temporary files
+*.tmp
+*.temp

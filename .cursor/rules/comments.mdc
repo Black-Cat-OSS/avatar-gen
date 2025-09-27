@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+don't use comments in the code. Use better documentation management provided for a particular programming language.
+
+Eg:
+- Javascript and TypeScript use jsDocs.
+
+In all other cases, comments are not acceptable.

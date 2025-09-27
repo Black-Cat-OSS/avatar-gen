@@ -25,9 +25,24 @@ describe('YamlConfigService', () => {
     },
   };
 
+  const validYamlConfig = `
+app:
+  save_path: "./storage/avatars"
+  server:
+    host: "localhost"
+    port: 3000
+  database:
+    driver: "sqlite"
+    sqlite_params:
+      url: "file:./storage/database.sqlite"
+`;
+
   beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
+
+    // Mock fs.readFileSync before creating the module
+    mockedFs.readFileSync.mockReturnValue(validYamlConfig);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [YamlConfigService],
