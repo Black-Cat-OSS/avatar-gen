@@ -1,0 +1,287 @@
+// InputField Component Variables - Using Tailwind color variables
+:root {
+  // Input colors - using theme variables
+  --input-bg: var(--background);
+  --input-border: var(--border);
+  --input-border-focus: var(--ring);
+  --input-text: var(--foreground);
+  --input-placeholder: var(--muted-foreground);
+  --input-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  // Label colors
+  --label-text: var(--foreground);
+  --label-text-required: var(--color-red-500);
+
+  // Status colors - using Tailwind color variables
+  --status-error: var(--color-red-500);
+  --status-success: var(--color-green-500);
+  --status-warning: var(--color-amber-500);
+  --status-default: var(--color-gray-500);
+
+  // Description colors
+  --description-text: var(--color-gray-500);
+
+  // Disabled state
+  --disabled-bg: var(--color-gray-100);
+  --disabled-text: var(--color-gray-400);
+  --disabled-border: var(--color-gray-200);
+}
+
+// Base InputField Styles
+.inputField {
+  display: grid;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+
+  &.inputFieldFull {
+    max-width: 100%;
+  }
+
+  &.inputFieldSm {
+    max-width: 20rem; // 320px
+  }
+
+  &.inputFieldDefault {
+    max-width: 24rem; // 384px
+  }
+
+  &.inputFieldLg {
+    max-width: 28rem; // 448px
+  }
+
+  &.inputFieldXl {
+    max-width: 32rem; // 512px
+  }
+}
+
+// Label Styles
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--label-text);
+  margin-bottom: 0.25rem;
+
+  .required {
+    color: var(--label-text-required);
+    margin-left: 0.25rem;
+  }
+
+  // Disabled state
+  .inputField:has(input:disabled) & {
+    color: var(--disabled-text);
+    cursor: not-allowed;
+  }
+}
+
+// Required indicator styles
+.required {
+  color: var(--label-text-required);
+  margin-left: 0.25rem;
+}
+
+// Input Styles
+.input {
+  display: flex;
+  height: 2.25rem; // 36px
+  width: 100%;
+  border-radius: 0.375rem; // 6px
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  box-shadow: var(--input-shadow);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+
+  &::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  &:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 1px var(--input-border-focus);
+  }
+
+  &:disabled {
+    background-color: var(--disabled-bg);
+    border-color: var(--disabled-border);
+    color: var(--disabled-text);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  // Status variants
+  &.inputError {
+    border-color: var(--status-error);
+
+    &:focus {
+      border-color: var(--status-error);
+      box-shadow: 0 0 0 1px var(--status-error);
+    }
+  }
+
+  &.inputSuccess {
+    border-color: var(--status-success);
+
+    &:focus {
+      border-color: var(--status-success);
+      box-shadow: 0 0 0 1px var(--status-success);
+    }
+  }
+
+  &.inputWarning {
+    border-color: var(--status-warning);
+
+    &:focus {
+      border-color: var(--status-warning);
+      box-shadow: 0 0 0 1px var(--status-warning);
+    }
+  }
+}
+
+// Description Styles
+.description {
+  font-size: 0.75rem;
+  color: var(--description-text);
+  margin-top: 0rem;
+  line-height: 1.4;
+}
+
+// Status Message Styles
+.statusMessage {
+  font-size: 0.75rem;
+  margin-top: 0rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+
+  &.statusError {
+    color: var(--status-error);
+  }
+
+  &.statusSuccess {
+    color: var(--status-success);
+  }
+
+  &.statusWarning {
+    color: var(--status-warning);
+  }
+
+  &.statusDefault {
+    color: var(--status-default);
+  }
+}
+
+// Dark Theme Media Query - Override variables
+@media (prefers-color-scheme: dark) {
+  :root {
+    // Input colors - using theme variables (automatically handled by CSS cascade)
+    --input-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+
+    // Status colors - darker variants for dark mode
+    --status-error: var(--color-red-400);
+    --status-success: var(--color-green-400);
+    --status-warning: var(--color-amber-400);
+    --status-default: var(--color-gray-400);
+
+    // Description colors
+    --description-text: var(--color-gray-400);
+
+    // Disabled state
+    --disabled-bg: var(--color-gray-700);
+    --disabled-text: var(--color-gray-500);
+    --disabled-border: var(--color-gray-600);
+  }
+}
+
+// Dark class override (for manual dark mode toggle)
+.dark {
+  // Input colors - using theme variables (automatically handled by CSS cascade)
+  --input-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+
+  // Status colors - darker variants for dark mode
+  --status-error: var(--color-red-400);
+  --status-success: var(--color-green-400);
+  --status-warning: var(--color-amber-400);
+  --status-default: var(--color-gray-400);
+
+  // Description colors
+  --description-text: var(--color-gray-400);
+
+  // Disabled state
+  --disabled-bg: var(--color-gray-700);
+  --disabled-text: var(--color-gray-500);
+  --disabled-border: var(--color-gray-600);
+}
+
+// Focus states for accessibility
+.inputField:focus-within {
+  .label {
+    color: var(--input-border-focus);
+  }
+}
+
+// Error state focus
+.inputField:has(.inputError:focus) {
+  .label {
+    color: var(--color-red-500);
+  }
+}
+
+// Success state focus
+.inputField:has(.inputSuccess:focus) {
+  .label {
+    color: var(--color-green-500);
+  }
+}
+
+// Warning state focus
+.inputField:has(.inputWarning:focus) {
+  .label {
+    color: var(--color-amber-500);
+  }
+}
+
+// Dark mode focus states
+@media (prefers-color-scheme: dark) {
+  .inputField:has(.inputError:focus) {
+    .label {
+      color: var(--color-red-400);
+    }
+  }
+
+  .inputField:has(.inputSuccess:focus) {
+    .label {
+      color: var(--color-green-400);
+    }
+  }
+
+  .inputField:has(.inputWarning:focus) {
+    .label {
+      color: var(--color-amber-400);
+    }
+  }
+}
+
+.dark {
+  .inputField:has(.inputError:focus) {
+    .label {
+      color: var(--color-red-400);
+    }
+  }
+
+  .inputField:has(.inputSuccess:focus) {
+    .label {
+      color: var(--color-green-400);
+    }
+  }
+
+  .inputField:has(.inputWarning:focus) {
+    .label {
+      color: var(--color-amber-400);
+    }
+  }
+}

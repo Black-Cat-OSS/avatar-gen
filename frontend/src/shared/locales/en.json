@@ -1,0 +1,138 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About",
+    "signIn": "Sign In",
+    "login": "Login",
+    "menu": "Menu",
+    "theme": "Theme",
+    "language": "Language",
+    "close": "Close"
+  },
+  "header": {
+    "brand": "Web2Bizz",
+    "toggleMenu": "Toggle mobile menu"
+  },
+  "mobileMenu": {
+    "title": "Web2Bizz",
+    "closeMenu": "Close menu"
+  },
+  "themeToggle": {
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Select language",
+    "english": "English",
+    "russian": "Русский",
+    "spanish": "Español"
+  },
+  "pages": {
+    "about": {
+      "title": "About Web2Bizz",
+      "subtitle": "A modern web application built with clean architecture",
+      "fsdArchitecture": {
+        "title": "FSD Architecture",
+        "description": "Built using Feature-Sliced Design methodology for scalable and maintainable code structure."
+      },
+      "themeSystem": {
+        "title": "Theme System",
+        "description": "Complete dark/light theme support with automatic system detection and smooth transitions."
+      },
+      "technologyStack": {
+        "title": "Technology Stack",
+        "items": [
+          "React 19 with TypeScript",
+          "Vite for fast development",
+          "Tailwind CSS for styling",
+          "React Router for navigation",
+          "Zod for validation",
+          "React Hook Form for forms"
+        ],
+        "viewDetails": "View Details"
+      }
+    },
+    "devStack": {
+      "title": "Development Stack",
+      "subtitle": "Comprehensive overview of technologies and tools used in this project",
+      "frontend": {
+        "title": "Frontend Technologies",
+        "technologies": [
+          "React 19 with TypeScript",
+          "Vite for build tooling",
+          "Tailwind CSS for styling",
+          "TanStack Router for routing",
+          "React Hook Form for forms",
+          "Zod for validation",
+          "React i18next for internationalization",
+          "Storybook for component development"
+        ]
+      },
+      "backend": {
+        "title": "Backend Technologies",
+        "technologies": [
+          ".NET 8 with C#",
+          "ASP.NET Core Web API",
+          "Entity Framework Core",
+          "PostgreSQL database",
+          "Keycloak for authentication",
+          "Docker for containerization",
+          "OpenAPI/Swagger for documentation"
+        ]
+      },
+      "devops": {
+        "title": "DevOps & Tools",
+        "technologies": [
+          "Docker & Docker Compose",
+          "Nginx reverse proxy",
+          "Git for version control",
+          "pnpm for package management",
+          "ESLint for code linting",
+          "TypeScript for type safety",
+          "Jest for testing"
+        ]
+      },
+      "architecture": {
+        "title": "Architecture Overview",
+        "description": "This project follows modern architectural patterns with clear separation of concerns and scalable design principles.",
+        "frontend": {
+          "title": "Frontend Architecture",
+          "description": "Built with Feature-Sliced Design methodology, ensuring maintainable and scalable React components with proper separation of concerns."
+        },
+        "backend": {
+          "title": "Backend Architecture",
+          "description": "Modular .NET architecture with clean separation between modules, services, and data access layers for optimal maintainability."
+        }
+      },
+      "backToAbout": "Back to About"
+    }
+  },
+  "features": {
+    "counter": {
+      "count": "Count",
+      "increment": "Increment Count"
+    }
+  },
+  "login": {
+    "title": "Sign In",
+    "subtitle": "Welcome back! Please sign in to your account.",
+    "fields": {
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password"
+    },
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 6 characters"
+    }
+  }
+}

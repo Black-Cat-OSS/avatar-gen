@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Backend и Frontend (у них свои настройки prettier)
+backend/
+frontend/
+
+# Build outputs
+dist/
+build/
+coverage/
+.next/
+.nuxt/
+out/
+
+# Logs
+logs/
+*.log
+debug.log
+
+# Database
+**/*.sqlite
+**/*.db
+**/prisma/storage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# Git
+.git/
+.gitignore
+
+# Backups
+backups/
+*.backup
+*.bak
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Scripts (shell scripts should not be formatted)
+*.sh
+
+# Generated files
+*.generated.ts
+*.generated.js
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs build outputs
+docs/build/
+docs/.vuepress/dist/
+
+# Test outputs
+test-results/
+playwright-report/
+
+# Husky
+.husky/
+
+# PM2
+ecosystem.config.js
+
+# Static assets
+static/
+public/

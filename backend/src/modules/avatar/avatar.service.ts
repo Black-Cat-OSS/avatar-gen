@@ -2,7 +2,6 @@ import { Injectable, Logger, BadRequestException, NotFoundException } from '@nes
 import { DatabaseService } from '../database/database.service';
 import { AvatarGeneratorService } from './avatar-generator.service';
 import { AvatarStorageService } from './avatar-storage.service';
-import { FilterType } from '../../common/enums/filter.enum';
 import { GenerateAvatarDto, GetAvatarDto, ListAvatarsDto } from '../../common/dto/generate-avatar.dto';
 
 @Injectable()

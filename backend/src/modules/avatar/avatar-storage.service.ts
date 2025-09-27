@@ -1,7 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { AvatarObject } from '../../common/interfaces/avatar-object.interface';
 import { YamlConfigService } from '../../config/yaml-config.service';
 

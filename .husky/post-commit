@@ -1,0 +1,13 @@
+# Автоматически обновляем CHANGELOG.md если есть новые изменения
+if [ -f "CHANGELOG.md" ]; then
+  echo "📝 Проверка необходимости обновления CHANGELOG..."
+  
+  # Проверяем, есть ли коммиты с типами feat, fix, breaking change
+  last_changelog_commit=$(git log --oneline -n 10 CHANGELOG.md | head -1 | cut -d' ' -f1)
+  new_commits=$(git log --oneline --since="$last_changelog_commit" --grep="^feat\|^fix\|^BREAKING" --not --grep="^chore\|^docs\|^style\|^refactor\|^test\|^build\|^ci")
+  
+  if [ -n "$new_commits" ]; then
+    echo "⚠️  Обнаружены новые изменения, которые должны быть добавлены в CHANGELOG.md"
+    echo "Пожалуйста, обновите CHANGELOG.md вручную или используйте conventional-changelog"
+  fi
+fi

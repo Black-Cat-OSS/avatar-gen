@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Автоматически добавляем номер задачи в сообщение коммита, если есть
+if [ -z "$2" ] || [ "$2" = "message" ]; then
+  # Проверяем, есть ли ветка с номером задачи
+  branch=$(git rev-parse --abbrev-ref HEAD)
+  if echo "$branch" | grep -qE '^(feature|fix|hotfix|bugfix)/[A-Z]+-[0-9]+'; then
+    task_number=$(echo "$branch" | grep -oE '[A-Z]+-[0-9]+')
+    if ! grep -q "$task_number" "$1"; then
+      # Добавляем номер задачи в начало сообщения
+      sed -i.bak "1s/^/$task_number: /" "$1"
+      rm -f "$1.bak"
+    fi
+  fi
+fi

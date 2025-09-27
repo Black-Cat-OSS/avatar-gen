@@ -1,0 +1,138 @@
+{
+  "common": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "signIn": "Iniciar Sesión",
+    "login": "Iniciar Sesión",
+    "menu": "Menú",
+    "theme": "Tema",
+    "language": "Idioma",
+    "close": "Cerrar"
+  },
+  "header": {
+    "brand": "Web2Bizz",
+    "toggleMenu": "Alternar menú móvil"
+  },
+  "mobileMenu": {
+    "title": "Web2Bizz",
+    "closeMenu": "Cerrar menú"
+  },
+  "themeToggle": {
+    "switchToDark": "Cambiar a modo oscuro",
+    "switchToLight": "Cambiar a modo claro"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Seleccionar idioma",
+    "english": "English",
+    "russian": "Русский",
+    "spanish": "Español"
+  },
+  "pages": {
+    "about": {
+      "title": "Acerca de Web2Bizz",
+      "subtitle": "Una aplicación web moderna construida con arquitectura limpia",
+      "fsdArchitecture": {
+        "title": "Arquitectura FSD",
+        "description": "Construida usando la metodología Feature-Sliced Design para una estructura de código escalable y mantenible."
+      },
+      "themeSystem": {
+        "title": "Sistema de Temas",
+        "description": "Soporte completo para tema oscuro/claro con detección automática del sistema y transiciones suaves."
+      },
+      "technologyStack": {
+        "title": "Stack Tecnológico",
+        "items": [
+          "React 19 con TypeScript",
+          "Vite para desarrollo rápido",
+          "Tailwind CSS para estilos",
+          "React Router para navegación",
+          "Zod para validación",
+          "React Hook Form para formularios"
+        ],
+        "viewDetails": "Ver Detalles"
+      }
+    },
+    "devStack": {
+      "title": "Stack de Desarrollo",
+      "subtitle": "Visión general completa de las tecnologías y herramientas utilizadas en este proyecto",
+      "frontend": {
+        "title": "Tecnologías Frontend",
+        "technologies": [
+          "React 19 con TypeScript",
+          "Vite para herramientas de construcción",
+          "Tailwind CSS para estilos",
+          "TanStack Router para enrutamiento",
+          "React Hook Form para formularios",
+          "Zod para validación",
+          "React i18next para internacionalización",
+          "Storybook para desarrollo de componentes"
+        ]
+      },
+      "backend": {
+        "title": "Tecnologías Backend",
+        "technologies": [
+          ".NET 8 con C#",
+          "ASP.NET Core Web API",
+          "Entity Framework Core",
+          "Base de datos PostgreSQL",
+          "Keycloak para autenticación",
+          "Docker para containerización",
+          "OpenAPI/Swagger para documentación"
+        ]
+      },
+      "devops": {
+        "title": "DevOps y Herramientas",
+        "technologies": [
+          "Docker y Docker Compose",
+          "Proxy inverso Nginx",
+          "Git para control de versiones",
+          "pnpm para gestión de paquetes",
+          "ESLint para linting de código",
+          "TypeScript para seguridad de tipos",
+          "Jest para pruebas"
+        ]
+      },
+      "architecture": {
+        "title": "Visión General de la Arquitectura",
+        "description": "Este proyecto sigue patrones arquitectónicos modernos con clara separación de responsabilidades y principios de diseño escalables.",
+        "frontend": {
+          "title": "Arquitectura Frontend",
+          "description": "Construida con metodología Feature-Sliced Design, asegurando componentes React mantenibles y escalables con adecuada separación de responsabilidades."
+        },
+        "backend": {
+          "title": "Arquitectura Backend",
+          "description": "Arquitectura .NET modular con clara separación entre módulos, servicios y capas de acceso a datos para una mantenibilidad óptima."
+        }
+      },
+      "backToAbout": "Volver a Acerca de"
+    }
+  },
+  "features": {
+    "counter": {
+      "count": "Contador",
+      "increment": "Incrementar Contador"
+    }
+  },
+  "login": {
+    "title": "Iniciar Sesión",
+    "subtitle": "¡Bienvenido de nuevo! Por favor, inicia sesión en tu cuenta.",
+    "fields": {
+      "email": "Dirección de Correo Electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "password": "Contraseña",
+      "passwordPlaceholder": "Ingresa tu contraseña"
+    },
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signIn": "Iniciar Sesión",
+    "signingIn": "Iniciando sesión...",
+    "noAccount": "¿No tienes una cuenta?",
+    "signUp": "Registrarse",
+    "validation": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Por favor, ingresa un correo electrónico válido",
+      "passwordRequired": "La contraseña es obligatoria",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres"
+    }
+  }
+}

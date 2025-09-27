@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+when the CHANGELOG.(md|txt|mdx) was changed insert as a message for the commit: "docs(changelog): Обновлён CHANGELOG.md"

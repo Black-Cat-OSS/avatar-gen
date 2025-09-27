@@ -1,0 +1,20 @@
+---
+alwaysApply: true
+---
+
+# Rules for backend directory
+
+it is necessary to keep documentation of the project, the module that you are developing should be described:
+- input data or arguments, what each means and their limitations
+- possible errors and how to fix them
+- if any script is added, describe what it is for and where to find it.
+
+# Rules for frontend directory
+
+For a frontend application, you need to document the launch and build of the project if something is changing a lot.
+
+for a frontend application, you need to document the launch and build of the project if something is changing a lot.
+
+in the documentation, update the technology stack that is used, the technologies include:
+- usage environment (nodejs, deno, bun.sh )
+- pages (ReactJS, Vue, Angular, Razor pages)

@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+when solving a bug, rely on the configurations at the root of the project. 
+
+To solve the problem, it is often enough to perform the following actions::
+- compare it with the requirements of the module (perhaps the module should behave this way)
+- identify the circumstances under which the bug occurs
+- double-check the file paths
+- double-check the input data
+- double-check the data types
+- recheck classes (when using css, scss, sass, less) in markup and styles
+- view the documentation of the package that is causing the problem

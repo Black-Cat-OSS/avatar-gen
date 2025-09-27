@@ -1,0 +1,1 @@
+export { WideLayout } from './WideLayout'
