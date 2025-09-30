@@ -424,7 +424,28 @@ const response = await apiClient.post<User>(
 
 Environment variables:
 
-- `VITE_API_BASE_URL` - API base URL (default: http://localhost:3000/api)
+- `VITE_API_BASE_URL` - API base URL (default: http://localhost:3000)
+
+### Backend Integration
+
+Проект интегрирован с backend API для работы с аватарами:
+
+1. Создайте файл `.env` в директории `frontend/`:
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+2. Убедитесь, что backend запущен на порту 3000
+
+3. Доступные API эндпоинты:
+   - `GET /api/list` - получение списка аватаров
+   - `GET /api/:id` - получение изображения аватара
+   - `POST /api/generate` - генерация нового аватара
+   - `DELETE /api/:id` - удаление аватара
+
+4. На главной странице отображается галерея аватаров из backend
+
+Подробная документация: [docs/frontend-backend-integration.md](../docs/frontend-backend-integration.md)
 
 ## 📄 Лицензия
 

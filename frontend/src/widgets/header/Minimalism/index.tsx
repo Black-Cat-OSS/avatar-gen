@@ -11,7 +11,7 @@ interface HeaderMinimalismProps {
 
 export const HeaderMinimalism = ({
   className,
-  brandText = 'Web2Bizz',
+  brandText = 'ava-gen',
   onToggleMobileMenu,
   isMobileMenuOpen = false,
   containerWidth = 'max-w-7xl',

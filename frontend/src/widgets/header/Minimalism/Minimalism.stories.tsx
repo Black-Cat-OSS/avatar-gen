@@ -36,7 +36,7 @@ const meta: Meta<typeof HeaderMinimalism> = {
       control: 'text',
       description:
         'Brand name displayed in the center of the header',
-      defaultValue: 'Web2Bizz',
+      defaultValue: 'ava-gen',
     },
     containerWidth: {
       control: 'select',
@@ -62,7 +62,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
   },
 }
 
@@ -124,7 +124,7 @@ export const WithCustomStyling: Story = {
 
 export const Desktop: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
   },
   parameters: {
     viewport: {
@@ -135,7 +135,7 @@ export const Desktop: Story = {
 
 export const Tablet: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
   },
   parameters: {
     viewport: {
@@ -146,7 +146,7 @@ export const Tablet: Story = {
 
 export const Mobile: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
   },
   parameters: {
     viewport: {

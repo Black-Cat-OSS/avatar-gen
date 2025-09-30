@@ -20,7 +20,7 @@ interface DefaultHeaderProps extends BaseHeaderProps {
 
 const Default = ({
   className,
-  brandText = 'Web2Bizz',
+  brandText = 'ava-gen',
   homeText = 'Home',
   aboutText = 'About',
   signInText = 'Sign In',
@@ -42,7 +42,7 @@ const Default = ({
 // Search Header Component
 const Search = ({
   className,
-  brandText = 'Web2Bizz',
+  brandText = 'ava-gen',
   searchPlaceholder = 'Search...',
   onSearch,
   onToggleMobileMenu,
@@ -62,7 +62,7 @@ const Search = ({
 // Minimalism Header Component
 const Minimalism = ({
   className,
-  brandText = 'Web2Bizz',
+  brandText = 'ava-gen',
   onToggleMobileMenu,
   isMobileMenuOpen,
 }: BaseHeaderProps) => (
