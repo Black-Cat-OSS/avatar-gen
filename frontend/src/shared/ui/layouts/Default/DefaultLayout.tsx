@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Header, Footer } from '@/widgets'
+import { Footer, HeaderDefault } from '@/widgets'
 
 interface DefaultLayoutProps {
   children: ReactNode
@@ -12,7 +12,7 @@ export const DefaultLayout = ({
 }: DefaultLayoutProps) => {
   return (
     <div className='min-h-screen flex flex-col'>
-      <Header />
+      <HeaderDefault />
       <main className='flex-1 mt-16 min-h-[calc(100vh-4rem-8rem)]'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className={className}>{children}</div>

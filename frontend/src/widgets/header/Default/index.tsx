@@ -15,6 +15,7 @@ interface HeaderDefaultProps {
   onToggleMobileMenu?: () => void
   isMobileMenuOpen?: boolean
   containerWidth?: string
+  login?: boolean
 }
 
 export const HeaderDefault = ({
@@ -26,6 +27,7 @@ export const HeaderDefault = ({
   onToggleMobileMenu,
   isMobileMenuOpen = false,
   containerWidth = 'max-w-7xl',
+  login = false,
 }: HeaderDefaultProps) => {
   const [
     internalMobileMenuOpen,
@@ -90,11 +92,11 @@ export const HeaderDefault = ({
             </a>
             <LanguageSwitcher />
             <ThemeToggle />
-            <a href='/login'>
+            {login ? (<a href='/login'>
               <Button variant='outline' size='sm'>
                 {signInText}
               </Button>
-            </a>
+            </a>) : null}
           </nav>
         </div>
       </div>
