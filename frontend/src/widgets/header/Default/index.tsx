@@ -20,7 +20,7 @@ interface HeaderDefaultProps {
 
 export const HeaderDefault = ({
   className,
-  brandText = 'Web2Bizz',
+  brandText = 'ava-gen',
   homeText = 'Home',
   aboutText = 'About',
   signInText = 'Login',

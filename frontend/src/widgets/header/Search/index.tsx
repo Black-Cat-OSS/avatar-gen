@@ -18,7 +18,7 @@ interface HeaderSearchProps {
 
 export const HeaderSearch = ({
   className,
-  brandText = 'Web2Bizz',
+  brandText = 'ava-gen',
   searchPlaceholder = 'Search...',
   onSearch,
   onToggleMobileMenu,

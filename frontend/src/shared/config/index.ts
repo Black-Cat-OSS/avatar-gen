@@ -1,6 +1,6 @@
 // Application configuration
 export const APP_CONFIG = {
-  name: 'Web2Bizz Frontend',
+  name: 'ava-gen Frontend',
   version: '1.0.0',
   description:
     'Modern web application built with FSD architecture',

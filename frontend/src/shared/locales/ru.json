@@ -10,11 +10,11 @@
     "close": "Закрыть"
   },
   "header": {
-    "brand": "Web2Bizz",
+    "brand": "Ava-gen",
     "toggleMenu": "Открыть мобильное меню"
   },
   "mobileMenu": {
-    "title": "Web2Bizz",
+    "title": "Ava-gen",
     "closeMenu": "Закрыть меню"
   },
   "themeToggle": {
@@ -28,8 +28,20 @@
     "spanish": "Español"
   },
   "pages": {
+    "home": {
+      "title": "Галерея аватаров",
+      "subtitle": "Список аватаров из backend API",
+      "loading": "Загрузка аватаров...",
+      "error": "Ошибка загрузки",
+      "unknownError": "Неизвестная ошибка",
+      "noAvatars": "Аватары не найдены",
+      "avatarsFound": "Найдено аватаров",
+      "refresh": "Обновить",
+      "refreshing": "Загрузка...",
+      "avatarId": "ID"
+    },
     "about": {
-      "title": "О Web2Bizz",
+      "title": "О ava-gen",
       "subtitle": "Современное веб-приложение, построенное с чистой архитектурой",
       "fsdArchitecture": {
         "title": "FSD Архитектура",

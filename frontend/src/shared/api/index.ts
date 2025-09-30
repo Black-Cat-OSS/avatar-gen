@@ -1,7 +1,5 @@
-// API configuration and base client
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:3000/api'
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 export interface ApiResponse<T> {
   data: T
@@ -86,5 +84,7 @@ export class ApiClient {
   }
 }
 
-// Default API client instance
 export const apiClient = new ApiClient()
+
+export * from './avatar'
+export * from '../lib/hooks/use-avatars'

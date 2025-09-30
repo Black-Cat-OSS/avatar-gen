@@ -40,7 +40,7 @@ const meta: Meta<typeof HeaderSearch> = {
     brandText: {
       control: 'text',
       description: 'Brand name displayed in the header',
-      defaultValue: 'Web2Bizz',
+      defaultValue: 'ava-gen',
     },
     searchPlaceholder: {
       control: 'text',
@@ -75,7 +75,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
     searchPlaceholder: 'Search products, articles...',
     onSearch: mockOnSearch,
   },
@@ -108,7 +108,7 @@ export const WithCustomStyling: Story = {
 
 export const Desktop: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
     searchPlaceholder: 'Search...',
     onSearch: mockOnSearch,
   },
@@ -121,7 +121,7 @@ export const Desktop: Story = {
 
 export const Tablet: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
     searchPlaceholder: 'Search...',
     onSearch: mockOnSearch,
   },
@@ -134,7 +134,7 @@ export const Tablet: Story = {
 
 export const Mobile: Story = {
   args: {
-    brandText: 'Web2Bizz',
+    brandText: 'ava-gen',
     searchPlaceholder: 'Search...',
     onSearch: mockOnSearch,
   },

@@ -10,11 +10,11 @@
     "close": "Close"
   },
   "header": {
-    "brand": "Web2Bizz",
+    "brand": "Ava-gen",
     "toggleMenu": "Toggle mobile menu"
   },
   "mobileMenu": {
-    "title": "Web2Bizz",
+    "title": "Ava-gen",
     "closeMenu": "Close menu"
   },
   "themeToggle": {
@@ -28,8 +28,20 @@
     "spanish": "Español"
   },
   "pages": {
+    "home": {
+      "title": "Avatar Gallery",
+      "subtitle": "List of avatars from backend API",
+      "loading": "Loading avatars...",
+      "error": "Loading error",
+      "unknownError": "Unknown error",
+      "noAvatars": "No avatars found",
+      "avatarsFound": "Avatars found",
+      "refresh": "Refresh",
+      "refreshing": "Loading...",
+      "avatarId": "ID"
+    },
     "about": {
-      "title": "About Web2Bizz",
+      "title": "About ava-gen",
       "subtitle": "A modern web application built with clean architecture",
       "fsdArchitecture": {
         "title": "FSD Architecture",
