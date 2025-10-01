@@ -25,7 +25,9 @@
     "selectLanguage": "Seleccionar idioma",
     "english": "English",
     "russian": "Русский",
-    "spanish": "Español"
+    "spanish": "Español",
+    "german": "Deutsch",
+    "estonian": "Eesti"
   },
   "pages": {
     "home": {
@@ -38,7 +40,9 @@
       "avatarsFound": "Avatares encontrados",
       "refresh": "Actualizar",
       "refreshing": "Cargando...",
-      "avatarId": "ID"
+      "avatarId": "ID",
+      "generateAvatar": "Crear Avatar",
+      "loadMore": "Cargar Más"
     },
     "about": {
       "title": "Acerca de ava-gen",
@@ -117,12 +121,77 @@
         }
       },
       "backToAbout": "Volver a Acerca de"
+    },
+    "avatarGenerator": {
+      "title": "Generador de Avatares",
+      "subtitle": "Crea un avatar único con configuraciones personalizadas",
+      "description": "Configura colores y parámetros para crear un avatar personalizado"
+    },
+    "avatarViewer": {
+      "title": "Visor de Avatares",
+      "subtitle": "Explora y filtra avatares creados",
+      "size": "Tamaño",
+      "filter": "Filtro",
+      "filterPlaceholder": "Buscar por nombre o ID...",
+      "sortBy": "Ordenar por",
+      "sortByDate": "Por fecha",
+      "sortByName": "Por nombre",
+      "showing": "Mostrando",
+      "of": "de",
+      "avatars": "avatares",
+      "loading": "Cargando avatares...",
+      "error": "Error de carga",
+      "unknownError": "Error desconocido",
+      "noResults": "No se encontraron avatares",
+      "imageFilter": "Filtro de imagen",
+      "search": "Buscar",
+      "currentSize": "Tamaño",
+      "currentFilter": "Filtro",
+      "searching": "Buscando",
+      "backToGallery": "Volver a Galería",
+      "avatarNotFound": "Avatar no encontrado",
+      "noAvatarSelected": "Ningún avatar seleccionado",
+      "avatarInfo": "Información del Avatar",
+      "avatarId": "ID del Avatar",
+      "createdAt": "Fecha de Creación",
+      "primaryColor": "Color Primario",
+      "foreignColor": "Color Secundario",
+      "colorScheme": "Esquema de Colores",
+      "seed": "Semilla",
+      "avatarPreview": "Vista Previa del Avatar",
+      "allSizes": "Todos los Tamaños",
+      "allFilters": "Todos los Filtros"
     }
   },
   "features": {
     "counter": {
       "count": "Contador",
       "increment": "Incrementar Contador"
+    },
+    "avatarGenerator": {
+      "primaryColor": "Color Principal",
+      "foreignColor": "Color Secundario",
+      "colorScheme": "Esquema de Colores",
+      "seed": "Semilla",
+      "seedPlaceholder": "Ingresa una semilla única",
+      "seedDescription": "La semilla determina la unicidad del avatar (máx. 32 caracteres)",
+      "generate": "Generar Avatar",
+      "generating": "Generando...",
+      "success": "¡Avatar generado exitosamente!",
+      "error": "Error de generación",
+      "colorSchemes": {
+        "default": "Por Defecto",
+        "monochrome": "Monocromo",
+        "vibrant": "Vibrante",
+        "pastel": "Pastel",
+        "ocean": "Océano",
+        "sunset": "Atardecer",
+        "forest": "Bosque",
+        "royal": "Real"
+      },
+      "randomPalette": "Paleta aleatoria",
+      "generateSeed": "Generar frase",
+      "currentPalette": "Paleta Actual"
     }
   },
   "login": {

@@ -15,9 +15,10 @@ import { useMobileMenu } from '@/shared/lib/contexts'
 
 interface HeaderProps {
   className?: string
+  showLogin?: boolean
 }
 
-export const Header = ({ className }: HeaderProps) => {
+export const Header = ({ className, showLogin = false }: HeaderProps) => {
   const { t } = useTranslation()
   const {
     isOpen: isMobileMenuOpen,
@@ -62,20 +63,28 @@ export const Header = ({ className }: HeaderProps) => {
               <NavigationLink to='/about'>
                 {t('common.about')}
               </NavigationLink>
+              <NavigationLink to='/avatar-generator'>
+                {t('pages.avatarGenerator.title')}
+              </NavigationLink>
+              <NavigationLink to='/avatar-viewer'>
+                {t('pages.avatarViewer.title')}
+              </NavigationLink>
               <LanguageSwitcher />
               <ThemeToggle />
-              <NavigationLink to='/login'>
-                <Button variant='outline' size='sm'>
-                  {t('common.login', 'Login')}
-                </Button>
-              </NavigationLink>
+              {showLogin && (
+                <NavigationLink to='/login'>
+                  <Button variant='outline' size='sm'>
+                    {t('common.login')}
+                  </Button>
+                </NavigationLink>
+              )}
             </nav>
           </div>
         </div>
       </header>
 
       {/* Mobile Menu */}
-      <MobileMenu />
+      <MobileMenu showLogin={showLogin} />
 
       {/* Language Popup */}
       <LanguagePopup />

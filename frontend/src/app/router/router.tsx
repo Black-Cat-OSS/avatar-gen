@@ -6,6 +6,8 @@ import {
 } from '@tanstack/react-router'
 import { HomePage } from '@/pages'
 import { AboutPage } from '@/pages'
+import { AvatarGeneratorPage } from '@/pages'
+import { AvatarViewerPage } from '@/pages'
 import { DevStackPage } from '@/pages'
 import { LoginPage } from '@/pages'
 import { DefaultLayout, CenterLayout } from '@/shared/ui'
@@ -37,6 +39,31 @@ const aboutRoute = createRoute({
   ),
 })
 
+// Create the avatar generator route
+const avatarGeneratorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/avatar-generator',
+  component: () => (
+    <DefaultLayout>
+      <AvatarGeneratorPage />
+    </DefaultLayout>
+  ),
+})
+
+// Create the avatar viewer route
+const avatarViewerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/avatar-viewer',
+  validateSearch: (search: Record<string, unknown>) => ({
+    id: (search.id as string) || undefined,
+  }),
+  component: () => (
+    <DefaultLayout>
+      <AvatarViewerPage />
+    </DefaultLayout>
+  ),
+})
+
 // Create the dev-stack route
 const devStackRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -63,6 +90,8 @@ const loginRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   aboutRoute,
+  avatarGeneratorRoute,
+  avatarViewerRoute,
   devStackRoute,
   loginRoute,
 ])

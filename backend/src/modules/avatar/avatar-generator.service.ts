@@ -39,16 +39,18 @@ export class AvatarGeneratorService {
       }
     }
     
+    const uniqueSeed = seed ? seed + '-' + Date.now() + '-' + Math.random() : uuidv4();
+    
     // Generate images for all required sizes (4n to 9n)
     const avatarObject: AvatarObject = {
       meta_data_name: id,
       meta_data_created_at: now,
-      image_4n: await this.generateImageForSize(16, finalPrimaryColor, finalForeignColor, seed), // 2^4 = 16
-      image_5n: await this.generateImageForSize(32, finalPrimaryColor, finalForeignColor, seed), // 2^5 = 32
-      image_6n: await this.generateImageForSize(64, finalPrimaryColor, finalForeignColor, seed), // 2^6 = 64
-      image_7n: await this.generateImageForSize(128, finalPrimaryColor, finalForeignColor, seed), // 2^7 = 128
-      image_8n: await this.generateImageForSize(256, finalPrimaryColor, finalForeignColor, seed), // 2^8 = 256
-      image_9n: await this.generateImageForSize(512, finalPrimaryColor, finalForeignColor, seed), // 2^9 = 512
+      image_4n: await this.generateImageForSize(16, finalPrimaryColor, finalForeignColor, uniqueSeed), // 2^4 = 16
+      image_5n: await this.generateImageForSize(32, finalPrimaryColor, finalForeignColor, uniqueSeed), // 2^5 = 32
+      image_6n: await this.generateImageForSize(64, finalPrimaryColor, finalForeignColor, uniqueSeed), // 2^6 = 64
+      image_7n: await this.generateImageForSize(128, finalPrimaryColor, finalForeignColor, uniqueSeed), // 2^7 = 128
+      image_8n: await this.generateImageForSize(256, finalPrimaryColor, finalForeignColor, uniqueSeed), // 2^8 = 256
+      image_9n: await this.generateImageForSize(512, finalPrimaryColor, finalForeignColor, uniqueSeed), // 2^9 = 512
     };
     
     this.logger.log(`Avatar generated with ID: ${id}`);
@@ -61,38 +63,48 @@ export class AvatarGeneratorService {
     foreignColor?: string,
     seed?: string,
   ): Promise<Buffer> {
-    // Create a simple geometric avatar pattern
-    const canvas = Buffer.alloc(size * size * 4); // RGBA
+    const canvas = Buffer.alloc(size * size * 4);
     
-    // Use seed for deterministic generation if provided
     const randomSeed = seed ? this.seedToNumber(seed) : Math.random();
+    const rng = this.createSeededRandom(randomSeed);
+    
+    const gridSize = 7;
+    const cellSize = size / gridSize;
+    
+    const pattern: boolean[][] = [];
+    for (let i = 0; i < gridSize; i++) {
+      pattern[i] = [];
+      for (let j = 0; j < Math.ceil(gridSize / 2); j++) {
+        pattern[i][j] = rng() > 0.5;
+      }
+    }
+    
+    const primaryRgb = this.hexToRgb(primaryColor || '#3B82F6');
+    const foreignRgb = this.hexToRgb(foreignColor || '#60A5FA');
     
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const index = (y * size + x) * 4;
         
-        // Create a pattern based on position and seed
-        const pattern = this.generatePattern(x, y, size, randomSeed);
+        const gridX = Math.floor(x / cellSize);
+        const gridY = Math.floor(y / cellSize);
         
-        if (pattern === 0) {
-          // Primary color
-          const color = this.hexToRgb(primaryColor || '#3B82F6');
-          canvas[index] = color.r;     // R
-          canvas[index + 1] = color.g; // G
-          canvas[index + 2] = color.b; // B
-          canvas[index + 3] = 255;     // A (no alpha channel as per requirements)
-        } else {
-          // Foreign color
-          const color = this.hexToRgb(foreignColor || '#60A5FA');
-          canvas[index] = color.r;     // R
-          canvas[index + 1] = color.g; // G
-          canvas[index + 2] = color.b; // B
-          canvas[index + 3] = 255;     // A
+        let patternX = gridX;
+        if (gridX >= Math.ceil(gridSize / 2)) {
+          patternX = gridSize - 1 - gridX;
         }
+        
+        const isFilled = pattern[gridY] && pattern[gridY][patternX];
+        
+        const color = isFilled ? primaryRgb : foreignRgb;
+        
+        canvas[index] = color.r;
+        canvas[index + 1] = color.g;
+        canvas[index + 2] = color.b;
+        canvas[index + 3] = 255;
       }
     }
     
-    // Convert to PNG using Sharp
     return await sharp(canvas, {
       raw: {
         width: size,
@@ -102,25 +114,12 @@ export class AvatarGeneratorService {
     }).png().toBuffer();
   }
 
-  private generatePattern(x: number, y: number, size: number, seed: number): number {
-    // Create a deterministic pattern based on position and seed
-    const normalizedX = x / size;
-    const normalizedY = y / size;
-    
-    // Use seed to modify the pattern
-    const modifiedX = (normalizedX + seed) % 1;
-    const modifiedY = (normalizedY + seed * 0.7) % 1;
-    
-    // Create a geometric pattern (circles and squares)
-    const centerX = 0.5;
-    const centerY = 0.5;
-    const distance = Math.sqrt(
-      Math.pow(modifiedX - centerX, 2) + Math.pow(modifiedY - centerY, 2)
-    );
-    
-    // Alternating pattern based on distance and position
-    const pattern = Math.floor(distance * 8 + modifiedX * 4 + modifiedY * 2) % 2;
-    return pattern;
+  private createSeededRandom(seed: number): () => number {
+    let value = seed;
+    return () => {
+      value = (value * 9301 + 49297) % 233280;
+      return value / 233280;
+    };
   }
 
   private seedToNumber(seed: string): number {

@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import en from '../locales/en.json'
 import ru from '../locales/ru.json'
 import es from '../locales/es.json'
+import de from '../locales/de.json'
+import et from '../locales/et.json'
 
 const resources = {
   en: {
@@ -16,6 +18,12 @@ const resources = {
   },
   es: {
     translation: es,
+  },
+  de: {
+    translation: de,
+  },
+  et: {
+    translation: et,
   },
 }
 
@@ -36,5 +44,12 @@ i18n
       caches: ['localStorage'],
     },
   })
+
+// Debug: Log available languages
+if (import.meta.env.DEV) {
+  console.log('Available i18n languages:', Object.keys(resources))
+  console.log('Current language:', i18n.language)
+  console.log('Available translations for current language:', i18n.getDataByLanguage(i18n.language))
+}
 
 export default i18n

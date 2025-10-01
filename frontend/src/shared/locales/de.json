@@ -1,0 +1,219 @@
+{
+  "common": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "signIn": "Anmelden",
+    "login": "Anmeldung",
+    "menu": "Menü",
+    "theme": "Design",
+    "language": "Sprache",
+    "close": "Schließen"
+  },
+  "header": {
+    "brand": "ava-gen",
+    "toggleMenu": "Mobiles Menü öffnen"
+  },
+  "mobileMenu": {
+    "title": "ava-gen",
+    "closeMenu": "Menü schließen"
+  },
+  "themeToggle": {
+    "switchToDark": "Zu dunklem Design wechseln",
+    "switchToLight": "Zu hellem Design wechseln"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Sprache auswählen",
+    "english": "English",
+    "russian": "Русский",
+    "spanish": "Español",
+    "german": "Deutsch",
+    "estonian": "Eesti"
+  },
+  "pages": {
+    "home": {
+      "title": "Avatar-Galerie",
+      "subtitle": "Liste der Avatare von der Backend-API",
+      "loading": "Avatare werden geladen...",
+      "error": "Ladefehler",
+      "unknownError": "Unbekannter Fehler",
+      "noAvatars": "Keine Avatare gefunden",
+      "avatarsFound": "Gefundene Avatare",
+      "refresh": "Aktualisieren",
+      "refreshing": "Laden...",
+      "avatarId": "ID",
+      "generateAvatar": "Avatar erstellen",
+      "loadMore": "Mehr laden"
+    },
+    "about": {
+      "title": "Über ava-gen",
+      "subtitle": "Moderne Webanwendung mit sauberer Architektur",
+      "fsdArchitecture": {
+        "title": "FSD-Architektur",
+        "description": "Erstellt mit der Feature-Sliced Design-Methodik für skalierbare und wartbare Codestruktur."
+      },
+      "themeSystem": {
+        "title": "Design-System",
+        "description": "Vollständige Unterstützung für dunkles/helles Design mit automatischer Systemerkennung und sanften Übergängen."
+      },
+      "technologyStack": {
+        "title": "Technologie-Stack",
+        "items": [
+          "React 19 mit TypeScript",
+          "Vite für schnelle Entwicklung",
+          "Tailwind CSS für Styling",
+          "React Router für Navigation",
+          "Zod für Validierung",
+          "React Hook Form für Formulare"
+        ],
+        "viewDetails": "Details anzeigen"
+      }
+    },
+    "devStack": {
+      "title": "Entwicklungs-Stack",
+      "subtitle": "Umfassender Überblick über die in diesem Projekt verwendeten Technologien und Tools",
+      "frontend": {
+        "title": "Frontend-Technologien",
+        "technologies": [
+          "React 19 mit TypeScript",
+          "Vite für Build-Tools",
+          "Tailwind CSS für Styling",
+          "TanStack Router für Routing",
+          "React Hook Form für Formulare",
+          "Zod für Validierung",
+          "React i18next für Internationalisierung",
+          "Storybook für Komponentenentwicklung"
+        ]
+      },
+      "backend": {
+        "title": "Backend-Technologien",
+        "technologies": [
+          ".NET 8 mit C#",
+          "ASP.NET Core Web API",
+          "Entity Framework Core",
+          "PostgreSQL-Datenbank",
+          "Keycloak für Authentifizierung",
+          "Docker für Containerisierung",
+          "OpenAPI/Swagger für Dokumentation"
+        ]
+      },
+      "devops": {
+        "title": "DevOps & Tools",
+        "technologies": [
+          "Docker & Docker Compose",
+          "Nginx Reverse Proxy",
+          "Git für Versionskontrolle",
+          "pnpm für Paketverwaltung",
+          "ESLint für Code-Linting",
+          "TypeScript für Typsicherheit",
+          "Jest für Tests"
+        ]
+      },
+      "architecture": {
+        "title": "Architektur-Übersicht",
+        "description": "Dieses Projekt folgt modernen Architekturmustern mit klarer Trennung der Verantwortlichkeiten und skalierbaren Designprinzipien.",
+        "frontend": {
+          "title": "Frontend-Architektur",
+          "description": "Erstellt mit Feature-Sliced Design-Methodik, die wartbare und skalierbare React-Komponenten mit ordnungsgemäßer Trennung der Verantwortlichkeiten gewährleistet."
+        },
+        "backend": {
+          "title": "Backend-Architektur",
+          "description": "Modulare .NET-Architektur mit sauberer Trennung zwischen Modulen, Services und Datenzugriffsschichten für optimale Wartbarkeit."
+        }
+      },
+      "backToAbout": "Zurück zu Über uns"
+    },
+    "avatarGenerator": {
+      "title": "Avatar-Generator",
+      "subtitle": "Erstellen Sie einen einzigartigen Avatar mit benutzerdefinierten Einstellungen",
+      "description": "Konfigurieren Sie Farben und Parameter, um einen personalisierten Avatar zu erstellen"
+    },
+    "avatarViewer": {
+      "title": "Avatar-Viewer",
+      "subtitle": "Durchsuchen und filtern Sie erstellte Avatare",
+      "size": "Größe",
+      "filter": "Filter",
+      "filterPlaceholder": "Nach Name oder ID suchen...",
+      "sortBy": "Sortieren nach",
+      "sortByDate": "Nach Datum",
+      "sortByName": "Nach Name",
+      "showing": "Anzeigen",
+      "of": "von",
+      "avatars": "Avatare",
+      "loading": "Avatare werden geladen...",
+      "error": "Ladefehler",
+      "unknownError": "Unbekannter Fehler",
+      "noResults": "Keine Avatare gefunden",
+      "imageFilter": "Bildfilter",
+      "search": "Suchen",
+      "currentSize": "Größe",
+      "currentFilter": "Filter",
+      "searching": "Suche",
+      "backToGallery": "Zurück zur Galerie",
+      "avatarNotFound": "Avatar nicht gefunden",
+      "noAvatarSelected": "Kein Avatar ausgewählt",
+      "avatarInfo": "Avatar-Informationen",
+      "avatarId": "Avatar-ID",
+      "createdAt": "Erstellt am",
+      "primaryColor": "Primärfarbe",
+      "foreignColor": "Sekundärfarbe",
+      "colorScheme": "Farbschema",
+      "seed": "Seed",
+      "avatarPreview": "Avatar-Vorschau",
+      "allSizes": "Alle Größen",
+      "allFilters": "Alle Filter"
+    }
+  },
+  "features": {
+    "counter": {
+      "count": "Zähler",
+      "increment": "Zähler erhöhen"
+    },
+    "avatarGenerator": {
+      "primaryColor": "Primärfarbe",
+      "foreignColor": "Sekundärfarbe",
+      "colorScheme": "Farbschema",
+      "seed": "Seed",
+      "seedPlaceholder": "Eindeutigen Seed eingeben",
+      "seedDescription": "Seed bestimmt die Einzigartigkeit des Avatars (max. 32 Zeichen)",
+      "generate": "Avatar generieren",
+      "generating": "Generierung...",
+      "success": "Avatar erfolgreich generiert!",
+      "error": "Generierungsfehler",
+      "colorSchemes": {
+        "default": "Standard",
+        "monochrome": "Monochrom",
+        "vibrant": "Lebendig",
+        "pastel": "Pastell",
+        "ocean": "Ozean",
+        "sunset": "Sonnenuntergang",
+        "forest": "Wald",
+        "royal": "Königlich"
+      },
+      "randomPalette": "Zufällige Palette",
+      "generateSeed": "Phrase generieren",
+      "currentPalette": "Aktuelle Palette"
+    }
+  },
+  "login": {
+    "title": "Anmeldung",
+    "subtitle": "Willkommen zurück! Bitte melden Sie sich in Ihrem Konto an.",
+    "fields": {
+      "email": "E-Mail-Adresse",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "password": "Passwort",
+      "passwordPlaceholder": "Geben Sie Ihr Passwort ein"
+    },
+    "rememberMe": "Angemeldet bleiben",
+    "forgotPassword": "Passwort vergessen?",
+    "signIn": "Anmelden",
+    "signingIn": "Anmeldung läuft...",
+    "noAccount": "Noch kein Konto?",
+    "signUp": "Registrieren",
+    "validation": {
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 6 Zeichen haben"
+    }
+  }
+}

@@ -25,7 +25,9 @@
     "selectLanguage": "Выберите язык",
     "english": "English",
     "russian": "Русский",
-    "spanish": "Español"
+    "spanish": "Español",
+    "german": "Deutsch",
+    "estonian": "Eesti"
   },
   "pages": {
     "home": {
@@ -38,7 +40,9 @@
       "avatarsFound": "Найдено аватаров",
       "refresh": "Обновить",
       "refreshing": "Загрузка...",
-      "avatarId": "ID"
+      "avatarId": "ID",
+      "generateAvatar": "Создать аватар",
+      "loadMore": "Загрузить ещё"
     },
     "about": {
       "title": "О ava-gen",
@@ -117,12 +121,77 @@
         }
       },
       "backToAbout": "Назад к О нас"
+    },
+    "avatarGenerator": {
+      "title": "Генератор аватаров",
+      "subtitle": "Создайте уникальный аватар с помощью настроек",
+      "description": "Настройте цвета и параметры для создания персонализированного аватара"
+    },
+    "avatarViewer": {
+      "title": "Обозреватель аватаров",
+      "subtitle": "Просматривайте и фильтруйте созданные аватары",
+      "size": "Размер",
+      "filter": "Фильтр",
+      "filterPlaceholder": "Поиск по названию или ID...",
+      "sortBy": "Сортировка",
+      "sortByDate": "По дате",
+      "sortByName": "По названию",
+      "showing": "Показано",
+      "of": "из",
+      "avatars": "аватаров",
+      "loading": "Загрузка аватаров...",
+      "error": "Ошибка загрузки",
+      "unknownError": "Неизвестная ошибка",
+      "noResults": "Аватары не найдены",
+      "imageFilter": "Фильтр изображения",
+      "search": "Поиск",
+      "currentSize": "Размер",
+      "currentFilter": "Фильтр",
+      "searching": "Поиск",
+      "backToGallery": "Назад к галерее",
+      "avatarNotFound": "Аватар не найден",
+      "noAvatarSelected": "Аватар не выбран",
+      "avatarInfo": "Информация об аватаре",
+      "avatarId": "ID аватара",
+      "createdAt": "Дата создания",
+      "primaryColor": "Основной цвет",
+      "foreignColor": "Дополнительный цвет",
+      "colorScheme": "Цветовая схема",
+      "seed": "Сид",
+      "avatarPreview": "Предпросмотр аватара",
+      "allSizes": "Все размеры",
+      "allFilters": "Все фильтры"
     }
   },
   "features": {
     "counter": {
       "count": "Счетчик",
       "increment": "Увеличить счетчик"
+    },
+    "avatarGenerator": {
+      "primaryColor": "Основной цвет",
+      "foreignColor": "Дополнительный цвет",
+      "colorScheme": "Цветовая схема",
+      "seed": "Семя (Seed)",
+      "seedPlaceholder": "Введите уникальное семя",
+      "seedDescription": "Семя определяет уникальность аватара (макс. 32 символа)",
+      "generate": "Сгенерировать аватар",
+      "generating": "Генерация...",
+      "success": "Аватар успешно сгенерирован!",
+      "error": "Ошибка генерации",
+      "colorSchemes": {
+        "default": "По умолчанию",
+        "monochrome": "Монохром",
+        "vibrant": "Яркий",
+        "pastel": "Пастельный",
+        "ocean": "Океан",
+        "sunset": "Закат",
+        "forest": "Лес",
+        "royal": "Королевский"
+      },
+            "randomPalette": "Случайная палитра",
+            "generateSeed": "Сгенерировать фразу",
+            "currentPalette": "Текущая палитра"
     }
   },
   "login": {
