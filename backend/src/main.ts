@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
+import { AppModule } from './modules/app/app.module';
 import { YamlConfigService } from './config/yaml-config.service';
 import { LoggerService } from './modules/logger/logger.service';
 

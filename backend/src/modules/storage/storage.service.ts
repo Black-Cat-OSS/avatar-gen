@@ -5,8 +5,8 @@ import { AvatarObject } from '../../common/interfaces/avatar-object.interface';
 import { YamlConfigService } from '../../config/yaml-config.service';
 
 @Injectable()
-export class AvatarStorageService {
-  private readonly logger = new Logger(AvatarStorageService.name);
+export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
 
   constructor(private readonly configService: YamlConfigService) {}
 
@@ -15,14 +15,12 @@ export class AvatarStorageService {
     const filePath = this.getFilePath(id);
     
     try {
-      // Ensure directory exists
       const dir = dirname(filePath);
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
         this.logger.log(`Created directory: ${dir}`);
       }
 
-      // Serialize and save the object
       const serializedData = JSON.stringify({
         ...avatarObject,
         image_4n: Array.from(avatarObject.image_4n),
@@ -54,7 +52,6 @@ export class AvatarStorageService {
       const fileContent = readFileSync(filePath, 'utf8');
       const data = JSON.parse(fileContent);
       
-      // Deserialize the object
       const avatarObject: AvatarObject = {
         meta_data_name: data.meta_data_name,
         meta_data_created_at: new Date(data.meta_data_created_at),
