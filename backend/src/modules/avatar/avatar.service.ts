@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { AvatarGeneratorService } from './avatar-generator.service';
-import { AvatarStorageService } from './avatar-storage.service';
+import { StorageService } from '../storage/storage.service';
+import { GeneratorService } from './modules';
 import { GenerateAvatarDto, GetAvatarDto, ListAvatarsDto } from '../../common/dto/generate-avatar.dto';
 
 @Injectable()
@@ -10,8 +10,8 @@ export class AvatarService {
 
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly avatarGenerator: AvatarGeneratorService,
-    private readonly avatarStorage: AvatarStorageService,
+    private readonly avatarGenerator: GeneratorService,
+    private readonly storageService: StorageService,
   ) {}
 
   async generateAvatar(dto: GenerateAvatarDto) {
@@ -32,7 +32,7 @@ export class AvatarService {
       );
 
       // Save to file system
-      const filePath = await this.avatarStorage.saveAvatar(avatarObject);
+      const filePath = await this.storageService.saveAvatar(avatarObject);
 
       // Save metadata to database
       const avatar = await this.databaseService.avatar.create({
@@ -79,7 +79,7 @@ export class AvatarService {
       }
 
       // Load avatar object from file
-      const avatarObject = await this.avatarStorage.loadAvatar(id);
+      const avatarObject = await this.storageService.loadAvatar(id);
 
       // Determine which image size to use
       const sizeKey = dto.size ? `image_${dto.size}n` : 'image_6n';
@@ -122,7 +122,7 @@ export class AvatarService {
       }
 
       // Delete from file system
-      await this.avatarStorage.deleteAvatar(id);
+      await this.storageService.deleteAvatar(id);
 
       // Delete from database
       await this.databaseService.avatar.delete({

@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
-import { AvatarObject, ColorScheme } from '../../common/interfaces/avatar-object.interface';
-import { FilterType } from '../../common/enums/filter.enum';
+import { AvatarObject, ColorScheme } from '../../../../common/interfaces/avatar-object.interface';
+import { FilterType } from '../../../../common/enums/filter.enum';
 
 @Injectable()
-export class AvatarGeneratorService {
-  private readonly logger = new Logger(AvatarGeneratorService.name);
+export class GeneratorService {
+  private readonly logger = new Logger(GeneratorService.name);
   
   private readonly colorSchemes: ColorScheme[] = [
     { name: 'green', primaryColor: 'green', foreignColor: 'lightgreen' },
