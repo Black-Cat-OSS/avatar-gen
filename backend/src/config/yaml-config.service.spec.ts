@@ -18,6 +18,10 @@ describe('YamlConfigService', () => {
       },
       database: {
         driver: 'sqlite',
+        connection: {
+          maxRetries: 3,
+          retryDelay: 2000,
+        },
         sqlite_params: {
           url: 'file:./storage/database.sqlite',
         },
@@ -33,6 +37,9 @@ app:
     port: 3000
   database:
     driver: "sqlite"
+    connection:
+      maxRetries: 3
+      retryDelay: 2000
     sqlite_params:
       url: "file:./storage/database.sqlite"
 `;
@@ -65,6 +72,9 @@ app:
             port: 3000
           database:
             driver: "sqlite"
+            connection:
+              maxRetries: 3
+              retryDelay: 2000
             sqlite_params:
               url: "file:./storage/database.sqlite"
       `);
@@ -95,6 +105,9 @@ app:
             port: 3000
           database:
             driver: "sqlite"
+            connection:
+              maxRetries: 3
+              retryDelay: 2000
             sqlite_params:
               url: "file:./storage/database.sqlite"
       `);
@@ -135,6 +148,9 @@ app:
             port: 3000
           database:
             driver: "sqlite"
+            connection:
+              maxRetries: 3
+              retryDelay: 2000
             sqlite_params:
               url: "file:./storage/database.sqlite"
       `);
@@ -164,6 +180,9 @@ app:
             port: 3000
           database:
             driver: "sqlite"
+            connection:
+              maxRetries: 3
+              retryDelay: 2000
             sqlite_params:
               url: "file:./storage/database.sqlite"
       `);
@@ -192,6 +211,9 @@ app:
             port: 3000
           database:
             driver: "sqlite"
+            connection:
+              maxRetries: 3
+              retryDelay: 2000
             sqlite_params:
               url: "file:./storage/database.sqlite"
       `);
@@ -222,6 +244,9 @@ app:
             port: 3000
           database:
             driver: "sqlite"
+            connection:
+              maxRetries: 3
+              retryDelay: 2000
             sqlite_params:
               url: "file:./storage/database.sqlite"
       `);

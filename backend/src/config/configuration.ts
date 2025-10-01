@@ -8,10 +8,22 @@ const configSchema = z.object({
       port: z.number().min(1).max(65535).default(3000),
     }),
     database: z.object({
-      driver: z.literal('sqlite'),
+      driver: z.enum(['sqlite', 'postgresql']),
+      connection: z.object({
+        maxRetries: z.number().min(1).max(10).default(3),
+        retryDelay: z.number().min(100).max(10000).default(2000),
+      }),
       sqlite_params: z.object({
         url: z.string().min(1, 'Database URL is required'),
-      }),
+      }).optional(),
+      postgresql_params: z.object({
+        host: z.string().default('localhost'),
+        port: z.number().min(1).max(65535).default(5432),
+        database: z.string().min(1, 'Database name is required'),
+        username: z.string().min(1, 'Username is required'),
+        password: z.string().min(1, 'Password is required'),
+        ssl: z.boolean().default(false),
+      }).optional(),
     }),
   }),
 });

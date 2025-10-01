@@ -20,6 +20,11 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "prisma:reset": "prisma migrate reset",
+    "prisma:deploy": "prisma migrate deploy",
+    "db:switch:sqlite": "node scripts/switch-db.js sqlite",
+    "db:switch:postgresql": "node scripts/switch-db.js postgresql",
+    "db:health": "node scripts/check-db-health.js",
     "prepare": "husky install",
     "commitlint": "commitlint --edit",
     "commit": "git-cz"

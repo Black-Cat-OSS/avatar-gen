@@ -5,6 +5,16 @@ app:
     port: 3000
   database:
     driver: "sqlite"
+    connection:
+      maxRetries: 3
+      retryDelay: 2000
     sqlite_params:
       url: "file:./prisma/storage/database.sqlite"
+    # postgresql_params:
+    #   host: "localhost"
+    #   port: 5432
+    #   database: "avatar_gen"
+    #   username: "postgres"
+    #   password: "password"
+    #   ssl: false
 
