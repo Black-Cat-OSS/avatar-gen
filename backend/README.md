@@ -43,13 +43,22 @@ npm install
 cp env.example .env
 ```
 
-3. Choose database type and configure:
-```bash
-# For SQLite (default)
-npm run db:switch:sqlite
-
-# For PostgreSQL
-npm run db:switch:postgresql
+3. Configure database in `settings.yaml`:
+```yaml
+database:
+  driver: "sqlite"  # or "postgresql"
+  connection:
+    maxRetries: 3
+    retryDelay: 2000
+  sqlite_params:
+    url: "file:./prisma/storage/database.sqlite"
+  # postgresql_params:
+  #   host: "localhost"
+  #   port: 5432
+  #   database: "avatar_gen"
+  #   username: "postgres"
+  #   password: "password"
+  #   ssl: false
 ```
 
 4. Generate Prisma client:
@@ -193,9 +202,6 @@ docker run -p 3000:3000 -v $(pwd)/storage:/app/storage avatar-backend
 - `npm run prisma:studio` - Open Prisma Studio
 - `npm run prisma:reset` - Reset database (development only)
 - `npm run prisma:deploy` - Deploy migrations to production
-- `npm run db:switch:sqlite` - Switch to SQLite database
-- `npm run db:switch:postgresql` - Switch to PostgreSQL database
-- `npm run db:health` - Check database connection health
 
 ### Project Structure
 
