@@ -1,0 +1,1 @@
+export { AvatarGeneratorForm } from './AvatarGeneratorForm'

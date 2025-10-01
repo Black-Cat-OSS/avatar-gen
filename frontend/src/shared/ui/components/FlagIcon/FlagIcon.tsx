@@ -17,6 +17,7 @@ import {
   CA,
   AU,
   IN,
+  EE,
   type FlagComponent,
 } from 'country-flag-icons/react/3x2'
 
@@ -52,6 +53,7 @@ const flagComponents: Record<string, FlagComponent> = {
   ca: CA,
   au: AU,
   in: IN,
+  ee: EE,
 }
 
 export const FlagIcon = ({

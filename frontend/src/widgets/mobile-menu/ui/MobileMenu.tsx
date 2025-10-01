@@ -4,7 +4,11 @@ import { Button, NavigationLink } from '@/shared/ui'
 import { ThemeToggle } from '@/features'
 import { useMobileMenu } from '@/shared/lib/contexts'
 
-export const MobileMenu = () => {
+interface MobileMenuProps {
+  showLogin?: boolean
+}
+
+export const MobileMenu = ({ showLogin = false }: MobileMenuProps) => {
   const { t } = useTranslation()
   const { isOpen, close: onClose } = useMobileMenu()
 
@@ -122,6 +126,20 @@ export const MobileMenu = () => {
               >
                 {t('common.about')}
               </NavigationLink>
+              <NavigationLink
+                to='/avatar-generator'
+                className='block px-4 py-3 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors'
+                onClick={onClose}
+              >
+                {t('pages.avatarGenerator.title')}
+              </NavigationLink>
+              <NavigationLink
+                to='/avatar-viewer'
+                className='block px-4 py-3 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors'
+                onClick={onClose}
+              >
+                {t('pages.avatarViewer.title')}
+              </NavigationLink>
             </div>
           </nav>
 
@@ -133,15 +151,17 @@ export const MobileMenu = () => {
               </span>
               <ThemeToggle />
             </div>
-            <NavigationLink to='/login' className='block'>
-              <Button
-                variant='outline'
-                size='sm'
-                className='w-full'
-              >
-                {t('common.login', 'Login')}
-              </Button>
-            </NavigationLink>
+            {showLogin && (
+              <NavigationLink to='/login' className='block'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='w-full'
+                >
+                  {t('common.login')}
+                </Button>
+              </NavigationLink>
+            )}
           </div>
         </div>
       </div>

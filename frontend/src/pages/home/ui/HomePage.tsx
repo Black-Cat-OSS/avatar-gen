@@ -1,11 +1,45 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { avatarApi } from '@/shared/api'
+import { Link } from '@tanstack/react-router'
 import { useAvatars } from '@/shared/lib'
 import { Button } from '@/shared/ui'
+import { AvatarCard } from '@/widgets'
+import type { Avatar } from '@/shared/api'
 
 export const HomePage = () => {
   const { t } = useTranslation()
-  const { data, isLoading, isError, error, refetch } = useAvatars({ pick: 10 })
+  const [offset, setOffset] = useState(0)
+  const [allAvatars, setAllAvatars] = useState<Avatar[]>([])
+  const [hasMore, setHasMore] = useState(true)
+  
+  const { data, isLoading, isError, error, refetch } = useAvatars({ pick: 10, offset })
+
+  // Update accumulated avatars when new data arrives
+  useEffect(() => {
+    if (data) {
+      if (offset === 0) {
+        // First load or refresh - replace all avatars
+        setAllAvatars(data.avatars)
+      } else {
+        // Load more - append new avatars
+        setAllAvatars(prev => [...prev, ...data.avatars])
+      }
+      setHasMore(data.pagination.hasMore)
+    }
+  }, [data, offset])
+
+  const handleLoadMore = () => {
+    setOffset(prevOffset => prevOffset + 10)
+  }
+
+  const handleRefresh = () => {
+    setOffset(0)
+    setAllAvatars([])
+    setHasMore(true)
+    refetch()
+  }
+
+  const showLoadMore = allAvatars.length > 0 && hasMore && !isLoading
 
   return (
     <div className='py-8'>
@@ -14,9 +48,16 @@ export const HomePage = () => {
           <h1 className='text-4xl font-bold text-foreground mb-4'>
             {t('pages.home.title')}
           </h1>
-          <p className='text-muted-foreground'>
+          <p className='text-muted-foreground mb-6'>
             {t('pages.home.subtitle')}
           </p>
+          
+          {/* Create Avatar Button */}
+          <Link to="/avatar-generator">
+            <Button variant='default' size='lg'>
+              {t('pages.home.generateAvatar')}
+            </Button>
+          </Link>
         </div>
 
         <div className='mb-8'>
@@ -34,58 +75,56 @@ export const HomePage = () => {
             </div>
           )}
 
-          {data && data.avatars.length === 0 && (
+          {!isLoading && allAvatars.length === 0 && (
             <div className='text-center py-8'>
-              <p className='text-muted-foreground'>{t('pages.home.noAvatars')}</p>
+              <p className='text-muted-foreground mb-4'>{t('pages.home.noAvatars')}</p>
+              <Button 
+                onClick={handleRefresh}
+                variant='outline'
+                disabled={isLoading}
+              >
+                {isLoading ? t('pages.home.refreshing') : t('pages.home.refresh')}
+              </Button>
             </div>
           )}
 
-          {data && data.avatars.length > 0 && (
+          {allAvatars.length > 0 && (
             <div>
-              <div className='mb-4 text-sm text-muted-foreground'>
-                {t('pages.home.avatarsFound')}: {data.pagination.total}
+              <div className='mb-4 flex justify-between items-center'>
+                <div className='text-sm text-muted-foreground'>
+                  {t('pages.home.avatarsFound')}: {data?.pagination.total ?? allAvatars.length}
+                </div>
+                <Button 
+                  onClick={handleRefresh}
+                  variant='outline'
+                  size='sm'
+                  disabled={isLoading}
+                >
+                  {isLoading ? t('pages.home.refreshing') : t('pages.home.refresh')}
+                </Button>
               </div>
               <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-                {data.avatars.map((avatar) => (
-                  <div
-                    key={avatar.id}
-                    className='border rounded-lg p-4 bg-card hover:shadow-lg transition-shadow'
-                  >
-                    <div className='aspect-square bg-muted rounded-md mb-3 overflow-hidden'>
-                      <img
-                        src={avatarApi.getImageUrl(avatar.id)}
-                        alt={avatar.name}
-                        className='w-full h-full object-cover'
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E'
-                        }}
-                      />
-                    </div>
-                    <div className='space-y-1'>
-                      <p className='text-xs font-medium truncate' title={avatar.id}>
-                        {t('pages.home.avatarId')}: {avatar.id.slice(0, 8)}...
-                      </p>
-                      <p className='text-xs text-muted-foreground'>
-                        {new Date(avatar.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
+                {allAvatars.map((avatar) => (
+                  <AvatarCard key={avatar.id} avatar={avatar} />
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        <div className='flex justify-center gap-4'>
-          <Button 
-            onClick={() => refetch()}
-            variant='outline'
-            disabled={isLoading}
-          >
-            {isLoading ? t('pages.home.refreshing') : t('pages.home.refresh')}
-          </Button>
-        </div>
+        {/* Load More Button */}
+        {showLoadMore && (
+          <div className='text-center mt-8'>
+            <Button 
+              onClick={handleLoadMore}
+              variant='outline'
+              disabled={isLoading}
+              size='lg'
+            >
+              {isLoading ? t('pages.home.loading') : t('pages.home.loadMore')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

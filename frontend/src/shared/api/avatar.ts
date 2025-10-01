@@ -26,6 +26,25 @@ export interface ListAvatarsParams {
   offset?: number
 }
 
+export interface GenerateAvatarParams {
+  primaryColor?: string
+  foreignColor?: string
+  colorScheme?: string
+  seed?: string
+}
+
+export interface GenerateAvatarResponse {
+  id: string
+  name: string
+  filePath: string
+  createdAt: string
+  version: string
+  primaryColor?: string
+  foreignColor?: string
+  colorScheme?: string
+  seed?: string
+}
+
 export const avatarApi = {
   list: async (
     params: ListAvatarsParams = {},
@@ -41,11 +60,27 @@ export const avatarApi = {
     return response.data
   },
 
+  generate: async (
+    params: GenerateAvatarParams,
+  ): Promise<GenerateAvatarResponse> => {
+    const response = await apiClient.post<GenerateAvatarResponse>(
+      '/api/generate',
+      params,
+    )
+    return response.data
+  },
+
   getImageUrl: (id: string, filter?: string, size?: number): string => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
     const params = new URLSearchParams()
     if (filter) params.append('filter', filter)
-    if (size) params.append('size', size.toString())
+    if (size) {
+      // Convert pixel size to power of 2 (backend expects 5-9, where 2^n)
+      const sizeExponent = Math.log2(size)
+      if (Number.isInteger(sizeExponent) && sizeExponent >= 4 && sizeExponent <= 9) {
+        params.append('size', sizeExponent.toString())
+      }
+    }
 
     const query = params.toString()
     return query ? `${baseUrl}/api/${id}?${query}` : `${baseUrl}/api/${id}`

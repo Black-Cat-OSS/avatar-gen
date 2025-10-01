@@ -1,0 +1,219 @@
+{
+  "common": {
+    "home": "Avaleht",
+    "about": "Meist",
+    "signIn": "Logi sisse",
+    "login": "Sisselogimine",
+    "menu": "Menüü",
+    "theme": "Teema",
+    "language": "Keel",
+    "close": "Sulge"
+  },
+  "header": {
+    "brand": "ava-gen",
+    "toggleMenu": "Ava mobiilne menüü"
+  },
+  "mobileMenu": {
+    "title": "ava-gen",
+    "closeMenu": "Sulge menüü"
+  },
+  "themeToggle": {
+    "switchToDark": "Lülitu tumeda teema peale",
+    "switchToLight": "Lülitu hele teema peale"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Vali keel",
+    "english": "English",
+    "russian": "Русский",
+    "spanish": "Español",
+    "german": "Deutsch",
+    "estonian": "Eesti"
+  },
+  "pages": {
+    "home": {
+      "title": "Avatarite galerii",
+      "subtitle": "Avatarite nimekiri backend API-st",
+      "loading": "Avatarite laadimine...",
+      "error": "Laadimise viga",
+      "unknownError": "Tundmatu viga",
+      "noAvatars": "Avatarid ei leitud",
+      "avatarsFound": "Leitud avatare",
+      "refresh": "Värskenda",
+      "refreshing": "Laadimine...",
+      "avatarId": "ID",
+      "generateAvatar": "Loo avatar",
+      "loadMore": "Lae rohkem"
+    },
+    "about": {
+      "title": "Meist - ava-gen",
+      "subtitle": "Kaasaegne veebirakendus, mis on ehitatud puhta arhitektuuriga",
+      "fsdArchitecture": {
+        "title": "FSD arhitektuur",
+        "description": "Ehitatud Feature-Sliced Design metodoloogia abil skaleeritava ja hooldatava koodistruktuuri jaoks."
+      },
+      "themeSystem": {
+        "title": "Teema süsteem",
+        "description": "Täielik tumeda/hele teema tugi automaatse süsteemituvastusega ja sujuvate üleminekutega."
+      },
+      "technologyStack": {
+        "title": "Tehnoloogia stack",
+        "items": [
+          "React 19 TypeScriptiga",
+          "Vite kiireks arenduseks",
+          "Tailwind CSS stiilide jaoks",
+          "React Router navigeerimiseks",
+          "Zod valideerimiseks",
+          "React Hook Form vormide jaoks"
+        ],
+        "viewDetails": "Vaata üksikasju"
+      }
+    },
+    "devStack": {
+      "title": "Arenduse stack",
+      "subtitle": "Põhjalik ülevaade selles projektis kasutatavatest tehnoloogiatest ja tööriistadest",
+      "frontend": {
+        "title": "Frontend tehnoloogiad",
+        "technologies": [
+          "React 19 TypeScriptiga",
+          "Vite ehitus tööriistade jaoks",
+          "Tailwind CSS stiilide jaoks",
+          "TanStack Router marsruudistamiseks",
+          "React Hook Form vormide jaoks",
+          "Zod valideerimiseks",
+          "React i18next rahvusvahelistamiseks",
+          "Storybook komponentide arendamiseks"
+        ]
+      },
+      "backend": {
+        "title": "Backend tehnoloogiad",
+        "technologies": [
+          ".NET 8 C#-ga",
+          "ASP.NET Core Web API",
+          "Entity Framework Core",
+          "PostgreSQL andmebaas",
+          "Keycloak autentimiseks",
+          "Docker konteineriseerimiseks",
+          "OpenAPI/Swagger dokumentatsiooniks"
+        ]
+      },
+      "devops": {
+        "title": "DevOps ja tööriistad",
+        "technologies": [
+          "Docker ja Docker Compose",
+          "Nginx pöördproxy",
+          "Git versioonide kontrolliks",
+          "pnpm pakettide haldamiseks",
+          "ESLint koodi lintimiseks",
+          "TypeScript tüübikindluseks",
+          "Jest testimiseks"
+        ]
+      },
+      "architecture": {
+        "title": "Arhitektuuri ülevaade",
+        "description": "See projekt järgib kaasaegseid arhitektuuri mustreid selge vastutuse jagamise ja skaleeritavate disaini põhimõtetega.",
+        "frontend": {
+          "title": "Frontend arhitektuur",
+          "description": "Ehitatud Feature-Sliced Design metodoloogia abil, tagades hooldatavad ja skaleeritavad React komponendid õige vastutuse jagamisega."
+        },
+        "backend": {
+          "title": "Backend arhitektuur",
+          "description": "Modulaarne .NET arhitektuur selge eraldusega moodulite, teenuste ja andmete juurdepääsu kihtide vahel optimaalse hooldatavuse jaoks."
+        }
+      },
+      "backToAbout": "Tagasi Meist"
+    },
+    "avatarGenerator": {
+      "title": "Avatarite generaator",
+      "subtitle": "Loo ainulaadne avatar kohandatud seadetega",
+      "description": "Konfigureeri värve ja parameetreid personaalse avatari loomiseks"
+    },
+    "avatarViewer": {
+      "title": "Avatarite vaatur",
+      "subtitle": "Sirvi ja filtreeri loodud avatare",
+      "size": "Suurus",
+      "filter": "Filter",
+      "filterPlaceholder": "Otsi nime või ID järgi...",
+      "sortBy": "Sordi",
+      "sortByDate": "Kuupäeva järgi",
+      "sortByName": "Nime järgi",
+      "showing": "Näidatakse",
+      "of": "kuni",
+      "avatars": "avatari",
+      "loading": "Avatarite laadimine...",
+      "error": "Laadimise viga",
+      "unknownError": "Tundmatu viga",
+      "noResults": "Avatarid ei leitud",
+      "imageFilter": "Pildi filter",
+      "search": "Otsi",
+      "currentSize": "Suurus",
+      "currentFilter": "Filter",
+      "searching": "Otsimine",
+      "backToGallery": "Tagasi galeriisse",
+      "avatarNotFound": "Avatari ei leitud",
+      "noAvatarSelected": "Avatari pole valitud",
+      "avatarInfo": "Avatari informatsioon",
+      "avatarId": "Avatari ID",
+      "createdAt": "Loodud",
+      "primaryColor": "Peamine värv",
+      "foreignColor": "Teine värv",
+      "colorScheme": "Värviskeem",
+      "seed": "Seemne",
+      "avatarPreview": "Avatari eelvaade",
+      "allSizes": "Kõik suurused",
+      "allFilters": "Kõik filtrid"
+    }
+  },
+  "features": {
+    "counter": {
+      "count": "Loendur",
+      "increment": "Suurenda loendurit"
+    },
+    "avatarGenerator": {
+      "primaryColor": "Peamine värv",
+      "foreignColor": "Teine värv",
+      "colorScheme": "Värviskeem",
+      "seed": "Seemne",
+      "seedPlaceholder": "Sisesta ainulaadne seemne",
+      "seedDescription": "Seemne määrab avatari ainulaadsuse (maks. 32 tähemärki)",
+      "generate": "Genereeri avatar",
+      "generating": "Genereerimine...",
+      "success": "Avatar edukalt genereeritud!",
+      "error": "Genereerimise viga",
+      "colorSchemes": {
+        "default": "Vaikimisi",
+        "monochrome": "Monokrom",
+        "vibrant": "Erk",
+        "pastel": "Pastell",
+        "ocean": "Ookean",
+        "sunset": "Päikeseloojang",
+        "forest": "Mets",
+        "royal": "Kuninglik"
+      },
+      "randomPalette": "Juhuslik palett",
+      "generateSeed": "Genereeri fraas",
+      "currentPalette": "Praegune palett"
+    }
+  },
+  "login": {
+    "title": "Sisselogimine",
+    "subtitle": "Tere tulemast tagasi! Palun logi oma kontole sisse.",
+    "fields": {
+      "email": "E-posti aadress",
+      "emailPlaceholder": "Sisesta oma e-post",
+      "password": "Parool",
+      "passwordPlaceholder": "Sisesta oma parool"
+    },
+    "rememberMe": "Jäta mind meelde",
+    "forgotPassword": "Unustasid parooli?",
+    "signIn": "Logi sisse",
+    "signingIn": "Sisselogimine...",
+    "noAccount": "Pole kontot?",
+    "signUp": "Registreeru",
+    "validation": {
+      "emailRequired": "E-post on nõutav",
+      "emailInvalid": "Palun sisesta kehtiv e-posti aadress",
+      "passwordRequired": "Parool on nõutav",
+      "passwordTooShort": "Parool peab olema vähemalt 6 tähemärki"
+    }
+  }
+}
