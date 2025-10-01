@@ -19,9 +19,9 @@ export class GenerateAvatarDto {
   @IsString()
   colorScheme?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Seed for avatar generation (max 32 characters)',
-    maxLength: 32
+    maxLength: 32,
   })
   @IsOptional()
   @IsString()
@@ -30,20 +30,20 @@ export class GenerateAvatarDto {
 }
 
 export class GetAvatarDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Filter to apply to the image',
     enum: FilterType,
-    example: FilterType.GRAYSCALE
+    example: FilterType.GRAYSCALE,
   })
   @IsOptional()
   @IsEnum(FilterType)
   filter?: FilterType;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Size parameter (2^n where 4 < n <= 9)',
     minimum: 5,
     maximum: 9,
-    example: 6
+    example: 6,
   })
   @IsOptional()
   @Transform(({ value }) => parseInt(value))
@@ -54,11 +54,11 @@ export class GetAvatarDto {
 }
 
 export class ListAvatarsDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Number of records to retrieve (default: 10)',
     minimum: 1,
     maximum: 100,
-    example: 10
+    example: 10,
   })
   @IsOptional()
   @Transform(({ value }) => parseInt(value))
@@ -67,10 +67,10 @@ export class ListAvatarsDto {
   @Max(100)
   pick?: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Number of records to skip (default: 0)',
     minimum: 0,
-    example: 0
+    example: 0,
   })
   @IsOptional()
   @Transform(({ value }) => parseInt(value))
@@ -78,4 +78,3 @@ export class ListAvatarsDto {
   @Min(0)
   offset?: number;
 }
-

@@ -39,4 +39,3 @@ export class LoggerService implements NestLoggerService {
     this.logger.trace({ context }, message);
   }
 }
-

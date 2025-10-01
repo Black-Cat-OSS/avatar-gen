@@ -15,7 +15,11 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AvatarService } from './avatar.service';
-import { GenerateAvatarDto, GetAvatarDto, ListAvatarsDto } from '../../common/dto/generate-avatar.dto';
+import {
+  GenerateAvatarDto,
+  GetAvatarDto,
+  ListAvatarsDto,
+} from '../../common/dto/generate-avatar.dto';
 
 @ApiTags('Avatar')
 @Controller('api')
@@ -70,8 +74,16 @@ export class AvatarController {
 
   @Get('list')
   @ApiOperation({ summary: 'Get list of avatars with pagination' })
-  @ApiQuery({ name: 'pick', required: false, description: 'Number of records to retrieve (default: 10, max: 100)' })
-  @ApiQuery({ name: 'offset', required: false, description: 'Number of records to skip (default: 0)' })
+  @ApiQuery({
+    name: 'pick',
+    required: false,
+    description: 'Number of records to retrieve (default: 10, max: 100)',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Number of records to skip (default: 0)',
+  })
   @ApiResponse({ status: 200, description: 'Avatar list retrieved successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid parameters' })
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -119,20 +131,20 @@ export class AvatarController {
   @Get(':id')
   @ApiOperation({ summary: 'Get avatar by ID' })
   @ApiParam({ name: 'id', description: 'Avatar ID (UUID)' })
-  @ApiQuery({ name: 'filter', required: false, description: 'Filter to apply (grayscale, sepia, negative)' })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Filter to apply (grayscale, sepia, negative)',
+  })
   @ApiQuery({ name: 'size', required: false, description: 'Size parameter (5-9, where 2^n)' })
   @ApiResponse({ status: 200, description: 'Avatar retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Avatar not found' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid parameters' })
   @UsePipes(new ValidationPipe({ transform: true }))
-  async getAvatar(
-    @Param('id') id: string,
-    @Query() dto: GetAvatarDto,
-    @Res() res: Response,
-  ) {
+  async getAvatar(@Param('id') id: string, @Query() dto: GetAvatarDto, @Res() res: Response) {
     try {
       const result = await this.avatarService.getAvatar(id, dto);
-      
+
       res.set({
         'Content-Type': result.contentType,
         'Content-Length': result.image.length.toString(),
@@ -140,7 +152,7 @@ export class AvatarController {
         'X-Created-At': result.createdAt.toISOString(),
         'X-Version': result.version,
       });
-      
+
       res.send(result.image);
     } catch (error) {
       const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
@@ -177,6 +189,4 @@ export class AvatarController {
       );
     }
   }
-
 }
-

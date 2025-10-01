@@ -18,11 +18,13 @@ async function bootstrap() {
   app.useLogger(logger);
 
   // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // CORS configuration
   app.enableCors({
@@ -46,16 +48,17 @@ async function bootstrap() {
 
   // Get server configuration
   const serverConfig = configService.getServerConfig();
-  
+
   // Start server
   await app.listen(serverConfig.port, serverConfig.host);
-  
+
   logger.log(`Application is running on: http://${serverConfig.host}:${serverConfig.port}`);
-  logger.log(`Swagger documentation available at: http://${serverConfig.host}:${serverConfig.port}/swagger`);
+  logger.log(
+    `Swagger documentation available at: http://${serverConfig.host}:${serverConfig.port}/swagger`,
+  );
 }
 
-bootstrap().catch((error) => {
+bootstrap().catch(error => {
   console.error('Failed to start application:', error);
   process.exit(1);
 });
-

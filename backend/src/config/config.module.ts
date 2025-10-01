@@ -6,4 +6,3 @@ import { YamlConfigService } from './yaml-config.service';
   exports: [YamlConfigService],
 })
 export class ConfigModule {}
-

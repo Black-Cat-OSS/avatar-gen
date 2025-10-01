@@ -9,7 +9,9 @@ app:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./prisma/storage/database.sqlite"
+      url: "file:./storage/database/database.sqlite"
+  # Директории автоматически создаются модулем инициализации
+  # Не изменяйте эти пути, они синхронизированы с InitializationModule
     # postgresql_params:
     #   host: "localhost"
     #   port: 5432
