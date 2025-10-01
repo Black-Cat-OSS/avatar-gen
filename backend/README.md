@@ -38,12 +38,7 @@ Backend service for generating and managing avatars similar to GitHub/GitLab.
 npm install
 ```
 
-2. Set up environment:
-```bash
-cp env.example .env
-```
-
-3. Configure database in `settings.yaml`:
+2. Configure database in `settings.yaml`:
 ```yaml
 database:
   driver: "sqlite"  # or "postgresql"
@@ -61,17 +56,17 @@ database:
   #   ssl: false
 ```
 
-4. Generate Prisma client:
+3. Generate environment file and Prisma client:
 ```bash
 npm run prisma:generate
 ```
 
-5. Run database migrations:
+4. Run database migrations:
 ```bash
 npm run prisma:migrate
 ```
 
-6. Start the application:
+5. Start the application:
 ```bash
 npm run start:dev
 ```
@@ -197,11 +192,12 @@ docker run -p 3000:3000 -v $(pwd)/storage:/app/storage avatar-backend
 - `npm run test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:cov` - Run tests with coverage
-- `npm run prisma:generate` - Generate Prisma client
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:studio` - Open Prisma Studio
-- `npm run prisma:reset` - Reset database (development only)
-- `npm run prisma:deploy` - Deploy migrations to production
+- `npm run env:generate` - Generate .env file from settings.yaml
+- `npm run prisma:generate` - Generate .env file and Prisma client
+- `npm run prisma:migrate` - Generate .env file and run database migrations
+- `npm run prisma:studio` - Generate .env file and open Prisma Studio
+- `npm run prisma:reset` - Generate .env file and reset database (development only)
+- `npm run prisma:deploy` - Generate .env file and deploy migrations to production
 
 ### Project Structure
 

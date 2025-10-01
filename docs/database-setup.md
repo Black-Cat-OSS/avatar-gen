@@ -9,16 +9,22 @@
 
 ## Конфигурация
 
-### Переменные окружения
+### Автоматическая генерация .env файла
+
+Переменные окружения `DATABASE_PROVIDER` и `DATABASE_URL` автоматически генерируются из `settings.yaml` при запуске любых Prisma команд.
 
 ```bash
-# Тип базы данных
-DATABASE_PROVIDER="sqlite"  # или "postgresql"
+# Генерация .env файла из settings.yaml
+npm run env:generate
+```
 
-# URL подключения к базе данных
-DATABASE_URL="file:./prisma/storage/database.sqlite"  # для SQLite
-# или
-DATABASE_URL="postgresql://username:password@host:port/database"  # для PostgreSQL
+Сгенерированный файл `.env`:
+
+```bash
+# Generated from settings.yaml
+DATABASE_PROVIDER="sqlite"
+DATABASE_URL="file:./prisma/storage/database.sqlite"
+CONFIG_PATH="./settings.yaml"
 ```
 
 ### Файл settings.yaml
@@ -52,8 +58,8 @@ app:
 
 ### Настройка
 
-1. Убедитесь, что `DATABASE_PROVIDER="sqlite"`
-2. Проверьте путь к файлу базы данных в `DATABASE_URL`
+1. В файле `settings.yaml` установите `driver: "sqlite"`
+2. Настройте параметры в разделе `sqlite_params`
 3. Запустите миграции: `npm run prisma:migrate`
 
 ### Использование
@@ -125,11 +131,7 @@ GRANT ALL PRIVILEGES ON DATABASE avatar_gen TO avatar_user;
 # Настройка PostgreSQL в settings.yaml
 # Установите driver: "postgresql" и настройте postgresql_params
 
-# Обновление переменных окружения
-export DATABASE_PROVIDER="postgresql"
-export DATABASE_URL="postgresql://postgres:password@localhost:5432/avatar_gen"
-
-# Генерация клиента Prisma
+# Генерация .env файла и клиента Prisma
 npm run prisma:generate
 
 # Запуск миграций
