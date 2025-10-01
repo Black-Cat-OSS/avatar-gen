@@ -7,7 +7,7 @@ Backend service for generating and managing avatars similar to GitHub/GitLab.
 - 🎨 Generate avatars with custom colors and patterns
 - 🎯 Multiple size options (16x16 to 512x512 pixels)
 - 🎭 Apply filters (grayscale, sepia, negative)
-- 💾 Persistent storage with SQLite database
+- 💾 Persistent storage with SQLite or PostgreSQL database
 - 📁 File-based avatar object storage
 - 🔧 YAML configuration
 - 📚 OpenAPI/Swagger documentation
@@ -17,7 +17,7 @@ Backend service for generating and managing avatars similar to GitHub/GitLab.
 ## Tech Stack
 
 - **Framework**: NestJS with TypeScript
-- **Database**: SQLite with Prisma ORM
+- **Database**: SQLite or PostgreSQL with Prisma ORM
 - **Image Processing**: Sharp
 - **Validation**: Zod + class-validator
 - **Logging**: Pino
@@ -43,17 +43,26 @@ npm install
 cp env.example .env
 ```
 
-3. Generate Prisma client:
+3. Choose database type and configure:
+```bash
+# For SQLite (default)
+npm run db:switch:sqlite
+
+# For PostgreSQL
+npm run db:switch:postgresql
+```
+
+4. Generate Prisma client:
 ```bash
 npm run prisma:generate
 ```
 
-4. Run database migrations:
+5. Run database migrations:
 ```bash
 npm run prisma:migrate
 ```
 
-5. Start the application:
+6. Start the application:
 ```bash
 npm run start:dev
 ```
@@ -109,17 +118,52 @@ app:
     host: "localhost"
     port: 3000
   database:
-    driver: "sqlite"
+    driver: "sqlite"  # or "postgresql"
+    connection:
+      maxRetries: 3
+      retryDelay: 2000
     sqlite_params:
-      url: "file:./storage/database.sqlite"
+      url: "file:./prisma/storage/database.sqlite"
+    # postgresql_params:
+    #   host: "localhost"
+    #   port: 5432
+    #   database: "avatar_gen"
+    #   username: "postgres"
+    #   password: "password"
+    #   ssl: false
 ```
+
+### Database Configuration
+
+The application supports both SQLite and PostgreSQL databases with automatic connection retry logic:
+
+#### SQLite (Default)
+- File-based database
+- No additional setup required
+- Perfect for development and small deployments
+
+#### PostgreSQL
+- Full-featured relational database
+- Better performance for production environments
+- Requires PostgreSQL server to be running
+
+#### Connection Retry Logic
+- **maxRetries**: Number of connection attempts (default: 3)
+- **retryDelay**: Delay between attempts in milliseconds (default: 2000)
+- Automatic reconnection on connection loss
 
 ## Docker
 
 ### Build and run with Docker Compose
 
 ```bash
+# Start with SQLite (default)
 docker-compose up --build
+
+# Start with PostgreSQL
+# Uncomment PostgreSQL environment variables in docker-compose.yml
+# Then run:
+docker-compose up --build postgres avatar-backend
 ```
 
 ### Build Docker image
@@ -147,6 +191,11 @@ docker run -p 3000:3000 -v $(pwd)/storage:/app/storage avatar-backend
 - `npm run prisma:generate` - Generate Prisma client
 - `npm run prisma:migrate` - Run database migrations
 - `npm run prisma:studio` - Open Prisma Studio
+- `npm run prisma:reset` - Reset database (development only)
+- `npm run prisma:deploy` - Deploy migrations to production
+- `npm run db:switch:sqlite` - Switch to SQLite database
+- `npm run db:switch:postgresql` - Switch to PostgreSQL database
+- `npm run db:health` - Check database connection health
 
 ### Project Structure
 
