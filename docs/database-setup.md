@@ -59,8 +59,8 @@ app:
 ### Использование
 
 ```bash
-# Переключение на SQLite
-npm run db:switch:sqlite
+# Настройка SQLite в settings.yaml
+# Установите driver: "sqlite" и настройте sqlite_params
 
 # Генерация клиента Prisma
 npm run prisma:generate
@@ -68,8 +68,8 @@ npm run prisma:generate
 # Запуск миграций
 npm run prisma:migrate
 
-# Проверка состояния БД
-npm run db:health
+# Запуск приложения
+npm run start:dev
 ```
 
 ## PostgreSQL
@@ -122,8 +122,8 @@ GRANT ALL PRIVILEGES ON DATABASE avatar_gen TO avatar_user;
 #### 3. Настройка приложения
 
 ```bash
-# Переключение на PostgreSQL
-npm run db:switch:postgresql
+# Настройка PostgreSQL в settings.yaml
+# Установите driver: "postgresql" и настройте postgresql_params
 
 # Обновление переменных окружения
 export DATABASE_PROVIDER="postgresql"
@@ -134,6 +134,9 @@ npm run prisma:generate
 
 # Запуск миграций
 npm run prisma:migrate
+
+# Запуск приложения
+npm run start:dev
 ```
 
 ### Docker с PostgreSQL
@@ -142,8 +145,8 @@ npm run prisma:migrate
 # Запуск PostgreSQL в Docker
 docker-compose up postgres
 
-# Переключение на PostgreSQL
-npm run db:switch:postgresql
+# Настройка PostgreSQL в settings.yaml
+# Установите driver: "postgresql" и настройте postgresql_params
 
 # Запуск приложения
 npm run start:dev
@@ -178,12 +181,6 @@ database:
 ```
 
 ## Проверка состояния базы данных
-
-### Команда health check
-
-```bash
-npm run db:health
-```
 
 ### API endpoint
 
