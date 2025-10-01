@@ -42,8 +42,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document, {
     customSiteTitle: 'Avatar Generation API',
-    customfavIcon: '/favicon.ico',
-    customCss: '.swagger-ui .topbar { display: none }',
   });
 
   // Get server configuration
