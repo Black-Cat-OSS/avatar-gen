@@ -13,4 +13,3 @@ import { GeneratorModule } from './modules';
   exports: [AvatarService],
 })
 export class AvatarModule {}
-

@@ -1,8 +1,12 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
 import { StorageService } from '../storage/storage.service';
 import { GeneratorService } from './modules';
-import { GenerateAvatarDto, GetAvatarDto, ListAvatarsDto } from '../../common/dto/generate-avatar.dto';
+import {
+  GenerateAvatarDto,
+  GetAvatarDto,
+  ListAvatarsDto,
+} from '../../common/dto/generate-avatar.dto';
+import { DatabaseService } from '../database';
 
 @Injectable()
 export class AvatarService {
@@ -16,7 +20,7 @@ export class AvatarService {
 
   async generateAvatar(dto: GenerateAvatarDto) {
     this.logger.log('Generating new avatar');
-    
+
     try {
       // Validate seed length
       if (dto.seed && dto.seed.length > 32) {
@@ -48,7 +52,7 @@ export class AvatarService {
       });
 
       this.logger.log(`Avatar generated successfully with ID: ${avatar.id}`);
-      
+
       return {
         id: avatar.id,
         createdAt: avatar.createdAt,
@@ -62,7 +66,7 @@ export class AvatarService {
 
   async getAvatar(id: string, dto: GetAvatarDto) {
     this.logger.log(`Retrieving avatar with ID: ${id}`);
-    
+
     try {
       // Validate size parameter
       if (dto.size && (dto.size <= 4 || dto.size > 9)) {
@@ -91,7 +95,7 @@ export class AvatarService {
       }
 
       this.logger.log(`Avatar retrieved successfully: ${id}`);
-      
+
       return {
         id: avatar.id,
         image: imageBuffer,
@@ -110,7 +114,7 @@ export class AvatarService {
 
   async deleteAvatar(id: string) {
     this.logger.log(`Deleting avatar with ID: ${id}`);
-    
+
     try {
       // Check if avatar exists in database
       const avatar = await this.databaseService.avatar.findUnique({
@@ -130,7 +134,7 @@ export class AvatarService {
       });
 
       this.logger.log(`Avatar deleted successfully: ${id}`);
-      
+
       return { message: 'Avatar deleted successfully' };
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -147,7 +151,7 @@ export class AvatarService {
 
   async listAvatars(dto: ListAvatarsDto) {
     this.logger.log('Retrieving avatar list');
-    
+
     try {
       const pick = dto.pick || 10;
       const offset = dto.offset || 0;
@@ -173,7 +177,7 @@ export class AvatarService {
       const total = await this.databaseService.avatar.count();
 
       this.logger.log(`Retrieved ${avatars.length} avatars from ${offset} offset`);
-      
+
       return {
         avatars,
         pagination: {
@@ -197,4 +201,3 @@ export class AvatarService {
     };
   }
 }
-

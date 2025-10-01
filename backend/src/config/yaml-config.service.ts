@@ -17,10 +17,10 @@ export class YamlConfigService {
     try {
       const configPath = process.env.CONFIG_PATH || join(process.cwd(), 'settings.yaml');
       this.logger.log(`Loading configuration from: ${configPath}`);
-      
+
       const fileContents = readFileSync(configPath, 'utf8');
       const rawConfig = yaml.load(fileContents);
-      
+
       this.config = validateConfig(rawConfig);
       this.logger.log('Configuration loaded successfully');
     } catch (error) {
@@ -45,4 +45,3 @@ export class YamlConfigService {
     return this.config.app.database;
   }
 }
-

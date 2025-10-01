@@ -18,6 +18,8 @@ dist-ssr
 # Environment files (auto-generated from settings.yaml)
 backend/.env
 
+storage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

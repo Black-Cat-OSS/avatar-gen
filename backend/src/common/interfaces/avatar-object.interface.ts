@@ -14,4 +14,3 @@ export interface ColorScheme {
   primaryColor: string;
   foreignColor: string;
 }
-

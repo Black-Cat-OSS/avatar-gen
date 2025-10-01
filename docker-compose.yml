@@ -27,19 +27,19 @@ services:
   avatar-backend:
     build: 
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: avatar-gen-backend
     ports:
       - "3000:3000"
     volumes:
       - ./backend/storage:/app/storage
-      - ./backend/prisma/storage:/app/prisma/storage
       - ./backend/settings.yaml:/app/settings.yaml
+      - ./backend/logs:/app/logs
     environment:
       - NODE_ENV=production
       # For SQLite (default)
       - DATABASE_PROVIDER=sqlite
-      - DATABASE_URL=file:./prisma/storage/database.sqlite
+      - DATABASE_URL=file:./storage/database/database.sqlite
       # For PostgreSQL (uncomment to use PostgreSQL)
       # - DATABASE_PROVIDER=postgresql
       # - DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen
@@ -57,6 +57,29 @@ services:
     networks:
       - avatar-gen-network
 
+  # Frontend Service (если есть)
+  avatar-frontend:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+    container_name: avatar-gen-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/logs:/var/log/nginx
+    depends_on:
+      - avatar-backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - avatar-gen-network
+
 volumes:
   postgres_data:
     driver: local
@@ -64,4 +87,3 @@ volumes:
 networks:
   avatar-gen-network:
     driver: bridge
-

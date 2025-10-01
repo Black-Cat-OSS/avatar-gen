@@ -6,4 +6,3 @@ import { GeneratorService } from './generator.service';
   exports: [GeneratorService],
 })
 export class GeneratorModule {}
-

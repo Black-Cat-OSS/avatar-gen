@@ -3,4 +3,3 @@ export enum FilterType {
   SEPIA = 'sepia',
   NEGATIVE = 'negative',
 }
-
