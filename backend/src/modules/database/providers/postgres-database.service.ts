@@ -33,14 +33,22 @@ export class PostgresDatabaseService implements IDatabaseConnection {
     const postgresParams = (
       config as { app: { database: { postgresql_params: Record<string, unknown> } } }
     ).app.database.postgresql_params;
-    const databaseUrl = this.buildPostgresUrl(postgresParams);
 
-    // Устанавливаем переменную окружения для Prisma
-    process.env.DATABASE_URL = databaseUrl;
+    // Проверяем наличие обязательных параметров PostgreSQL
+    if (!postgresParams) {
+      throw new Error(
+        'PostgreSQL parameters are required in configuration. Please check settings.yaml file.',
+      );
+    }
+
+    const databaseUrl = this.buildPostgresUrl(postgresParams);
 
     this._prisma = new PrismaClient({
       datasourceUrl: databaseUrl,
     });
+
+    // Устанавливаем переменную окружения для консистентности (может потребоваться Prisma в других местах)
+    process.env.DATABASE_URL = databaseUrl;
 
     this.config = config;
     this.logger = new Logger(PostgresDatabaseService.name);
@@ -70,6 +78,13 @@ export class PostgresDatabaseService implements IDatabaseConnection {
       database = 'avatar_gen',
       ssl = false,
     } = params || {};
+
+    // Проверяем обязательные параметры
+    if (!username || !host || !database) {
+      throw new Error(
+        'PostgreSQL configuration is incomplete. Required fields: username, host, database',
+      );
+    }
 
     // Формируем строку подключения
     let url = `postgresql://${username}`;

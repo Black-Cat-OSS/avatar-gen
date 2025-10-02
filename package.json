@@ -12,10 +12,17 @@
     "start": "npm run start --workspaces",
     "dev": "npm run dev --workspaces",
     "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "format": "prettier --write \"**/*.{js,ts,tsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,tsx,json,md,yml,yaml}\"",
     "test": "npm run test --workspaces",
     "prepare": "husky install",
     "commit": "git-cz",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "lint:backend": "eslint \"backend/**/*.{ts,js}\" --config backend/eslint.config.mjs",
+    "lint:backend:fix": "eslint \"backend/**/*.{ts,js}\" --config backend/eslint.config.mjs --fix",
+    "format:backend": "prettier --write \"backend/**/*.{ts,js,json,md,yml,yaml}\"",
+    "format:backend:check": "prettier --check \"backend/**/*.{ts,js,json,md,yml,yaml}\""
   },
   "keywords": [
     "avatar",
@@ -44,7 +51,7 @@
       "eslint --config backend/eslint.config.mjs --fix",
       "prettier --write"
     ],
-    "frontend/**/*.{ts,js,tsx,jsx,vue}": [
+    "frontend/**/*.{ts,js,tsx,jsx}": [
       "eslint --config frontend/eslint.config.js --fix",
       "prettier --write"
     ],

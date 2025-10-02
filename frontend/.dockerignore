@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Development tools not needed in container
+husky
+!package.docker.json
+
+# Development files
+logs/
+docs/
+scripts/
+*.log
+
+# Config files not needed in container
+eslint.config.js
+components.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore

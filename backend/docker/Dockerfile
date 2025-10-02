@@ -11,12 +11,16 @@ RUN apk add --no-cache \
     make \
     g++
 
+# Set environment variable to skip husky installation
+ENV HUSKY_SKIP_INSTALL=1
+
 # Copy package files first for better caching
 COPY package*.json ./
+COPY package-lock.json ./
 
 # Install ALL dependencies (including devDependencies for build)
-# Use parallel installation for faster builds
-RUN npm ci --prefer-offline --no-audit
+# Use installation for faster builds
+RUN npm install
 
 # Copy source code and Prisma schema
 COPY src ./src
@@ -30,7 +34,8 @@ RUN npx prisma generate
 # Build the application with parallel compilation
 # Set max old space size for large builds and enable parallel compilation
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm run build
+RUN npm install -g typescript && \ 
+    npm run build
 
 # Production stage
 FROM node:20-alpine AS production
@@ -45,9 +50,10 @@ RUN apk add --no-cache \
 
 # Copy package files
 COPY package*.json ./
+COPY package-lock.json ./
 
 # Install only production dependencies
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist

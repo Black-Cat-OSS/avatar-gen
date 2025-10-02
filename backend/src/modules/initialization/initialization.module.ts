@@ -1,4 +1,5 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
+import { ConfigModule } from '../../config/config.module';
 import { DirectoryInitializerService } from './services/directory-initializer.service';
 import { InitializationService } from './services/initialization.service';
 
@@ -27,6 +28,7 @@ import { InitializationService } from './services/initialization.service';
  */
 @Global()
 @Module({
+  imports: [ConfigModule], // Импортируем ConfigModule для доступа к YamlConfigService
   providers: [
     // Основной сервис инициализации
     InitializationService,
@@ -47,4 +49,21 @@ import { InitializationService } from './services/initialization.service';
     DirectoryInitializerService,
   ],
 })
-export class InitializationModule {}
+export class InitializationModule implements OnModuleInit {
+  private readonly logger = new Logger(InitializationModule.name);
+
+  async onModuleInit(): Promise<void> {
+    try {
+      this.logger.log(
+        'InitializationModule initialized - Application initialization services ready',
+      );
+    } catch (error) {
+      this.logger.error(
+        `InitializationModule initialization failed: ${error.message}`,
+        error.stack,
+        'InitializationModule',
+      );
+      throw error;
+    }
+  }
+}

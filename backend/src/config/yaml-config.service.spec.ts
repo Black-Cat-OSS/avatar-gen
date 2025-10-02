@@ -48,7 +48,8 @@ app:
     // Reset mocks
     jest.clearAllMocks();
 
-    // Mock fs.readFileSync before creating the module
+    // Mock fs methods before creating the module
+    mockedFs.existsSync.mockReturnValue(true);
     mockedFs.readFileSync.mockReturnValue(validYamlConfig);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -123,9 +124,7 @@ app:
     });
 
     it('should throw error when file does not exist', () => {
-      mockedFs.readFileSync.mockImplementation(() => {
-        throw new Error('ENOENT: no such file or directory');
-      });
+      mockedFs.existsSync.mockReturnValue(false);
 
       const originalCwd = process.cwd;
       process.cwd = jest.fn().mockReturnValue('/test');
@@ -267,4 +266,3 @@ app:
     });
   });
 });
-

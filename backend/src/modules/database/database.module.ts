@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigModule } from '../../config/config.module';
 import { YamlConfigService } from '../../config/yaml-config.service';
 import { SqliteDatabaseService } from './providers/sqlite-database.service';
@@ -71,4 +71,19 @@ import { DatabaseDriver } from './constants/database.constants';
   ],
   exports: [DatabaseService],
 })
-export class DatabaseModule {}
+export class DatabaseModule implements OnModuleInit {
+  private readonly logger = new Logger(DatabaseModule.name);
+
+  async onModuleInit(): Promise<void> {
+    try {
+      this.logger.log('DatabaseModule initialized - Database service ready');
+    } catch (error) {
+      this.logger.error(
+        `DatabaseModule initialization failed: ${error.message}`,
+        error.stack,
+        'DatabaseModule',
+      );
+      throw error;
+    }
+  }
+}

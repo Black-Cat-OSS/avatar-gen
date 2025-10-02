@@ -1,0 +1,20 @@
+services:
+  # PostgreSQL Database - PostgreSQL Profile
+  postgres:
+    profiles:
+      - postgresql
+
+  # Avatar Backend Service - PostgreSQL Profile
+  avatar-backend:
+    environment:
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Frontend Service - PostgreSQL Profile
+  avatar-frontend:
+    depends_on:
+      avatar-backend:
+        condition: service_healthy

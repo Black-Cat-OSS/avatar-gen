@@ -273,6 +273,7 @@ export const AvatarGeneratorForm = () => {
                   onChange={(e) => handleInputChange('primaryColor', e.target.value)}
                   placeholder="#3b82f6"
                   className="flex-1"
+                  label={t('features.avatarGenerator.primaryColor')}
                 />
               </div>
             </div>
@@ -294,6 +295,7 @@ export const AvatarGeneratorForm = () => {
                   onChange={(e) => handleInputChange('foreignColor', e.target.value)}
                   placeholder="#ef4444"
                   className="flex-1"
+                  label={t('features.avatarGenerator.foreignColor')}
                 />
               </div>
             </div>
@@ -322,6 +324,7 @@ export const AvatarGeneratorForm = () => {
             onChange={(e) => handleInputChange('seed', e.target.value)}
             placeholder={t('features.avatarGenerator.seedPlaceholder')}
             maxLength={32}
+            label={t('features.avatarGenerator.seed')}
           />
           <p className="text-xs text-muted-foreground">
             {t('features.avatarGenerator.seedDescription')}

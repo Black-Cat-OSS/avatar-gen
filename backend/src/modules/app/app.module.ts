@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigModule } from '../../config/config.module';
-import { InitializationModule } from '../initialization';
-import { DatabaseModule } from '../database';
 import { LoggerModule } from '../logger/logger.module';
+import { DatabaseModule } from '../database';
+import { InitializationModule } from '../initialization';
 import { AvatarModule } from '../avatar/avatar.module';
+import { HealthModule } from '../health';
 
 /**
  * Корневой модуль приложения
@@ -13,11 +14,27 @@ import { AvatarModule } from '../avatar/avatar.module';
  */
 @Module({
   imports: [
-    ConfigModule,
-    InitializationModule, // ← Модуль инициализации (должен быть первым)
-    DatabaseModule,
-    LoggerModule,
-    AvatarModule,
+    ConfigModule, // ← Конфигурация (должна быть первой)
+    LoggerModule, // ← Логирование
+    InitializationModule, // ← Инициализация директорий
+    DatabaseModule, // ← База данных
+    AvatarModule, // ← Модуль аватаров
+    HealthModule, // ← Модуль проверки здоровья
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  private readonly logger = new Logger(AppModule.name);
+
+  async onModuleInit(): Promise<void> {
+    try {
+      this.logger.log('AppModule initialized - All application modules loaded successfully');
+    } catch (error) {
+      this.logger.error(
+        `AppModule initialization failed: ${error.message}`,
+        error.stack,
+        'AppModule',
+      );
+      throw error;
+    }
+  }
+}

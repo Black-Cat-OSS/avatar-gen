@@ -1,0 +1,20 @@
+name: avatar-gen-sqlite
+
+services:
+  avatar-backend:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    environment:
+      - DATABASE_PROVIDER=sqlite
+      - DATABASE_URL=file:./storage/database/database.sqlite
+    depends_on: [] # Убираем зависимость от PostgreSQL
+
+  # Frontend Service - SQLite Profile
+  avatar-frontend:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+    depends_on:
+      avatar-backend:
+        condition: service_healthy
