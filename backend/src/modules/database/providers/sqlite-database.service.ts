@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import * as fs from 'fs';
+import * as path from 'path';
 import { YamlConfigService } from '../../../config/yaml-config.service';
 import { IDatabaseConnection, DatabaseInfo } from '../interfaces';
 
@@ -26,29 +28,143 @@ export class SqliteDatabaseService implements IDatabaseConnection {
   private isConnected = false;
   private logger: Logger;
   private _prisma: PrismaClient;
+  private readonly databaseFilePath: string;
 
   constructor(private readonly configService: YamlConfigService) {
     const config = configService.getConfig();
 
-    // Программно задаем URL базы данных из конфигурации
-    const databaseUrl =
-      (config as { app: { database: { sqlite_params: { url: string } } } }).app.database
-        .sqlite_params?.url || 'file:./storage/database/database.sqlite';
+    // Проверяем наличие обязательного параметра URL базы данных
+    const sqliteParams = (config as { app: { database: { sqlite_params: { url: string } } } }).app
+      .database.sqlite_params;
+    if (!sqliteParams?.url) {
+      throw new Error(
+        'SQLite database URL is required in configuration. Please check settings.yaml file.',
+      );
+    }
 
-    // Устанавливаем переменную окружения для Prisma
-    process.env.DATABASE_URL = databaseUrl;
+    const databaseUrl = sqliteParams.url;
+
+    // Извлекаем путь к файлу из URL (формат: file:./path/to/db.sqlite)
+    this.databaseFilePath = this.extractFilePathFromUrl(databaseUrl);
 
     this._prisma = new PrismaClient({
       datasourceUrl: databaseUrl,
     });
 
+    // Устанавливаем переменную окружения для консистентности (может потребоваться Prisma в других местах)
+    process.env.DATABASE_URL = databaseUrl;
+
     this.config = config;
     this.logger = new Logger(SqliteDatabaseService.name);
-    console.debug(`SQLite datasource URL: ${databaseUrl}`);
+    this.logger.debug(`SQLite datasource URL: ${databaseUrl}`);
+    this.logger.debug(`SQLite database file path: ${this.databaseFilePath}`);
   }
 
   get prisma(): PrismaClient {
     return this._prisma;
+  }
+
+  /**
+   * Извлекает путь к файлу из URL SQLite
+   *
+   * @param {string} url - URL в формате file:./path/to/db.sqlite
+   * @returns {string} Путь к файлу базы данных
+   * @private
+   */
+  private extractFilePathFromUrl(url: string): string {
+    // Убираем префикс "file:" из URL
+    let filePath = url.replace(/^file:/, '');
+
+    // Преобразуем относительный путь в абсолютный
+    if (!path.isAbsolute(filePath)) {
+      filePath = path.resolve(process.cwd(), filePath);
+    }
+
+    return filePath;
+  }
+
+  /**
+   * Проверяет существование файла базы данных и директории
+   *
+   * @throws {Error} Если файл или директория не существуют, или нет прав доступа
+   * @private
+   */
+  private checkDatabaseFileExists(): void {
+    const dbDirectory = path.dirname(this.databaseFilePath);
+
+    // Проверяем существование директории
+    if (!fs.existsSync(dbDirectory)) {
+      const errorMessage = [
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '❌ SQLite Database Error: Directory does not exist',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `📁 Expected directory: ${dbDirectory}`,
+        '',
+        '📝 Solution:',
+        `   Create the directory manually or update the database path in settings.yaml`,
+        '',
+        '   Example commands:',
+        `   mkdir -p "${dbDirectory}"`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n');
+
+      this.logger.error(errorMessage);
+      throw new Error(`SQLite database directory does not exist: ${dbDirectory}`);
+    }
+
+    // Проверяем существование файла базы данных
+    if (!fs.existsSync(this.databaseFilePath)) {
+      const errorMessage = [
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '❌ SQLite Database Error: Database file does not exist',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `📂 Expected file: ${this.databaseFilePath}`,
+        '',
+        '📝 Solution:',
+        '   1. Run Prisma migrations to create the database:',
+        '      npm run prisma:migrate',
+        '',
+        '   2. Or create an empty database file:',
+        `      touch "${this.databaseFilePath}"`,
+        '',
+        '   3. Then run migrations:',
+        '      npm run prisma:migrate',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n');
+
+      this.logger.error(errorMessage);
+      throw new Error(`SQLite database file does not exist: ${this.databaseFilePath}`);
+    }
+
+    // Проверяем права на чтение/запись
+    try {
+      fs.accessSync(this.databaseFilePath, fs.constants.R_OK | fs.constants.W_OK);
+    } catch {
+      const errorMessage = [
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '❌ SQLite Database Error: Insufficient permissions',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `📂 Database file: ${this.databaseFilePath}`,
+        '',
+        '📝 Solution:',
+        '   Grant read/write permissions to the database file:',
+        `   chmod 666 "${this.databaseFilePath}"`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n');
+
+      this.logger.error(errorMessage);
+      throw new Error(
+        `Insufficient permissions for SQLite database file: ${this.databaseFilePath}`,
+      );
+    }
+
+    this.logger.log(`✅ SQLite database file exists and is accessible: ${this.databaseFilePath}`);
   }
 
   /**
@@ -64,6 +180,11 @@ export class SqliteDatabaseService implements IDatabaseConnection {
         app: { database: { connection: { maxRetries: number; retryDelay: number } } };
       }
     ).app.database.connection;
+
+    // Проверяем существование файла базы данных перед первой попыткой подключения
+    if (retryCount === 1) {
+      this.checkDatabaseFileExists();
+    }
 
     try {
       await this._prisma.$connect();

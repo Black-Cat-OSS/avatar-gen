@@ -1,0 +1,14 @@
+app:
+  server:
+    port: 3001  # Разный порт для разработки
+  database:
+    # В разработке можно использовать более детальное логирование подключений
+    connection:
+      maxRetries: 5  # Больше попыток для разработки
+      retryDelay: 1000  # Меньше задержка между попытками
+    sqlite_params:
+      url: "file:./backend/storage/database/database.dev.sqlite"  # Отдельная БД для разработки
+  logging:
+    level: "debug"
+    verbose: true
+    pretty: true

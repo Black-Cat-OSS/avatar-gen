@@ -6,59 +6,74 @@ import { YamlConfigService } from './config/yaml-config.service';
 import { LoggerService } from './modules/logger/logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: false, // Use our custom logger
-  });
+  try {
+    console.log('Starting application bootstrap...');
 
-  // Get configuration service
-  const configService = app.get(YamlConfigService);
-  const logger = app.get(LoggerService);
+    console.log('Creating NestJS application instance...');
+    const app = await NestFactory.create(AppModule);
+    console.log('Application instance created');
 
-  // Set global logger
-  app.useLogger(logger);
+    // Get configuration and logger services
+    console.log('Getting configuration and logger services...');
+    const configService = app.get(YamlConfigService);
+    console.log('Config service retrieved');
 
-  // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
+    const loggerService = app.get(LoggerService);
+    console.log('Logger service retrieved');
 
-  // CORS configuration
-  app.enableCors({
-    origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+    // Set global logger
+    app.useLogger(loggerService);
+    console.log('Global logger configured');
 
-  // Swagger configuration
-  const config = new DocumentBuilder()
-    .setTitle('Avatar Generation API')
-    .setDescription('API for generating and managing avatars similar to GitHub/GitLab')
-    .setVersion('0.0.1')
-    .addTag('Avatar', 'Avatar generation and management endpoints')
-    .build();
+    loggerService.log('Application bootstrap completed successfully');
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('swagger', app, document, {
-    customSiteTitle: 'Avatar Generation API',
-  });
+    loggerService.debug('Setting up global validation pipe...');
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
 
-  // Get server configuration
-  const serverConfig = configService.getServerConfig();
+    loggerService.debug('Enabling CORS...');
+    app.enableCors({
+      origin: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      credentials: true,
+    });
 
-  // Start server
-  await app.listen(serverConfig.port, serverConfig.host);
+    loggerService.debug('Setting up Swagger documentation...');
+    const config = new DocumentBuilder()
+      .setTitle('Avatar Generation API')
+      .setDescription('API for generating and managing avatars similar to GitHub/GitLab')
+      .setVersion('0.0.1')
+      .addTag('Avatar', 'Avatar generation and management endpoints')
+      .build();
 
-  logger.log(`Application is running on: http://${serverConfig.host}:${serverConfig.port}`);
-  logger.log(
-    `Swagger documentation available at: http://${serverConfig.host}:${serverConfig.port}/swagger`,
-  );
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('swagger', app, document, {
+      customSiteTitle: 'Avatar Generation API',
+    });
+
+    // Get server configuration
+    const serverConfig = configService.getServerConfig();
+    loggerService.debug(`Server configuration: ${JSON.stringify(serverConfig)}`);
+
+    // Start server
+    loggerService.log(`Starting server on ${serverConfig.host}:${serverConfig.port}...`);
+    await app.listen(serverConfig.port, serverConfig.host);
+
+    loggerService.log(
+      `Application is running on: http://${serverConfig.host}:${serverConfig.port}`,
+    );
+    loggerService.log(
+      `Swagger documentation available at: http://${serverConfig.host}:${serverConfig.port}/swagger`,
+    );
+  } catch (error) {
+    console.error(`Failed to start application: ${error.message}`, error);
+    process.exit(1);
+  }
 }
 
-bootstrap().catch(error => {
-  console.error('Failed to start application:', error);
-  process.exit(1);
-});
+bootstrap();

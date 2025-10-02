@@ -102,10 +102,35 @@ start_period: 10s
 
 ## 🚀 Использование
 
+### Профили конфигурации
+
+Проект поддерживает два профиля для разных баз данных:
+
+#### Профиль SQLite (по умолчанию)
+
+Используется для разработки и простых сценариев без PostgreSQL.
+
+```bash
+# Запустить с профилем SQLite
+docker-compose --profile sqlite up -d
+
+# Или просто (профиль sqlite активен по умолчанию)
+docker-compose up -d
+```
+
+#### Профиль PostgreSQL
+
+Используется для production окружения с полноценной PostgreSQL базой данных.
+
+```bash
+# Запустить с профилем PostgreSQL
+docker-compose --profile postgresql up -d
+```
+
 ### Быстрый старт
 
 ```bash
-# Запустить все сервисы
+# Запустить все сервисы (профиль sqlite по умолчанию)
 docker-compose up -d
 
 # Просмотр логов
@@ -121,14 +146,17 @@ docker-compose down -v
 ### Запуск отдельных сервисов
 
 ```bash
-# Только backend с SQLite (без PostgreSQL)
-docker-compose up avatar-backend --no-deps
+# Только backend с SQLite
+docker-compose --profile sqlite up avatar-backend
 
 # Только backend с PostgreSQL
-docker-compose up postgres avatar-backend
+docker-compose --profile postgresql up avatar-backend
 
 # Только frontend
 docker-compose up avatar-frontend
+
+# PostgreSQL отдельно (только для профиля postgresql)
+docker-compose --profile postgresql up postgres
 ```
 
 ### Пересборка образов
@@ -146,42 +174,64 @@ docker-compose up --build
 
 ## ⚙️ Конфигурация
 
-### Использование SQLite (по умолчанию)
+### Профили баз данных
 
-```yaml
-# В docker-compose.yml
-environment:
-  - DATABASE_PROVIDER=sqlite
-  - DATABASE_URL=file:./prisma/storage/database.sqlite
-# Зависимость от PostgreSQL не требуется
-# Можно запускать: docker-compose up avatar-backend --no-deps
-```
+Проект использует профили для автоматической настройки базы данных:
 
-### Переключение на PostgreSQL
+#### Профиль SQLite (по умолчанию)
 
-1. **Раскомментируйте переменные окружения:**
+- Используется для разработки
+- Не требует дополнительной настройки
+- База данных хранится в файле
 
-```yaml
-environment:
-  # - DATABASE_PROVIDER=sqlite
-  # - DATABASE_URL=file:./prisma/storage/database.sqlite
-  - DATABASE_PROVIDER=postgresql
-  - DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen
-```
+#### Профиль PostgreSQL
 
-2. **Обновите settings.yaml:**
+- Используется для production
+- Требует настройки PostgreSQL сервиса
+
+### Настройка settings.yaml
+
+Убедитесь, что ваш `backend/settings.yaml` соответствует выбранному профилю:
 
 ```yaml
 app:
   database:
-    driver: 'postgresql'
-    # ... остальная конфигурация
+    driver: 'sqlite' # для профиля sqlite
+    # driver: 'postgresql'  # для профиля postgresql (раскомментируйте)
+    connection:
+      maxRetries: 3
+      retryDelay: 2000
+    sqlite_params:
+      url: 'file:./storage/database/database.sqlite'
+    # postgresql_params:     # раскомментируйте для PostgreSQL
+    #   host: "postgres"
+    #   port: 5432
+    #   database: "avatar_gen"
+    #   username: "postgres"
+    #   password: "password"
+    #   ssl: false
 ```
 
-3. **Запустите с PostgreSQL:**
+### Переключение между профилями
 
 ```bash
-docker-compose up postgres avatar-backend
+# Использовать SQLite (по умолчанию)
+docker-compose --profile sqlite up -d
+
+# Использовать PostgreSQL
+docker-compose --profile postgresql up -d
+```
+
+### Миграции базы данных
+
+Для каждого профиля выполняйте миграции отдельно:
+
+```bash
+# Миграция для SQLite
+docker-compose --profile sqlite run --rm avatar-backend npm run prisma:migrate
+
+# Миграция для PostgreSQL
+docker-compose --profile postgresql run --rm avatar-backend npm run prisma:migrate
 ```
 
 ### Изменение портов

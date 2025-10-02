@@ -61,8 +61,18 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit(): Promise<void> {
-    this.logger.log(`Initializing ${this.driver} database connection...`);
-    await this.activeConnection.onModuleInit();
+    try {
+      this.logger.log(`Initializing ${this.driver} database connection...`);
+      await this.activeConnection.onModuleInit();
+      this.logger.log(`${this.driver} database connection established successfully`);
+    } catch (error) {
+      this.logger.error(
+        `${this.driver} database connection failed: ${error.message}`,
+        error.stack,
+        'DatabaseService',
+      );
+      throw error;
+    }
   }
 
   async onModuleDestroy(): Promise<void> {

@@ -29,6 +29,17 @@ const configSchema = z.object({
         })
         .optional(),
     }),
+    logging: z
+      .object({
+        level: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
+        verbose: z.boolean().default(false),
+        pretty: z.boolean().default(true),
+      })
+      .default({
+        level: 'info',
+        verbose: false,
+        pretty: true,
+      }),
   }),
 });
 

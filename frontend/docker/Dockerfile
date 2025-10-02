@@ -1,27 +1,53 @@
 # Multi-stage build for React + Vite + TypeScript + Nginx
-# Stage 1: Build the application
+# Stage 1: Install dependencies
 # Using Node.js 22 (matches local version v22.20.0)
+FROM node:22-alpine AS dependencies
+
+# Set working directory
+WORKDIR /app
+
+# Set environment variable to skip husky installation
+ENV HUSKY_SKIP_INSTALL=1
+
+# Install npm globally (already included in node image)
+
+# Copy original package.json for dependencies installation
+COPY package.json ./
+
+# Install dependencies from the original package.json
+# Note: HUSKY_SKIP_INSTALL=1 prevents husky installation and prepare script execution
+RUN npm install --legacy-peer-deps && \
+    npm install -g typescript --legacy-peer-deps
+
+# Stage 2: Build the application
 FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install pnpm globally with specific version
-# Note: While pnpm loses some advantages in containers (hard links, shared store),
-# we use it to maintain consistency with the project's package manager
-RUN npm install -g pnpm@8.15.6
+# Copy all dependencies from previous stage (including dev dependencies needed for build)
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/package-lock.json ./package-lock.json
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Replace package.json with clean version without husky prepare script
+COPY package.docker.json ./package.json
 
-# Install dependencies (including dev dependencies for build)
-RUN pnpm install --frozen-lockfile
+# Add node_modules/.bin to PATH for access to binaries like tsc and vite
+ENV PATH="/app/node_modules/.bin:$PATH"
 
-# Copy source code
-COPY . .
+# Copy necessary files for build
+COPY index.html ./
+COPY src ./src/
+COPY public ./public/
+COPY static ./static/
+COPY plugins ./plugins/
+COPY vite.config.ts ./
+COPY tsconfig.json ./
+COPY tsconfig.app.json ./
+COPY tailwind.config.ts ./
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
 # Stage 2: Production image with Nginx
 FROM nginx:alpine AS production

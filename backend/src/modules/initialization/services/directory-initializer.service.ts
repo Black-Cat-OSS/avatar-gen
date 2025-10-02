@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import { dirname } from 'path';
 import { YamlConfigService } from '../../../config/yaml-config.service';
+import { Configuration } from '../../../config/configuration';
 
 /**
  * Сервис для инициализации директорий приложения на основе настроек
@@ -16,25 +17,34 @@ import { YamlConfigService } from '../../../config/yaml-config.service';
 @Injectable()
 export class DirectoryInitializerService implements OnModuleInit {
   private readonly logger = new Logger(DirectoryInitializerService.name);
-  private readonly config: Record<string, unknown>;
+  private readonly config: Configuration;
 
   constructor(private readonly configService: YamlConfigService) {
     this.config = this.configService.getConfig();
   }
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Initializing application directories from configuration...');
-
     try {
+      this.logger.log('Initializing application directories from configuration...');
+
+      this.logger.debug('Extracting directories from configuration');
       // Получаем директории из настроек
       const directoriesToCreate = this.extractDirectoriesFromConfig();
+      this.logger.debug(
+        `Found ${directoriesToCreate.length} directories to create: ${JSON.stringify(directoriesToCreate, null, 2)}`,
+      );
 
       // Создаем директории
+      this.logger.debug('Creating directories');
       await this.ensureDirectoriesExist(directoriesToCreate);
 
       this.logger.log(`Successfully initialized ${directoriesToCreate.length} directories`);
     } catch (error) {
-      this.logger.error('Failed to initialize directories', error);
+      this.logger.error(
+        `Failed to initialize directories: ${error.message}`,
+        error.stack,
+        'DirectoryInitializer',
+      );
       throw error;
     }
   }
@@ -69,16 +79,27 @@ export class DirectoryInitializerService implements OnModuleInit {
    * @param {Set<string>} directories - Множество для добавления директорий
    */
   private extractStorageDirectories(directories: Set<string>): void {
+    this.logger.debug('Extracting storage directories from config');
+
     // Директория для аватаров
     if (this.config.app?.save_path) {
+      this.logger.debug(`Avatar save path: ${this.config.app.save_path}`);
       const avatarDir = dirname(this.config.app.save_path);
+      this.logger.debug(`Avatar directory: ${avatarDir}`);
+
       if (avatarDir && avatarDir !== '.') {
         directories.add(avatarDir);
+        this.logger.debug(`Added avatar directory: ${avatarDir}`);
+      } else {
+        this.logger.warn(`Invalid avatar directory path: ${avatarDir}`);
       }
+    } else {
+      this.logger.warn('No avatar save path configured in settings');
     }
 
     // Добавляем корневую директорию storage если используется
     directories.add('storage');
+    this.logger.debug('Added root storage directory');
   }
 
   /**
@@ -88,21 +109,37 @@ export class DirectoryInitializerService implements OnModuleInit {
    * @param {Set<string>} directories - Множество для добавления директорий
    */
   private extractDatabaseDirectories(directories: Set<string>): void {
+    this.logger.debug('Extracting database directories from config');
+
     // SQLite база данных
     if (this.config.app?.database?.sqlite_params?.url) {
       const sqliteUrl = this.config.app.database.sqlite_params.url;
+      this.logger.debug(`SQLite URL: ${sqliteUrl}`);
+
       // Извлекаем путь из file:// URL
       if (sqliteUrl.startsWith('file:')) {
         const filePath = sqliteUrl.replace('file:', '');
+        this.logger.debug(`SQLite file path: ${filePath}`);
+
         const dbDir = dirname(filePath);
+        this.logger.debug(`SQLite directory: ${dbDir}`);
+
         if (dbDir && dbDir !== '.') {
           directories.add(dbDir);
+          this.logger.debug(`Added database directory: ${dbDir}`);
+        } else {
+          this.logger.warn(`Invalid database directory path: ${dbDir}`);
         }
+      } else {
+        this.logger.warn(`Invalid SQLite URL format: ${sqliteUrl}`);
       }
+    } else {
+      this.logger.debug('No SQLite configuration found');
     }
 
     // Добавляем директорию для Prisma storage
     directories.add('prisma/storage');
+    this.logger.debug('Added Prisma storage directory');
   }
 
   /**

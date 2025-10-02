@@ -19,4 +19,8 @@ app:
     #   username: "postgres"
     #   password: "password"
     #   ssl: false
+  logging:
+    level: "info"  # trace, debug, info, warn, error, fatal
+    verbose: false  # включает debug уровень логирования
+    pretty: true   # красивый вывод в консоль
 

@@ -113,21 +113,25 @@ GET /api/health
 
 ## Configuration
 
-The application uses `settings.yaml` for configuration:
+The application uses YAML-based configuration with environment-specific overrides:
+
+### Base Configuration (`settings.yaml`)
+
+The main configuration file that must always be present:
 
 ```yaml
 app:
   save_path: "./storage/avatars"
   server:
-    host: "localhost"
+    host: "0.0.0.0"
     port: 3000
   database:
-    driver: "sqlite"  # or "postgresql"
+    driver: "sqlite"
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./prisma/storage/database.sqlite"
+      url: "file:./storage/database/database.sqlite"
     # postgresql_params:
     #   host: "localhost"
     #   port: 5432
@@ -136,6 +140,41 @@ app:
     #   password: "password"
     #   ssl: false
 ```
+
+### Environment-Specific Configuration
+
+Based on the `NODE_ENV` environment variable, the application will attempt to load environment-specific configuration files that override the base configuration:
+
+- **Development**: `settings.development.yaml` - Loaded when `NODE_ENV=development`
+- **Production**: `settings.production.yaml` - Loaded when `NODE_ENV=production`
+- **Testing**: `settings.test.yaml` - Loaded when `NODE_ENV=test`
+
+Example environment-specific configuration:
+
+```yaml
+# settings.development.yaml
+app:
+  server:
+    port: 3001  # Different port for development
+  database:
+    connection:
+      maxRetries: 5  # More retries for development
+      retryDelay: 1000  # Faster retry for development
+    sqlite_params:
+      url: "file:./storage/database/database.dev.sqlite"  # Separate DB for development
+```
+
+### Configuration Loading Process
+
+1. **Base Configuration**: Always loads `settings.yaml` (required)
+2. **Environment Override**: If `NODE_ENV` is set to `development`, `production`, or `test`, attempts to load `settings.{NODE_ENV}.yaml`
+3. **Merging**: Environment-specific configuration overrides base configuration using deep merge
+4. **Validation**: Final configuration is validated against the schema
+
+### Supported Environment Variables
+
+- `NODE_ENV`: Environment mode (`development`, `production`, `test`)
+- `CONFIG_PATH`: Custom path to base configuration file (defaults to `./settings.yaml`)
 
 ### Database Configuration
 
