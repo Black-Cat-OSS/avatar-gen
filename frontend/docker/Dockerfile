@@ -44,6 +44,7 @@ COPY plugins ./plugins/
 COPY vite.config.ts ./
 COPY tsconfig.json ./
 COPY tsconfig.app.json ./
+COPY tsconfig.node.json ./
 COPY tailwind.config.ts ./
 
 # Build the application
@@ -52,11 +53,21 @@ RUN npm run build
 # Stage 2: Production image with Nginx
 FROM nginx:alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Use alternative Alpine mirrors if default is unavailable
+RUN echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
+    echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories || true
+
+# Install curl for healthcheck with retry logic for network issues
+RUN for i in 1 2 3; do \
+        apk update && apk add --no-cache curl && break || \
+        { echo "Retry $i/3 failed, trying default mirrors..."; \
+          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
+          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
+          apk update; sleep 5; }; \
+    done
 
 # Create non-root user (www-data group already exists in nginx:alpine)
-RUN adduser -S www-data -u 1001 -G www-data
+RUN adduser -S www-data -u 1001 -G www-data || true
 
 # Nginx configuration will be mounted from host
 # COPY configs/nginx/nginx.conf /etc/nginx/nginx.conf
@@ -83,10 +94,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+    CMD curl -f http://localhost:8080/ || exit 1
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
-
-# Start nginx
+# Start nginx (Nginx handles signals correctly without init system)
 CMD ["nginx", "-g", "daemon off;"]

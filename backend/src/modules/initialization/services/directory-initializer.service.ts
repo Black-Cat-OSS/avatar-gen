@@ -27,6 +27,10 @@ export class DirectoryInitializerService implements OnModuleInit {
     try {
       this.logger.log('Initializing application directories from configuration...');
 
+      // Логируем текущую рабочую директорию для отладки
+      const cwd = process.cwd();
+      this.logger.debug(`Current working directory: ${cwd}`);
+
       this.logger.debug('Extracting directories from configuration');
       // Получаем директории из настроек
       const directoriesToCreate = this.extractDirectoriesFromConfig();
@@ -136,10 +140,6 @@ export class DirectoryInitializerService implements OnModuleInit {
     } else {
       this.logger.debug('No SQLite configuration found');
     }
-
-    // Добавляем директорию для Prisma storage
-    directories.add('prisma/storage');
-    this.logger.debug('Added Prisma storage directory');
   }
 
   /**
@@ -162,7 +162,6 @@ export class DirectoryInitializerService implements OnModuleInit {
   private addAdditionalDirectories(directories: Set<string>): void {
     // Добавляем корневые директории для безопасности
     directories.add('storage');
-    directories.add('prisma');
     directories.add('logs');
 
     // Добавляем поддиректории storage

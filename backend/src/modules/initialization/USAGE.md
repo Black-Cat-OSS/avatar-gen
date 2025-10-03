@@ -13,7 +13,7 @@
 @Module({
   imports: [
     ConfigModule,
-    InitializationModule,  // ← Автоматически инициализирует директории на основе настроек
+    InitializationModule, // ← Автоматически инициализирует директории на основе настроек
     DatabaseModule,
     LoggerModule,
     AvatarModule,
@@ -30,7 +30,7 @@ export class AppModule {}
 4. **Извлекает директории из конфигурации:**
    - `app.save_path` → директория для аватаров
    - `app.database.sqlite_params.url` → директория для БД
-   - Добавляет стандартные директории (`logs/`, `prisma/storage/`)
+   - Добавляет стандартные директории (`logs/`)
 5. **Создает недостающие директории**
 6. **Приложение продолжает нормальную работу**
 
@@ -43,10 +43,10 @@ export class AppModule {}
 ```yaml
 # settings.yaml
 app:
-  save_path: "./storage/avatars"  # → создаст ./storage/avatars/
+  save_path: './storage/avatars' # → создаст ./storage/avatars/
 database:
   sqlite_params:
-    url: "file:./storage/database/database.sqlite"  # → создаст ./storage/database/
+    url: 'file:./storage/database/database.sqlite' # → создаст ./storage/database/
 ```
 
 ### Созданная структура
@@ -57,9 +57,6 @@ storage/                    # Основная директория данных
 └── database/              # SQLite база данных (из sqlite_params.url)
     └── database.sqlite
 
-prisma/                    # Prisma файлы
-└── storage/               # Временные файлы Prisma
-
 logs/                      # Логи приложения (стандартная директория)
 ```
 
@@ -69,7 +66,7 @@ logs/                      # Логи приложения (стандартна
 
 - **`app.save_path`** - директория для аватаров
 - **`app.database.sqlite_params.url`** - путь к SQLite базе данных
-- **Стандартные директории** - `logs/`, `prisma/storage/`
+- **Стандартные директории** - `logs/`
 
 ## 🔍 Проверка статуса
 
@@ -80,9 +77,7 @@ import { InitializationService } from './modules/initialization';
 
 @Injectable()
 export class MyService {
-  constructor(
-    private readonly initializationService: InitializationService,
-  ) {}
+  constructor(private readonly initializationService: InitializationService) {}
 
   async checkInitializationStatus() {
     const statuses = this.initializationService.getAllInitializerStatus();
@@ -132,13 +127,9 @@ export class CustomInitializerService implements IInitializer {
   providers: [
     InitializationService,
     DirectoryInitializerService,
-    CustomInitializerService,  // ← Ваш инициализатор
+    CustomInitializerService, // ← Ваш инициализатор
   ],
-  exports: [
-    InitializationService,
-    DirectoryInitializerService,
-    CustomInitializerService,
-  ],
+  exports: [InitializationService, DirectoryInitializerService, CustomInitializerService],
 })
 export class InitializationModule {}
 ```
@@ -163,12 +154,12 @@ export class InitializationModule {}
 
 ```typescript
 interface InitializationStatus {
-  id: string;           // 'directory-initializer'
-  priority: number;     // 10
+  id: string; // 'directory-initializer'
+  priority: number; // 10
   status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
   startTime?: Date;
   endTime?: Date;
-  duration?: number;    // в миллисекундах
+  duration?: number; // в миллисекундах
   error?: string;
   metadata?: Record<string, any>;
 }
@@ -180,22 +171,16 @@ interface InitializationStatus {
 
 ```typescript
 // В DirectoryInitializerService
-private readonly requiredDirectories = {
-  storage: [
-    'storage',
-    'storage/avatars',
-    'storage/database',
-  ],
-  prisma: [
-    'prisma/storage',
-  ],
-  logs: [
-    'logs',
-  ],
-};
+private addAdditionalDirectories(directories: Set<string>): void {
+  directories.add('storage');
+  directories.add('logs');
+  directories.add('storage/avatars');
+  directories.add('storage/database');
+}
 ```
 
 Если нужно изменить структуру директорий:
+
 1. Обновите `requiredDirectories` в `DirectoryInitializerService`
 2. Обновите соответствующие настройки в `settings.yaml`
 3. Обновите Docker конфигурацию
@@ -215,10 +200,6 @@ ls -la storage/
 # ├── avatars/      # Создана на основе app.save_path из settings.yaml
 # └── database/     # Создана на основе sqlite_params.url из settings.yaml
 
-ls -la prisma/
-# prisma/
-# └── storage/      # Стандартная директория
-
 ls -la logs/
 # logs/             # Стандартная директория для логов
 ```
@@ -232,6 +213,7 @@ curl http://localhost:3000/api/health
 ```
 
 Должно вернуться что-то вроде:
+
 ```json
 {
   "status": "ok",
@@ -254,6 +236,7 @@ curl http://localhost:3000/api/health
 ### Директории не создаются
 
 **Проверьте:**
+
 1. Модуль добавлен в AppModule
 2. Права доступа к файловой системе
 3. Логи приложения на наличие ошибок
@@ -261,6 +244,7 @@ curl http://localhost:3000/api/health
 ### Ошибки инициализации
 
 **Проверьте логи:**
+
 ```bash
 # В Docker
 docker-compose logs avatar-backend
@@ -272,12 +256,14 @@ cd backend && npm run start:dev
 ### Проблемы с правами доступа
 
 **На Linux/Mac:**
+
 ```bash
 # Дайте права текущему пользователю
 sudo chown -R $USER:$USER storage/ prisma/ logs/
 ```
 
 **На Windows:**
+
 - Убедитесь, что у вас есть права на создание файлов в директории проекта
 
 ## 📚 Связанная документация
@@ -290,4 +276,3 @@ sudo chown -R $USER:$USER storage/ prisma/ logs/
 
 **Последнее обновление:** 2025-10-01
 **Статус:** ✅ Готов к использованию
-

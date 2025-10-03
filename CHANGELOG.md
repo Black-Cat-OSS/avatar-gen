@@ -8,6 +8,106 @@
 
 ## [Unreleased]
 
+## [0.0.2] - 2025-10-03
+
+### Added
+
+- **50 unit и E2E тестов для backend** с высоким покрытием кода
+  - HealthController: 100% coverage (7 тестов)
+  - AvatarController: 97.61% coverage (17 тестов)
+  - AvatarService: 90.9% coverage (22 теста)
+  - E2E тесты для health endpoints (4 теста)
+  - Jest setup для ES modules (uuid, sharp)
+- **Новая структура документации** - 8 тематических разделов:
+  - `docs/getting-started/` - Быстрый старт
+  - `docs/development/` - Руководство разработчика
+  - `docs/deployment/` - Развертывание
+  - `docs/api/` - API документация
+  - `docs/testing/` - Тестирование
+  - `docs/architecture/` - Архитектура
+  - `docs/contributing/` - Контрибуция
+  - `docs/archive/` - Архив устаревших документов
+- **README хабы** для каждой директории документации (8 хабов)
+- **Docker retry логика** для установки Alpine пакетов (3 попытки)
+- **Альтернативные зеркала Alpine Linux** (Yandex mirror для надежности)
+- **Метаданные проекта** в package.json:
+  - repository: https://github.com/letnull19A/avatar-gen
+  - bugs: URL для issues
+  - homepage: URL репозитория
+- **Документация по тестированию**:
+  - `backend/docs/TESTING.md` - Полное руководство
+  - `backend/docs/TEST_RESULTS.md` - Результаты и статистика
+- **Документация Docker**:
+  - `docker/README.md` - Основная документация
+  - `docker/DOCKER_BUILD_FIXES.md` - Решение проблем сборки
+- **Документация скриптов**: `scripts/README.md`
+
+### Changed
+
+- **Реорганизация Docker структуры**:
+  - Перемещены docker-compose файлы из корня → `docker/`
+  - Dockerfile остались в `backend/docker/` и `frontend/docker/`
+  - Обновлены все относительные пути в compose файлах
+- **Обновлены все скрипты управления** для новой Docker структуры:
+  - `scripts/build.sh` - поддержка профилей (sqlite/postgresql)
+  - `scripts/build-fast.sh` - быстрая сборка с кэшем
+  - `scripts/start.sh` - опции запуска и профили
+  - `scripts/dev.sh` - dev режим с профилями
+  - `scripts/stop.sh` - опции удаления volumes
+- **Лицензия изменена** с Apache License 2.0 → MIT License
+- **Автор обновлен** на letnull19a
+- **Обновлена вся документация** с правильными путями:
+  - `storage/database/database.sqlite` вместо `prisma/storage/database.sqlite`
+  - Обновлены все ссылки на перемещенные документы
+- **Jest конфигурация** для поддержки ES modules:
+  - Обновлен формат ts-jest конфигурации (убрано deprecated globals)
+  - Добавлен setupFilesAfterEnv для моков
+  - Настроено исключение из coverage (interfaces, enums, dto)
+- **Docker Dockerfiles оптимизированы**:
+  - Убран dumb-init из frontend (не нужен для Nginx)
+  - Добавлен tsconfig.node.json в frontend build
+  - Заменен wget → curl для healthcheck
+  - Добавлена retry логика для apk add
+
+### Fixed
+
+- **Проблема с lint-staged**: добавлены eslint и prettier в корневой
+  package.json
+- **Дублирующиеся директории**:
+  - Удалена `backend/backend/storage/` (создавалась при неправильном cwd)
+  - Удалена `backend/prisma/storage/` (больше не используется)
+- **Модуль инициализации** больше не создает `prisma/storage/` директорию
+- **Устаревшие пути к БД** во всей документации исправлены
+- **Проблемы сборки Docker образов**:
+  - Решена проблема с dumb-init package
+  - Решены временные ошибки Alpine репозиториев
+  - Исправлена сборка frontend (отсутствовал tsconfig.node.json)
+- **ES modules проблемы в тестах** (uuid, sharp) через jest-setup.ts
+- **Пути в docker-compose** обновлены относительно новой структуры
+
+### Removed
+
+- **Удалены дублирующиеся docker-compose файлы** из корня проекта (перемещены в
+  docker/)
+- **Удалено дублирование Docker документации** (использование ссылок вместо
+  копирования)
+- **Архивированы устаревшие документы**:
+  - `backend_task.md` → `docs/archive/` (первоначальное ТЗ, выполнено)
+  - `MIGRATION_DOCKER_STRUCTURE.md` → `docs/archive/` (миграция завершена)
+  - `REORGANIZATION_PLAN.md` → `docs/archive/`
+  - `REORGANIZATION_SUMMARY.md` → `docs/archive/`
+- **Удалено создание директории** `prisma/storage/` из модуля инициализации
+
+### Documentation
+
+- **Полная реорганизация** документации по тематическим разделам
+- **Единая точка входа** - `docs/README.md` (единственный файл в корне docs/)
+- **8 README хабов** для навигации по разделам
+- **Обновлены все внутренние ссылки** после перемещения файлов
+- **Централизованная навигация** с раскрывающимися секциями
+
+## [0.0.1] - 2025-10-01
+
 ### Added
 
 - Поддержка PostgreSQL в дополнение к SQLite
