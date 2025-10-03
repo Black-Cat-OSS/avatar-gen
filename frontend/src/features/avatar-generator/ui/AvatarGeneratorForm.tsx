@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useGenerateAvatar } from '@/shared/lib'
 import { Button } from '@/shared/ui'
 import { InputField } from '@/shared/ui'
+import { avatarApi } from '@/shared/api'
 
 // Predefined color palettes
 const colorPalettes = {
@@ -353,7 +354,7 @@ export const AvatarGeneratorForm = () => {
             </p>
             <div className="text-center">
               <img
-                src={`http://localhost:3000/api/${generateAvatar.data.id}`}
+                src={avatarApi.getImageUrl(generateAvatar.data.id)}
                 alt={generateAvatar.data.name}
                 className="mx-auto rounded-full w-32 h-32 object-cover border-4 border-primary"
               />

@@ -29,13 +29,13 @@ fi
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
-# Build with docker-compose
+# Build with docker-compose in parallel
 if [ "$PROFILE" = "sqlite" ]; then
-    echo "🔨 Building with SQLite profile..."
-    docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml build
+    echo "🔨 Building with SQLite profile (parallel build)..."
+    docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml build --parallel
 elif [ "$PROFILE" = "postgresql" ]; then
-    echo "🔨 Building with PostgreSQL profile..."
-    docker-compose -f docker/docker-compose.yml -f docker/docker-compose.postgresql.yml --profile postgresql build
+    echo "🔨 Building with PostgreSQL profile (parallel build)..."
+    docker-compose -f docker/docker-compose.yml -f docker/docker-compose.postgresql.yml --profile postgresql build --parallel
 else
     echo "❌ Invalid profile: $PROFILE"
     echo "Valid profiles: sqlite, postgresql"

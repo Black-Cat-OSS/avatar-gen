@@ -424,20 +424,27 @@ const response = await apiClient.post<User>(
 
 Environment variables:
 
-- `VITE_API_BASE_URL` - API base URL (default: http://localhost:3000)
+- `VITE_API_BASE_URL` - API base URL (default: empty for relative paths)
+  - Development: `http://localhost` (gateway HTTP on port 80)
+  - Production: Empty string (relative paths through gateway)
 
 ### Backend Integration
 
 Проект интегрирован с backend API для работы с аватарами:
 
-1. Создайте файл `.env` в директории `frontend/`:
+1. Создайте файл `.env.development` в директории `frontend/`:
 ```env
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost
 ```
 
-2. Убедитесь, что backend запущен на порту 3000
+Для продакшена используйте `.env.production`:
+```env
+VITE_API_BASE_URL=
+```
 
-3. Доступные API эндпоинты:
+2. Убедитесь, что gateway и backend запущены (через `./scripts/dev.sh` или `./scripts/start.sh`)
+
+3. Доступные API эндпоинты (через gateway):
    - `GET /api/list` - получение списка аватаров
    - `GET /api/:id` - получение изображения аватара
    - `POST /api/generate` - генерация нового аватара

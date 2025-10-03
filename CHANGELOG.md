@@ -12,6 +12,22 @@
 
 ### Added
 
+- **Nginx Gateway (Reverse Proxy)** для интеграции frontend и backend
+  - Reverse proxy для маршрутизации запросов
+  - Сегментированная сетевая архитектура (external, internal, backend-db)
+  - Поддержка SSL/TLS с самоподписанными сертификатами
+  - HTTP/2 поддержка на порту 12745
+  - Автоматическое перенаправление HTTP → HTTPS
+  - DNS resolver для корректной работы с Docker сетями
+  - Настроенные healthcheck для мониторинга состояния
+- **Конфигурация API URL для frontend**
+  - .env файлы для разных окружений (development, production)
+  - Автоматическое определение базового URL API
+  - Относительные пути в production сборке
+  - Gateway URL (http://localhost) в development режиме
+- **Автоматическое создание внешней сети** в скриптах запуска
+  - Проверка существования сети перед созданием
+  - Интеграция в `scripts/start.sh` и `scripts/dev.sh`
 - **50 unit и E2E тестов для backend** с высоким покрытием кода
   - HealthController: 100% coverage (7 тестов)
   - AvatarController: 97.61% coverage (17 тестов)
@@ -44,6 +60,20 @@
 
 ### Changed
 
+- **Docker Compose конфигурация**:
+  - Добавлен gateway сервис с nginx
+  - Сегментированные сети (external, internal, backend-db)
+  - Изоляция backend и базы данных в отдельной сети
+  - Gateway имеет доступ к внешней и внутренней сетям
+- **Frontend конфигурация**:
+  - API URL теперь использует gateway (не прямое подключение к backend)
+  - Обновлены дефолтные значения API URL
+  - Dockerfile копирует .env файлы при сборке
+  - Убран хардкод localhost:3000 из кода
+- **Nginx конфигурации**:
+  - Обновлен синтаксис HTTP/2 (deprecated директива заменена)
+  - PID файл перенесен в /tmp для избежания проблем с правами
+  - Удалена директива user nginx для корректной работы в Docker
 - **Реорганизация Docker структуры**:
   - Перемещены docker-compose файлы из корня → `docker/`
   - Dockerfile остались в `backend/docker/` и `frontend/docker/`
@@ -71,6 +101,17 @@
 
 ### Fixed
 
+- **Nginx права доступа**:
+  - Исправлена ошибка "Permission denied" для /var/run/nginx.pid
+  - Создаются все необходимые кеш-директории с правильными правами
+  - Добавлен entrypoint.sh для динамического создания директорий
+- **Nginx конфигурация**:
+  - Исправлены предупреждения о deprecated директиве "listen ... http2"
+  - Исправлено предупреждение о директиве "user" без root прав
+  - Добавлен DNS resolver для корректной работы с Docker сетями
+- **Docker Compose**:
+  - Удалены дублирующие директивы name из сервисов
+  - Исправлены имена upstream серверов в nginx (используются имена сервисов)
 - **Проблема с lint-staged**: добавлены eslint и prettier в корневой
   package.json
 - **Дублирующиеся директории**:

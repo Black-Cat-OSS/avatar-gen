@@ -15,6 +15,3 @@ services:
 
   # Frontend Service - PostgreSQL Profile
   avatar-frontend:
-    depends_on:
-      avatar-backend:
-        condition: service_healthy
