@@ -38,7 +38,7 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     && chown -R nginx:nginx /etc/letsencrypt
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 80 12745
 

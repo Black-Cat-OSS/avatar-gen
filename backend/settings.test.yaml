@@ -1,11 +1,11 @@
 app:
-  save_path: "./storage/test-avatars"
+  save_path: './storage/test-avatars'
   server:
-    port: 3002  # Отдельный порт для тестов
+    port: 3002 # Отдельный порт для тестов
   database:
-    driver: "sqlite"
+    driver: 'sqlite'
     connection:
-      maxRetries: 1  # Минимальное количество попыток для быстрых тестов
-      retryDelay: 100  # Минимальная задержка
+      maxRetries: 1 # Минимальное количество попыток для быстрых тестов
+      retryDelay: 100 # Минимальная задержка
     sqlite_params:
-      url: "file::memory:"  # In-memory база данных для тестов
+      url: 'file::memory:' # In-memory база данных для тестов

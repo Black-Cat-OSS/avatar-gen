@@ -1,9 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
+alwaysApply: false
 ---
-
 before sending requests to the server via curl, sh script, and so on, make sure that the resource is available.
 
 If the request is not completed for 3 minutes, stop trying to send the request. Look for the cause of the problem

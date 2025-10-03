@@ -29,10 +29,12 @@ export class AppModule {}
 3. **DirectoryInitializerService читает настройки из `settings.yaml`**
 4. **Извлекает директории из конфигурации:**
    - `app.save_path` → директория для аватаров
-   - `app.database.sqlite_params.url` → директория для БД
+   - `app.database.sqlite_params.url` → директория для БД (только для SQLite)
    - Добавляет стандартные директории (`logs/`)
 5. **Создает недостающие директории**
 6. **Приложение продолжает нормальную работу**
+
+⚠️ **Важно:** Директория для базы данных создается **только для SQLite**. Для PostgreSQL создание директорий не требуется.
 
 ## 📁 Создаваемые директории
 
@@ -41,12 +43,26 @@ export class AppModule {}
 ### Извлечение из конфигурации
 
 ```yaml
-# settings.yaml
+# settings.yaml (SQLite)
 app:
   save_path: './storage/avatars' # → создаст ./storage/avatars/
-database:
-  sqlite_params:
-    url: 'file:./storage/database/database.sqlite' # → создаст ./storage/database/
+  database:
+    driver: 'sqlite'
+    sqlite_params:
+      url: 'file:./storage/database/database.sqlite' # → создаст ./storage/database/
+```
+
+```yaml
+# settings.yaml (PostgreSQL)
+app:
+  save_path: './storage/avatars' # → создаст ./storage/avatars/
+  database:
+    driver: 'postgresql'
+    network:
+      # Директории БД не создаются для PostgreSQL
+      host: 'localhost'
+      port: 5432
+      database: 'avatar_gen'
 ```
 
 ### Созданная структура

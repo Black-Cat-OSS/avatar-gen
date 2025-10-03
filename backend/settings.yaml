@@ -1,26 +1,24 @@
 app:
-  save_path: "./storage/avatars"
+  save_path: './storage/avatars'
   server:
-    host: "0.0.0.0"
+    host: '0.0.0.0'
     port: 3000
   database:
-    driver: "sqlite"
+    driver: 'sqlite'
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./storage/database/database.sqlite"
-  # Директории автоматически создаются модулем инициализации
-  # Не изменяйте эти пути, они синхронизированы с InitializationModule
-    # postgresql_params:
-    #   host: "localhost"
-    #   port: 5432
-    #   database: "avatar_gen"
-    #   username: "postgres"
-    #   password: "password"
-    #   ssl: false
+      url: 'file:./storage/database/database.sqlite'
+    network:
+      host: 'localhost' # для локальной разработки
+      port: 5432
+      database: 'avatar_gen'
+      username: 'postgres'
+      password: 'password'
+      ssl: false
   logging:
-    level: "info"  # trace, debug, info, warn, error, fatal
-    verbose: false  # включает debug уровень логирования
-    pretty: true   # красивый вывод в консоль
+    level: 'info' # trace, debug, info, warn, error, fatal
+    verbose: false # включает debug уровень логирования
+    pretty: true # красивый вывод в консоль
 

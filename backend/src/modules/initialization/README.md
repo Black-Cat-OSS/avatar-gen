@@ -105,8 +105,10 @@ export class MyService {
 Модуль анализирует `settings.yaml` и извлекает пути из следующих настроек:
 
 - **`app.save_path`** - директория для аватаров
-- **`app.database.sqlite_params.url`** - путь к SQLite базе данных
+- **`app.database.sqlite_params.url`** - путь к SQLite базе данных (только если `driver: 'sqlite'`)
 - **Дополнительные директории** - `logs/`
+
+⚠️ **Важно:** Директория для базы данных создается **только для SQLite**. Для PostgreSQL создание директорий не требуется.
 
 ### Структура директорий
 
@@ -121,13 +123,28 @@ logs/                      # Логи приложения
 
 ### Пример извлечения из настроек
 
+**SQLite (директории создаются):**
 ```yaml
 # settings.yaml
 app:
   save_path: './storage/avatars' # → создаст storage/avatars/
   database:
+    driver: 'sqlite'
     sqlite_params:
       url: 'file:./storage/database/database.sqlite' # → создаст storage/database/
+```
+
+**PostgreSQL (директории БД не создаются):**
+```yaml
+# settings.yaml
+app:
+  save_path: './storage/avatars' # → создаст storage/avatars/
+  database:
+    driver: 'postgresql'
+    network:
+      host: 'localhost'
+      port: 5432
+      database: 'avatar_gen'
 ```
 
 ### Структура директорий
@@ -154,7 +171,7 @@ private extractDirectoriesFromConfig(): string[] {
 ### Методы извлечения директорий
 
 - **`extractStorageDirectories()`** - извлекает директории из `app.save_path`
-- **`extractDatabaseDirectories()`** - извлекает директории из `app.database.sqlite_params.url`
+- **`extractDatabaseDirectories()`** - извлекает директории из `app.database.sqlite_params.url` (только для SQLite)
 - **`extractLogDirectories()`** - добавляет директорию `logs/`
 - **`addAdditionalDirectories()`** - добавляет корневые директории для безопасности
 

@@ -115,8 +115,12 @@ export class DirectoryInitializerService implements OnModuleInit {
   private extractDatabaseDirectories(directories: Set<string>): void {
     this.logger.debug('Extracting database directories from config');
 
-    // SQLite база данных
-    if (this.config.app?.database?.sqlite_params?.url) {
+    // Получаем текущий драйвер БД
+    const dbDriver = this.config.app?.database?.driver;
+    this.logger.debug(`Database driver: ${dbDriver}`);
+
+    // Обработка директорий SQLite - только если драйвер sqlite
+    if (dbDriver === 'sqlite' && this.config.app?.database?.sqlite_params?.url) {
       const sqliteUrl = this.config.app.database.sqlite_params.url;
       this.logger.debug(`SQLite URL: ${sqliteUrl}`);
 
@@ -130,15 +134,21 @@ export class DirectoryInitializerService implements OnModuleInit {
 
         if (dbDir && dbDir !== '.') {
           directories.add(dbDir);
-          this.logger.debug(`Added database directory: ${dbDir}`);
+          this.logger.debug(`Added SQLite database directory: ${dbDir}`);
         } else {
           this.logger.warn(`Invalid database directory path: ${dbDir}`);
         }
       } else {
         this.logger.warn(`Invalid SQLite URL format: ${sqliteUrl}`);
       }
+    } else if (dbDriver === 'sqlite') {
+      this.logger.debug('SQLite driver selected but no configuration found');
+    } else if (dbDriver === 'postgresql') {
+      this.logger.debug('PostgreSQL driver selected - no local directories needed');
     } else {
-      this.logger.debug('No SQLite configuration found');
+      this.logger.debug(
+        `Database driver '${dbDriver}' does not require local directory initialization`,
+      );
     }
   }
 

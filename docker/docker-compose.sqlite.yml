@@ -2,6 +2,7 @@ name: avatar-gen-sqlite
 
 services:
   avatar-backend:
+    container_name: avatar-gen-backend
     build:
       context: ../backend
       dockerfile: docker/Dockerfile
@@ -12,6 +13,7 @@ services:
 
   # Frontend Service - SQLite Profile
   avatar-frontend:
+    container_name: avatar-gen-frontend
     build:
       context: ../frontend
       dockerfile: docker/Dockerfile

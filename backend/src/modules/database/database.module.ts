@@ -74,9 +74,17 @@ import { DatabaseDriver } from './constants/database.constants';
 export class DatabaseModule implements OnModuleInit {
   private readonly logger = new Logger(DatabaseModule.name);
 
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly configService: YamlConfigService,
+  ) {}
+
   async onModuleInit(): Promise<void> {
     try {
-      this.logger.log('DatabaseModule initialized - Database service ready');
+      const driver = this.databaseService.getDriver();
+      const driverName = driver === DatabaseDriver.SQLITE ? 'SQLite' : 'PostgreSQL';
+
+      this.logger.log(`🗄️  DatabaseModule initialized - ${driverName} provider active`);
     } catch (error) {
       this.logger.error(
         `DatabaseModule initialization failed: ${error.message}`,
