@@ -196,7 +196,7 @@ describe('AvatarService', () => {
 
       await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(BadRequestException);
       await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(
-        'Size must be between 5 and 9',
+        'Size must be between 4 and 9',
       );
     });
 

@@ -136,7 +136,7 @@ export class AvatarController {
     required: false,
     description: 'Filter to apply (grayscale, sepia, negative)',
   })
-  @ApiQuery({ name: 'size', required: false, description: 'Size parameter (5-9, where 2^n)' })
+  @ApiQuery({ name: 'size', required: false, description: 'Size parameter (4-9, where 2^n)' })
   @ApiResponse({ status: 200, description: 'Avatar retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Avatar not found' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid parameters' })
