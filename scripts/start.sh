@@ -37,6 +37,16 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
+# Create external network if it doesn't exist
+echo "🌐 Checking external network..."
+if ! docker network ls | grep -q "avatar-gen-external"; then
+    echo "📡 Creating external network 'avatar-gen-external'..."
+    docker network create avatar-gen-external
+    echo "✅ External network created"
+else
+    echo "✅ External network already exists"
+fi
+
 # Start services based on profile
 if [ "$PROFILE" = "sqlite" ]; then
     echo "🔨 Starting services with SQLite..."
@@ -52,7 +62,9 @@ fi
 
 echo ""
 echo "✅ Services started!"
-echo "🌐 Frontend: http://localhost"
-echo "🌐 Backend API: http://localhost:3000"
-echo "📚 Swagger docs: http://localhost:3000/swagger"
-echo "📊 Health check: http://localhost:3000/api/health"
+echo "🌐 Gateway (HTTPS): https://localhost:12745"
+echo "🌐 Gateway (HTTP): http://localhost"
+echo "🌐 Frontend: https://localhost:12745/"
+echo "🌐 Backend API: https://localhost:12745/api"
+echo "📚 Swagger docs: https://localhost:12745/api/swagger"
+echo "📊 Health check: https://localhost:12745/api/health"

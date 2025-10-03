@@ -71,7 +71,7 @@ export const avatarApi = {
   },
 
   getImageUrl: (id: string, filter?: string, size?: number): string => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
     const params = new URLSearchParams()
     if (filter) params.append('filter', filter)
     if (size) {

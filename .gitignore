@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+gateway/logs
 
 # Dependencies
 node_modules/
@@ -15,9 +16,17 @@ dist
 dist-ssr
 *.local
 
-# Environment files (auto-generated from settings.yaml)
+# Environment files
+# Backend .env is auto-generated from settings.yaml
 backend/.env
 backend/storage
+
+# Frontend .env files
+# Include base .env, .env.development, .env.production
+# Ignore only .env.local files
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
 
 # Editor directories and files
 .vscode/*

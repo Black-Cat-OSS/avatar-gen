@@ -51,6 +51,10 @@ Dockerfile
 .dockerignore
 docker-compose.yml
 
+# Nginx
+gateway/configs/
+*.conf
+
 # Scripts (shell scripts should not be formatted)
 *.sh
 

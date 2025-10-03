@@ -35,6 +35,10 @@ COPY package.docker.json ./package.json
 # Add node_modules/.bin to PATH for access to binaries like tsc and vite
 ENV PATH="/app/node_modules/.bin:$PATH"
 
+# Copy environment files (Vite will use .env and .env.production during build)
+COPY .env ./.env
+COPY .env.production ./.env.production
+
 # Copy necessary files for build
 COPY index.html ./
 COPY src ./src/
