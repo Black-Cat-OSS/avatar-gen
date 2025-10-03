@@ -3,7 +3,11 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import { AvatarController } from './avatar.controller';
 import { AvatarService } from './avatar.service';
-import { GenerateAvatarDto, GetAvatarDto, ListAvatarsDto } from '../../common/dto/generate-avatar.dto';
+import {
+  GenerateAvatarDto,
+  GetAvatarDto,
+  ListAvatarsDto,
+} from '../../common/dto/generate-avatar.dto';
 import { FilterType } from '../../common/enums/filter.enum';
 
 describe('AvatarController', () => {
@@ -32,7 +36,7 @@ describe('AvatarController', () => {
 
     controller = module.get<AvatarController>(AvatarController);
     service = module.get<AvatarService>(AvatarService);
-    
+
     // Reset mocks
     jest.clearAllMocks();
   });
@@ -71,11 +75,11 @@ describe('AvatarController', () => {
     it('should throw BadRequest on service error', async () => {
       const dto: GenerateAvatarDto = { seed: 'test' };
       const errorMessage = 'Invalid parameters';
-      
+
       mockAvatarService.generateAvatar.mockRejectedValue(new Error(errorMessage));
 
       await expect(controller.generateAvatar(dto)).rejects.toThrow(HttpException);
-      
+
       try {
         await controller.generateAvatar(dto);
       } catch (error) {
@@ -181,7 +185,7 @@ describe('AvatarController', () => {
 
     it('should throw BadRequest on invalid parameters', async () => {
       const dto: ListAvatarsDto = { pick: 10 };
-      
+
       mockAvatarService.listAvatars.mockRejectedValue(new Error('Invalid offset'));
 
       await expect(controller.listAvatars(dto)).rejects.toThrow(HttpException);
@@ -302,7 +306,9 @@ describe('AvatarController', () => {
 
       mockAvatarService.getAvatar.mockRejectedValue(notFoundError);
 
-      await expect(controller.getAvatar(avatarId, dto, mockResponse)).rejects.toThrow(HttpException);
+      await expect(controller.getAvatar(avatarId, dto, mockResponse)).rejects.toThrow(
+        HttpException,
+      );
     });
   });
 
@@ -342,4 +348,3 @@ describe('AvatarController', () => {
     });
   });
 });
-

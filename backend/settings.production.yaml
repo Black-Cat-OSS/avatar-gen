@@ -1,14 +1,20 @@
 app:
   server:
-    host: "0.0.0.0"
-    port: 8080  # Стандартный порт для продакшена
+    host: '0.0.0.0'
+    port: 3000 # Стандартный порт для backend API
   database:
+    driver: 'postgresql' # PostgreSQL для production
     connection:
-      maxRetries: 3  # Стандартное количество попыток
-      retryDelay: 3000  # Больше задержка для продакшена
-    sqlite_params:
-      url: "file:./storage/database/database.sqlite"  # Продакшен БД
+      maxRetries: 3 # Стандартное количество попыток
+      retryDelay: 3000 # Больше задержка для продакшена
+    network:
+      host: 'postgres' # имя сервиса в docker-compose
+      port: 5432
+      database: 'avatar_gen'
+      username: 'postgres'
+      password: 'password'
+      ssl: false
   logging:
-    level: "warn"  # только предупреждения и ошибки в продакшене
-    verbose: false  # отключить детальное логирование
-    pretty: false  # JSON формат для продакшена
+    level: 'warn' # только предупреждения и ошибки в продакшене
+    verbose: false # отключить детальное логирование
+    pretty: false # JSON формат для продакшена

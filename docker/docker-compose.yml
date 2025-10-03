@@ -40,7 +40,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../backend/init-scripts:/docker-entrypoint-initdb.d
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d avatar_gen"]
@@ -61,11 +60,13 @@ services:
       - "3000"
     volumes:
       - ../backend/storage:/app/storage
-      - ../backend/settings.yaml:/app/settings.yaml
+      - ../backend/settings.yaml:/app/backend/settings.yaml:ro
+      - ../backend/settings.production.yaml:/app/backend/settings.production.yaml:ro
       - ../backend/logs:/app/logs
     environment:
       - NODE_ENV=production
       - CONFIG_PATH=./settings.yaml
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
@@ -84,12 +85,12 @@ services:
       dockerfile: docker/Dockerfile
     container_name: avatar-gen-frontend
     expose:
-      - "80"
+      - "8080"
     volumes:
       - ../frontend/logs:/var/log/nginx
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3

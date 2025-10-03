@@ -1,7 +1,4 @@
 ---
-description:
-globs:
 alwaysApply: true
 ---
-
 When writing code, follow the prettier, eslint settings that are located at the root of the project.

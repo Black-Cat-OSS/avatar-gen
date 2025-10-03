@@ -73,8 +73,8 @@ RUN for i in 1 2 3; do \
 # Create non-root user (www-data group already exists in nginx:alpine)
 RUN adduser -S www-data -u 1001 -G www-data || true
 
-# Nginx configuration will be mounted from host
-# COPY configs/nginx/nginx.conf /etc/nginx/nginx.conf
+# Copy custom nginx configuration
+COPY configs/nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html

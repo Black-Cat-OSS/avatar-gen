@@ -6,6 +6,7 @@ services:
 
   # Avatar Backend Service - PostgreSQL Profile
   avatar-backend:
+    container_name: avatar-gen-backend
     environment:
       - DATABASE_PROVIDER=postgresql
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen
@@ -15,3 +16,4 @@ services:
 
   # Frontend Service - PostgreSQL Profile
   avatar-frontend:
+    container_name: avatar-gen-frontend

@@ -30,18 +30,17 @@ export class PostgresDatabaseService implements IDatabaseConnection {
   constructor(private readonly configService: YamlConfigService) {
     // Вычисляем все параметры до создания PrismaClient
     const config = configService.getConfig();
-    const postgresParams = (
-      config as { app: { database: { postgresql_params: Record<string, unknown> } } }
-    ).app.database.postgresql_params;
+    const networkParams = (config as { app: { database: { network: Record<string, unknown> } } })
+      .app.database.network;
 
-    // Проверяем наличие обязательных параметров PostgreSQL
-    if (!postgresParams) {
+    // Проверяем наличие обязательных параметров сети для PostgreSQL
+    if (!networkParams) {
       throw new Error(
-        'PostgreSQL parameters are required in configuration. Please check settings.yaml file.',
+        'Network parameters are required in configuration. Please check settings.yaml file.',
       );
     }
 
-    const databaseUrl = this.buildPostgresUrl(postgresParams);
+    const databaseUrl = this.buildPostgresUrl(networkParams);
 
     this._prisma = new PrismaClient({
       datasourceUrl: databaseUrl,
@@ -54,7 +53,7 @@ export class PostgresDatabaseService implements IDatabaseConnection {
     this.logger = new Logger(PostgresDatabaseService.name);
     // Не логируем URL целиком (может содержать пароль)
     console.debug(
-      `PostgreSQL datasource configured for host: ${(postgresParams as { host: string }).host}:${(postgresParams as { port: number }).port}`,
+      `PostgreSQL datasource configured for host: ${(networkParams as { host: string }).host}:${(networkParams as { port: number }).port}`,
     );
   }
 

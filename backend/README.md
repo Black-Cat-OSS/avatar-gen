@@ -54,7 +54,7 @@ database:
     retryDelay: 2000
   sqlite_params:
     url: "file:./prisma/storage/database.sqlite"
-  # postgresql_params:
+  # network:
   #   host: "localhost"
   #   port: 5432
   #   database: "avatar_gen"
@@ -146,22 +146,40 @@ app:
 
 ### Database Configuration
 
-The application supports both SQLite and PostgreSQL databases with automatic connection retry logic:
+The application supports both SQLite and PostgreSQL databases with automatic connection retry logic.
+
+📚 **[Полная документация по конфигурации БД](./docs/DATABASE_CONFIGURATION.md)**
+
+#### Быстрое переключение между БД
+
+База данных выбирается через переменную окружения `NODE_ENV`:
+
+```bash
+# SQLite (по умолчанию)
+node scripts/generate-env.js
+
+# PostgreSQL (production)
+NODE_ENV=production node scripts/generate-env.js
+```
 
 #### SQLite (Default)
 - File-based database
 - No additional setup required
 - Perfect for development and small deployments
+- Используется в: `default`, `development`, `test`
 
 #### PostgreSQL
 - Full-featured relational database
 - Better performance for production environments
 - Requires PostgreSQL server to be running
+- Используется в: `production`
 
 #### Connection Retry Logic
 - **maxRetries**: Number of connection attempts (default: 3)
 - **retryDelay**: Delay between attempts in milliseconds (default: 2000)
 - Automatic reconnection on connection loss
+
+**📖 Подробная документация:** [DATABASE_CONFIGURATION.md](./docs/DATABASE_CONFIGURATION.md)
 
 ## Docker
 

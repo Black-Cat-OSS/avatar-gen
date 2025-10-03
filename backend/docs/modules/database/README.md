@@ -221,7 +221,7 @@ app:
     connection:
       maxRetries: 3
       retryDelay: 2000
-    postgresql_params:
+    network:
       host: "localhost"
       port: 5432
       database: "avatar_gen"

@@ -4,7 +4,11 @@ import { AvatarService } from './avatar.service';
 import { DatabaseService } from '../database';
 import { GeneratorService } from './modules';
 import { StorageService } from '../storage/storage.service';
-import { GenerateAvatarDto, GetAvatarDto, ListAvatarsDto } from '../../common/dto/generate-avatar.dto';
+import {
+  GenerateAvatarDto,
+  GetAvatarDto,
+  ListAvatarsDto,
+} from '../../common/dto/generate-avatar.dto';
 import { FilterType } from '../../common/enums/filter.enum';
 
 describe('AvatarService', () => {
@@ -123,12 +127,14 @@ describe('AvatarService', () => {
       };
 
       await expect(service.generateAvatar(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.generateAvatar(dto)).rejects.toThrow('Seed must not exceed 32 characters');
+      await expect(service.generateAvatar(dto)).rejects.toThrow(
+        'Seed must not exceed 32 characters',
+      );
     });
 
     it('should handle generation errors', async () => {
       const dto: GenerateAvatarDto = { seed: 'test' };
-      
+
       mockGeneratorService.generateAvatar.mockRejectedValue(new Error('Generation failed'));
 
       await expect(service.generateAvatar(dto)).rejects.toThrow('Generation failed');
@@ -179,7 +185,9 @@ describe('AvatarService', () => {
       mockDatabaseService.avatar.findUnique.mockResolvedValue(null);
 
       await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(NotFoundException);
-      await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(`Avatar with ID ${avatarId} not found`);
+      await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(
+        `Avatar with ID ${avatarId} not found`,
+      );
     });
 
     it('should throw BadRequestException for invalid size', async () => {
@@ -187,7 +195,9 @@ describe('AvatarService', () => {
       const dto: GetAvatarDto = { size: 10 }; // Invalid: > 9
 
       await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(BadRequestException);
-      await expect(service.getAvatar(avatarId, dto)).rejects.toThrow('Size must be between 5 and 9');
+      await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(
+        'Size must be between 5 and 9',
+      );
     });
 
     it('should apply filter when specified', async () => {
@@ -215,10 +225,7 @@ describe('AvatarService', () => {
 
       const result = await service.getAvatar(avatarId, dto);
 
-      expect(mockGeneratorService.applyFilter).toHaveBeenCalledWith(
-        expect.any(Buffer),
-        dto.filter,
-      );
+      expect(mockGeneratorService.applyFilter).toHaveBeenCalledWith(expect.any(Buffer), dto.filter);
       expect(result.image).toBe(filteredImage);
     });
 
@@ -295,7 +302,7 @@ describe('AvatarService', () => {
 
       expect(mockDatabaseService.avatar.findMany).toHaveBeenCalledWith({
         take: 10, // default pick
-        skip: 0,  // default offset
+        skip: 0, // default offset
         orderBy: {
           createdAt: 'asc',
         },
@@ -381,7 +388,9 @@ describe('AvatarService', () => {
       mockDatabaseService.avatar.findUnique.mockResolvedValue(null);
 
       await expect(service.deleteAvatar(avatarId)).rejects.toThrow(NotFoundException);
-      await expect(service.deleteAvatar(avatarId)).rejects.toThrow(`Avatar with ID ${avatarId} not found`);
+      await expect(service.deleteAvatar(avatarId)).rejects.toThrow(
+        `Avatar with ID ${avatarId} not found`,
+      );
     });
   });
 
@@ -426,4 +435,3 @@ describe('AvatarService', () => {
     });
   });
 });
-
