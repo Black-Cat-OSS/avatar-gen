@@ -40,15 +40,15 @@ export class GetAvatarDto {
   filter?: FilterType;
 
   @ApiPropertyOptional({
-    description: 'Size parameter (2^n where 4 < n <= 9)',
-    minimum: 5,
+    description: 'Size parameter (2^n where 4 <= n <= 9)',
+    minimum: 4,
     maximum: 9,
     example: 6,
   })
   @IsOptional()
   @Transform(({ value }) => parseInt(value))
   @IsNumber()
-  @Min(5)
+  @Min(4)
   @Max(9)
   size?: number;
 }

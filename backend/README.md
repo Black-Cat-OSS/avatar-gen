@@ -96,7 +96,7 @@ GET /api/:id
 
 Query parameters:
 - `filter` (optional): grayscale, sepia, negative
-- `size` (optional): 5-9 (where 2^n, e.g., 6 = 64x64px)
+- `size` (optional): 4-9 (where 2^n, e.g., 4 = 16x16px, 6 = 64x64px)
 
 ### Delete Avatar
 ```
