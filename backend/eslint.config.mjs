@@ -4,12 +4,32 @@ import eslintPluginPrettier from 'eslint-plugin-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', 'coverage', '**/*.js', '**/*.spec.ts', '**/*.test.ts'],
+    ignores: [
+      'dist/**',
+      '**/dist/**',
+      'node_modules/**',
+      '**/node_modules/**',
+      'coverage/**',
+      '**/coverage/**',
+      'test/**',
+      '**/test/**',
+      '**/*.js',
+      '**/*.cjs',
+      '**/*.mjs',
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/*.e2e-spec.ts',
+      'frontend/**',
+      'docs/**',
+      'scripts/**',
+      'docker/**',
+      'reports/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.ts'],
+    files: ['backend/**/*.ts', 'src/**/*.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

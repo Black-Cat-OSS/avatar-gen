@@ -1,6 +1,6 @@
 {
   "name": "avatar-gen",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Avatar Generator API with frontend and backend",
   "private": true,
   "workspaces": [
@@ -31,15 +31,25 @@
     "nestjs",
     "typescript"
   ],
-  "author": "",
+  "author": "letnull19a",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letnull19A/avatar-gen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/letnull19A/avatar-gen/issues"
+  },
+  "homepage": "https://github.com/letnull19A/avatar-gen#readme",
   "devDependencies": {
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^9.36.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.2.10"
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.6.2"
   },
   "config": {
     "commitizen": {
@@ -48,15 +58,15 @@
   },
   "lint-staged": {
     "backend/**/*.{ts,js}": [
-      "eslint --config backend/eslint.config.mjs --fix",
-      "prettier --write"
+      "pnpm eslint --config backend/eslint.config.mjs --fix",
+      "pnpm prettier --write"
     ],
     "frontend/**/*.{ts,js,tsx,jsx}": [
-      "eslint --config frontend/eslint.config.js --fix",
-      "prettier --write"
+      "pnpm eslint --config frontend/eslint.config.js --fix",
+      "pnpm prettier --write"
     ],
     "**/*.{json,md,yml,yaml}": [
-      "prettier --write"
+      "pnpm prettier --write"
     ]
   }
 }

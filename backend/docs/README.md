@@ -1,123 +1,150 @@
-# Avatar Generation Backend
+# Backend Documentation
 
-Backend service for generating and managing avatars similar to GitHub/GitLab.
+**Версия:** 0.0.2  
+**Дата обновления:** 2025-10-03  
+**Статус:** ✅ Production Ready
 
-## Features
+Документация backend приложения Avatar Generator - NestJS API сервер для генерации аватаров.
 
-- 🎨 Generate avatars with custom colors and patterns
-- 🎯 Multiple size options (16x16 to 512x512 pixels)
-- 🎭 Apply filters (grayscale, sepia, negative)
-- 💾 Persistent storage with SQLite or PostgreSQL database
-- 📁 File-based avatar object storage
-- 🔧 YAML configuration
-- 📚 OpenAPI/Swagger documentation
-- 🐳 Docker support
-- 🧪 Comprehensive test coverage
+## 🚀 Быстрый старт
 
-## Tech Stack
-
-- **Framework**: NestJS with TypeScript
-- **Database**: SQLite or PostgreSQL with Prisma ORM
-- **Image Processing**: Sharp
-- **Validation**: Zod + class-validator
-- **Logging**: Pino
-- **Documentation**: Swagger/OpenAPI
-- **Testing**: Jest
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 20+
-- npm or yarn
-
-### Installation
-
-1. Install dependencies:
 ```bash
+# Установка зависимостей
 npm install
-```
 
-2. Configure database in `settings.yaml`:
-```yaml
-database:
-  driver: "sqlite"  # or "postgresql"
-  connection:
-    maxRetries: 3
-    retryDelay: 2000
-  sqlite_params:
-    url: "file:./prisma/storage/database.sqlite"
-  # postgresql_params:
-  #   host: "localhost"
-  #   port: 5432
-  #   database: "avatar_gen"
-  #   username: "postgres"
-  #   password: "password"
-  #   ssl: false
-```
-
-3. Generate environment file and Prisma client:
-```bash
+# Генерация Prisma client и миграции
 npm run prisma:generate
-```
-
-4. Run database migrations:
-```bash
 npm run prisma:migrate
-```
 
-5. Start the application:
-```bash
+# Запуск в dev режиме
 npm run start:dev
 ```
 
-The API will be available at `http://localhost:3000`
-Swagger documentation at `http://localhost:3000/swagger`
+→ API: http://localhost:3000  
+→ Swagger: http://localhost:3000/swagger
 
-## API Endpoints
+**Подробнее:** [Backend README](../README.md)
 
-### Generate Avatar
+---
+
+## 📚 Документация по разделам
+
+### [📦 Modules](./modules/)
+
+**Документация модулей приложения**
+
+- [Database Module](./modules/database/) - Работа с БД (SQLite/PostgreSQL)
+  - Facade Pattern, Factory Provider
+  - 100% покрытие критических операций
+  - Автоматический retry
+- [Avatar Module](./modules/) - Генерация и управление аватарами
+- [Logger Module](./modules/) - Централизованное логирование
+- [Storage Module](./modules/) - Файловое хранилище
+- [Health Module](./modules/) - Health checks
+- [Initialization Module](../src/modules/initialization/) - Инициализация директорий
+
+→ [Перейти к модулям](./modules/README.md)
+
+### [🧪 Testing](./testing/)
+
+**Тестирование backend**
+
+- 50 unit и E2E тестов
+- 100% покрытие HealthController
+- 97%+ покрытие AvatarController
+- 90%+ покрытие AvatarService
+
+**Документы:**
+- [Testing Guide](./testing/TESTING.md) - Полное руководство
+- [Test Results](./testing/TEST_RESULTS.md) - Результаты и статистика
+
+→ [Перейти к тестированию](./testing/README.md)
+
+### [📝 Changelog](./changelog/)
+
+**История изменений**
+
+- [Changelog 2025-10-01](./changelog/CHANGELOG_2025-10-01.md)
+  - Перемещение SQLite в `storage/database/`
+  - Программное задание datasourceUrl
+- [Initialization Module Update](./changelog/INITIALIZATION_MODULE_UPDATE.md)
+  - Динамическое чтение из `settings.yaml`
+
+→ [Перейти к истории изменений](./changelog/README.md)
+
+### [📦 Archive](./archive/)
+
+**Архив устаревших документов**
+
+- INDEX.md (старый индекс)
+- DOCUMENTATION_STRUCTURE.md
+- REORGANIZATION_2025-10-01.md
+
+→ [Перейти к архиву](./archive/README.md)
+
+---
+
+## 🏗️ Архитектура
+
+### Технологический стек
+
 ```
-POST /api/generate
+NestJS 11
+├── TypeScript 5.9
+├── Prisma 6.16
+│   ├── SQLite (dev)
+│   └── PostgreSQL (prod)
+├── Sharp 0.34 (image processing)
+├── Pino (logging)
+├── Zod (validation)
+└── Swagger/OpenAPI
 ```
 
-Query parameters:
-- `primaryColor` (optional): Primary color for avatar
-- `foreignColor` (optional): Secondary color for avatar
-- `colorScheme` (optional): Predefined color scheme name
-- `seed` (optional): Seed for deterministic generation (max 32 chars)
+### Структура модулей
 
-### Get Avatar
 ```
-GET /api/:id
-```
-
-Query parameters:
-- `filter` (optional): grayscale, sepia, negative
-- `size` (optional): 5-9 (where 2^n, e.g., 6 = 64x64px)
-
-### Delete Avatar
-```
-DELETE /api/:id
-```
-
-### Get Color Schemes
-```
-GET /api/color-schemes
+src/
+├── config/                 # Конфигурация (YAML)
+├── modules/
+│   ├── app/               # Корневой модуль
+│   ├── avatar/            # Генерация аватаров
+│   ├── database/          # Работа с БД
+│   ├── storage/           # Файловое хранилище
+│   ├── health/            # Health checks
+│   ├── logger/            # Логирование
+│   └── initialization/    # Инициализация директорий
+├── common/
+│   ├── dto/               # Data Transfer Objects
+│   ├── enums/             # Перечисления
+│   └── interfaces/        # Интерфейсы
+└── main.ts                # Точка входа
 ```
 
-### Health Check
-```
-GET /api/health
-```
+## 📖 API Endpoints
 
-## Configuration
+### Health Endpoints
 
-The application uses YAML-based configuration with environment-specific overrides:
+| Endpoint | Method | Описание |
+|----------|--------|----------|
+| `/health` | GET | Базовая проверка здоровья |
+| `/health/detailed` | GET | Детальная информация |
 
-### Base Configuration (`settings.yaml`)
+### Avatar Endpoints
 
-The main configuration file that must always be present:
+| Endpoint | Method | Описание |
+|----------|--------|----------|
+| `/api/generate` | POST | Генерация нового аватара |
+| `/api/list` | GET | Список аватаров (пагинация) |
+| `/api/color-schemes` | GET | Доступные цветовые схемы |
+| `/api/:id` | GET | Получение аватара по ID |
+| `/api/:id` | DELETE | Удаление аватара |
+| `/api/health` | GET | Проверка здоровья сервиса |
+
+**Подробнее:** [Swagger UI](http://localhost:3000/swagger)
+
+## 🔧 Конфигурация
+
+### settings.yaml
 
 ```yaml
 app:
@@ -126,160 +153,244 @@ app:
     host: "0.0.0.0"
     port: 3000
   database:
-    driver: "sqlite"
+    driver: "sqlite"  # или "postgresql"
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
       url: "file:./storage/database/database.sqlite"
-    # postgresql_params:
-    #   host: "localhost"
-    #   port: 5432
-    #   database: "avatar_gen"
-    #   username: "postgres"
-    #   password: "password"
-    #   ssl: false
 ```
 
-### Environment-Specific Configuration
-
-Based on the `NODE_ENV` environment variable, the application will attempt to load environment-specific configuration files that override the base configuration:
-
-- **Development**: `settings.development.yaml` - Loaded when `NODE_ENV=development`
-- **Production**: `settings.production.yaml` - Loaded when `NODE_ENV=production`
-- **Testing**: `settings.test.yaml` - Loaded when `NODE_ENV=test`
-
-Example environment-specific configuration:
-
-```yaml
-# settings.development.yaml
-app:
-  server:
-    port: 3001  # Different port for development
-  database:
-    connection:
-      maxRetries: 5  # More retries for development
-      retryDelay: 1000  # Faster retry for development
-    sqlite_params:
-      url: "file:./storage/database/database.dev.sqlite"  # Separate DB for development
-```
-
-### Configuration Loading Process
-
-1. **Base Configuration**: Always loads `settings.yaml` (required)
-2. **Environment Override**: If `NODE_ENV` is set to `development`, `production`, or `test`, attempts to load `settings.{NODE_ENV}.yaml`
-3. **Merging**: Environment-specific configuration overrides base configuration using deep merge
-4. **Validation**: Final configuration is validated against the schema
-
-### Supported Environment Variables
-
-- `NODE_ENV`: Environment mode (`development`, `production`, `test`)
-- `CONFIG_PATH`: Custom path to base configuration file (defaults to `./settings.yaml`)
-
-### Database Configuration
-
-The application supports both SQLite and PostgreSQL databases with automatic connection retry logic:
-
-#### SQLite (Default)
-- File-based database
-- No additional setup required
-- Perfect for development and small deployments
-
-#### PostgreSQL
-- Full-featured relational database
-- Better performance for production environments
-- Requires PostgreSQL server to be running
-
-#### Connection Retry Logic
-- **maxRetries**: Number of connection attempts (default: 3)
-- **retryDelay**: Delay between attempts in milliseconds (default: 2000)
-- Automatic reconnection on connection loss
-
-## Docker
-
-### Build and run with Docker Compose
+### Переменные окружения
 
 ```bash
-# Start with SQLite (default)
-docker-compose up --build
-
-# Start with PostgreSQL
-# Uncomment PostgreSQL environment variables in docker-compose.yml
-# Then run:
-docker-compose up --build postgres avatar-backend
+NODE_ENV=production
+DATABASE_PROVIDER=sqlite
+DATABASE_URL=file:./storage/database/database.sqlite
+CONFIG_PATH=./settings.yaml
 ```
 
-### Build Docker image
+## 🐳 Docker
+
+### Сборка образа
 
 ```bash
-docker build -t avatar-backend .
+docker build -t avatar-backend -f docker/Dockerfile .
 ```
 
-### Run container
+### Запуск контейнера
 
 ```bash
-docker run -p 3000:3000 -v $(pwd)/storage:/app/storage avatar-backend
+docker run -p 3000:3000 \
+  -v $(pwd)/storage:/app/storage \
+  -v $(pwd)/settings.yaml:/app/settings.yaml \
+  avatar-backend
 ```
 
-## Development
+**Подробнее:** [Docker README](../docker/README.md)
 
-### Available Scripts
+## 🧪 Тестирование
 
-- `npm run start` - Start the application
-- `npm run start:dev` - Start in development mode with hot reload
-- `npm run build` - Build the application
-- `npm run test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:cov` - Run tests with coverage
-- `npm run env:generate` - Generate .env file from settings.yaml
-- `npm run prisma:generate` - Generate .env file and Prisma client
-- `npm run prisma:migrate` - Generate .env file and run database migrations
-- `npm run prisma:studio` - Generate .env file and open Prisma Studio
-- `npm run prisma:reset` - Generate .env file and reset database (development only)
-- `npm run prisma:deploy` - Generate .env file and deploy migrations to production
-
-### Project Structure
-
-```
-src/
-├── config/                 # Configuration modules
-├── modules/
-│   ├── avatar/            # Avatar generation and management
-│   ├── database/          # Database service
-│   └── logger/            # Logging service
-├── common/
-│   ├── dto/               # Data Transfer Objects
-│   ├── interfaces/        # TypeScript interfaces
-│   └── enums/             # Enums
-└── utils/                 # Utility functions
-```
-
-## Testing
-
-Run the test suite:
+### Запуск тестов
 
 ```bash
+# Все тесты
 npm test
+
+# С coverage
+npm run test:cov
+
+# Watch режим
+npm run test:watch
+
+# Конкретный модуль
+npm test avatar
 ```
 
-Run tests with coverage:
+### Статистика
+
+```
+✅ Test Suites: 4 passed, 4 total
+✅ Tests:       50 passed, 50 total
+⏱️  Time:        ~18s
+```
+
+**Подробнее:** [Testing Guide](./testing/TESTING.md) | [Test Results](./testing/TEST_RESULTS.md)
+
+## 📊 Основные модули
+
+### Database Module
+
+**Статус:** ✅ Production Ready v3.0.1
+
+- Поддержка SQLite и PostgreSQL
+- Facade Pattern для управления
+- Factory Provider (нулевой overhead)
+- Автоматический retry
+- Health check
+
+**Документация:**
+- [README](./modules/database/README.md)
+- [Architecture](./modules/database/ARCHITECTURE.md)
+- [Migration Guide](./modules/database/MIGRATION_GUIDE.md)
+
+### Avatar Module
+
+**Статус:** ✅ Production Ready  
+**Покрытие:** 90%+
+
+- Генерация уникальных аватаров
+- Поддержка цветовых схем
+- Применение фильтров (grayscale, sepia, negative)
+- Множественные размеры (2^5 до 2^9)
+
+### Logger Module
+
+**Статус:** ✅ Production Ready
+
+- Централизованное логирование (Pino)
+- Уровни: fatal, error, warn, info, debug, trace
+- Rotation логов
+- Pretty print для dev
+
+## 📦 NPM Scripts
 
 ```bash
-npm run test:cov
+# Development
+npm run start           # Запуск приложения
+npm run start:dev       # Dev режим с hot reload
+npm run start:debug     # Debug режим
+
+# Build
+npm run build           # Production сборка
+npm run format          # Форматирование (Prettier)
+npm run lint            # Линтинг (ESLint)
+
+# Testing
+npm test                # Запуск тестов
+npm run test:watch      # Watch режим
+npm run test:cov        # С coverage
+npm run test:debug      # Debug режим
+npm run test:e2e        # E2E тесты
+
+# Prisma
+npm run env:generate    # Генерация .env из settings.yaml
+npm run prisma:generate # Генерация Prisma client
+npm run prisma:migrate  # Запуск миграций
+npm run prisma:studio   # Prisma Studio (GUI)
+npm run prisma:reset    # Сброс БД (dev only)
+npm run prisma:deploy   # Deploy миграций (prod)
 ```
 
-## Architecture
+## 🔗 Связанные документы
 
-The application follows SOLID principles and uses:
+### Backend
 
-- **Modular architecture** with separate modules for different concerns
-- **Dependency injection** for loose coupling
-- **Repository pattern** for data access
-- **Service layer** for business logic
-- **DTO pattern** for data validation
-- **Error handling** with proper HTTP status codes
+- [Backend README](../README.md) - Главное руководство
+- [Docker Documentation](../docker/README.md) - Docker конфигурация
+- [Modules](./modules/README.md) - Документация модулей
+- [Testing](./testing/README.md) - Тестирование
 
-## License
+### Root проекта
 
-ISC
+- [Main README](../../README.md) - Обзор всего проекта
+- [Root Changelog](../../CHANGELOG.md) - Общая история изменений
+- [Project Documentation](../../docs/README.md) - Общая документация
 
+### Docker
+
+- [Docker Compose](../../docker/README.md) - Docker Compose конфигурация
+- [Scripts](../../scripts/README.md) - Скрипты управления
+
+## 💡 Best Practices
+
+### 1. Использование DatabaseService
+
+```typescript
+constructor(private readonly db: DatabaseService) {}
+
+async getData() {
+  return await this.db.avatar.findMany();
+}
+```
+
+### 2. Обработка ошибок
+
+```typescript
+async createAvatar(dto: CreateAvatarDto) {
+  try {
+    return await this.avatarService.generateAvatar(dto);
+  } catch (error) {
+    this.logger.error('Failed to create avatar', error);
+    throw new InternalServerErrorException('Avatar creation failed');
+  }
+}
+```
+
+### 3. Логирование
+
+```typescript
+this.logger.log(`Avatar created: ${avatar.id}`);
+this.logger.error('Database connection failed', error);
+this.logger.warn('Low disk space');
+```
+
+### 4. Транзакции
+
+```typescript
+await this.db.$transaction(async (tx) => {
+  await tx.avatar.create({ data: avatar1 });
+  await tx.avatar.create({ data: avatar2 });
+});
+```
+
+## 🆘 Troubleshooting
+
+### Проблемы с подключением к БД
+
+```bash
+# Проверьте настройки
+cat settings.yaml
+
+# Проверьте health endpoint
+curl http://localhost:3000/api/health
+
+# Проверьте логи
+tail -f logs/*.log
+```
+
+### Проблемы со сборкой
+
+```bash
+# Очистите dist
+rm -rf dist node_modules
+npm install
+npm run build
+```
+
+**Подробнее:** [Troubleshooting](../../docs/development/troubleshooting.md)
+
+## 📝 Статус документации
+
+| Раздел | Статус | Обновлено |
+|--------|--------|-----------|
+| Modules | ✅ Актуально | 2025-10-03 |
+| Testing | ✅ Актуально | 2025-10-03 |
+| Changelog | ✅ Актуально | 2025-10-03 |
+| Archive | ✅ Актуально | 2025-10-03 |
+
+## 🎉 Что нового в v0.0.2
+
+- ✅ 50 unit и E2E тестов с высоким покрытием
+- ✅ Factory Provider для Database Module
+- ✅ Реорганизация Docker структуры
+- ✅ Реорганизация документации
+- ✅ Обновлена лицензия (MIT)
+- ✅ Метаданные проекта в package.json
+
+---
+
+**License:** MIT  
+**Author:** letnull19a  
+**Repository:** https://github.com/letnull19A/avatar-gen  
+**Последнее обновление:** 2025-10-03

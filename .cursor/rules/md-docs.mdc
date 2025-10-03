@@ -18,3 +18,10 @@ for a frontend application, you need to document the launch and build of the pro
 in the documentation, update the technology stack that is used, the technologies include:
 - usage environment (nodejs, deno, bun.sh )
 - pages (ReactJS, Vue, Angular, Razor pages)
+
+Название файла должно быть в UPPER CASE + snake нотации.
+
+Пример как должно быть:
+
+DEPLOY_AWS.md
+DOCKER_GET_STARTED.md

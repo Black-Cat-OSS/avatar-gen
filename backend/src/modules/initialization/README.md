@@ -32,21 +32,27 @@
 ### Компоненты
 
 #### 1. InitializationService
+
 Основной координатор, управляющий всеми инициализаторами:
+
 - Автоматическое обнаружение инициализаторов
 - Выполнение в порядке приоритета
 - Обработка ошибок и откат
 - Сбор статистики
 
 #### 2. IInitializer (Интерфейс)
+
 Контракт для всех инициализаторов:
+
 - `getInitializerId()` - уникальный идентификатор
 - `getPriority()` - приоритет выполнения
 - `initialize()` - основная логика инициализации
 - `rollback()` - откат при ошибках (опционально)
 
 #### 3. DirectoryInitializerService
+
 Конкретная реализация для создания директорий:
+
 - Проверка существования директорий
 - Создание недостающих директорий
 - Мониторинг статуса директорий
@@ -62,7 +68,7 @@
 @Module({
   imports: [
     ConfigModule,
-    InitializationModule,  // ← Автоматически инициализирует директории
+    InitializationModule, // ← Автоматически инициализирует директории
     DatabaseModule,
     LoggerModule,
     AvatarModule,
@@ -78,9 +84,7 @@ import { InitializationService } from './modules/initialization';
 
 @Injectable()
 export class MyService {
-  constructor(
-    private readonly initializationService: InitializationService,
-  ) {}
+  constructor(private readonly initializationService: InitializationService) {}
 
   async someMethod() {
     // Получить статус инициализации
@@ -102,7 +106,7 @@ export class MyService {
 
 - **`app.save_path`** - директория для аватаров
 - **`app.database.sqlite_params.url`** - путь к SQLite базе данных
-- **Дополнительные директории** - `logs/`, `prisma/storage/`
+- **Дополнительные директории** - `logs/`
 
 ### Структура директорий
 
@@ -112,9 +116,6 @@ storage/                    # Основная директория данных
 └── database/              # SQLite база данных (из sqlite_params.url)
     └── database.sqlite
 
-prisma/                    # Prisma файлы
-└── storage/               # Временные файлы Prisma
-
 logs/                      # Логи приложения
 ```
 
@@ -123,10 +124,10 @@ logs/                      # Логи приложения
 ```yaml
 # settings.yaml
 app:
-  save_path: "./storage/avatars"  # → создаст storage/avatars/
+  save_path: './storage/avatars' # → создаст storage/avatars/
   database:
     sqlite_params:
-      url: "file:./storage/database/database.sqlite"  # → создаст storage/database/
+      url: 'file:./storage/database/database.sqlite' # → создаст storage/database/
 ```
 
 ### Структура директорий
@@ -164,22 +165,27 @@ private extractDirectoriesFromConfig(): string[] {
 #### Методы управления
 
 ##### `getInitializerStatus(initializerId: string): InitializationStatus | undefined`
+
 Получение статуса конкретного инициализатора.
 
 **Параметры:**
+
 - `initializerId` - Идентификатор инициализатора
 
 **Возвращает:** Статус инициализации или `undefined`
 
 ##### `getAllInitializerStatus(): InitializationStatus[]`
+
 Получение статуса всех инициализаторов.
 
 **Возвращает:** Массив статусов всех инициализаторов
 
 ##### `reinitialize(): Promise<void>`
+
 Принудительная реинициализация всех инициализаторов.
 
 **Использование:**
+
 ```typescript
 await this.initializationService.reinitialize();
 ```
@@ -189,9 +195,11 @@ await this.initializationService.reinitialize();
 #### Методы утилит
 
 ##### `getDirectoryStatus(): Promise<DirectoryStatus>`
+
 Получение детальной информации о статусе всех директорий.
 
 **Возвращает:**
+
 ```typescript
 {
   storage: {
@@ -206,6 +214,7 @@ await this.initializationService.reinitialize();
 ```
 
 ##### `recreateDirectories(): Promise<void>`
+
 Принудительное пересоздание всех директорий.
 
 **Предупреждение:** Удаляет существующие директории!
@@ -251,13 +260,9 @@ export class DatabaseInitializerService implements IInitializer {
   providers: [
     InitializationService,
     DirectoryInitializerService,
-    DatabaseInitializerService,  // ← Новый инициализатор
+    DatabaseInitializerService, // ← Новый инициализатор
   ],
-  exports: [
-    InitializationService,
-    DirectoryInitializerService,
-    DatabaseInitializerService,
-  ],
+  exports: [InitializationService, DirectoryInitializerService, DatabaseInitializerService],
 })
 export class InitializationModule {}
 ```
@@ -309,11 +314,11 @@ statuses.forEach(status => {
 
 ```yaml
 app:
-  save_path: "./storage/avatars"  # ← Директория для аватаров
+  save_path: './storage/avatars' # ← Директория для аватаров
 
 database:
   sqlite_params:
-    url: "file:./storage/database/database.sqlite"  # ← Путь к БД
+    url: 'file:./storage/database/database.sqlite' # ← Путь к БД
 ```
 
 ### Добавление новых директорий
@@ -321,12 +326,14 @@ database:
 Чтобы модуль создавал дополнительные директории:
 
 1. **Добавьте настройки в `settings.yaml`:**
+
    ```yaml
    app:
-     temp_path: "./storage/temp"  # Новая настройка
+     temp_path: './storage/temp' # Новая настройка
    ```
 
 2. **Обновите сервис извлечения директорий:**
+
    ```typescript
    private extractStorageDirectories(directories: Set<string>): void {
      // Директория для аватаров
@@ -405,6 +412,7 @@ describe('InitializationModule', () => {
 ## 🔒 Безопасность
 
 Модуль безопасен по умолчанию:
+
 - Создает только необходимые директории
 - Не перезаписывает существующие файлы
 - Использует `recursive: true` только для создания структуры
@@ -423,6 +431,7 @@ describe('InitializationModule', () => {
 ### Примеры будущих инициализаторов
 
 #### DatabaseInitializerService
+
 ```typescript
 // Инициализация подключения к БД
 async initialize(): Promise<void> {
@@ -431,6 +440,7 @@ async initialize(): Promise<void> {
 ```
 
 #### ConfigurationInitializerService
+
 ```typescript
 // Валидация и подготовка конфигурации
 async initialize(): Promise<void> {
@@ -439,6 +449,7 @@ async initialize(): Promise<void> {
 ```
 
 #### CacheInitializerService
+
 ```typescript
 // Предварительное заполнение кэша
 async initialize(): Promise<void> {
@@ -447,6 +458,7 @@ async initialize(): Promise<void> {
 ```
 
 #### MigrationInitializerService
+
 ```typescript
 // Выполнение миграций БД
 async initialize(): Promise<void> {
@@ -465,4 +477,3 @@ async initialize(): Promise<void> {
 **Последнее обновление:** 2025-10-01
 **Версия:** 1.0.0
 **Статус:** ✅ Готов к использованию
-

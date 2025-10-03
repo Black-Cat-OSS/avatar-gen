@@ -1,354 +1,288 @@
 # Backend Docker Configuration
 
-Docker конфигурация для backend-части проекта Avatar Generation.
+Конфигурация Docker для backend приложения Avatar Generator.
 
-## 📁 Структура
+## 📋 Структура
 
 ```
-backend/docker/
-└── Dockerfile          # Multi-stage Dockerfile для оптимизированной сборки
+backend/
+├── docker/
+│   ├── Dockerfile        # Multi-stage build конфигурация
+│   └── README.md         # Этот файл
+├── start.sh              # Startup script (ВАЖНО!)
+├── settings.yaml         # Конфигурация
+└── ...
 ```
 
 ## 🐳 Dockerfile
 
-### Multi-stage Build
+### Multi-stage build
 
-Используется multi-stage build для оптимизации размера финального образа:
+**Stage 1: Builder**
+- Базовый образ: `node:20-alpine`
+- Установка зависимостей для Sharp (vips-dev, python3, make, g++)
+- Копирование исходного кода
+- Генерация Prisma client
+- Компиляция TypeScript → JavaScript
 
-#### Stage 1: Builder
-- **Base:** `node:20-alpine`
-- **Назначение:** Компиляция TypeScript и сборка приложения
-- **Зависимости:** vips-dev, python3, make, g++ (для Sharp)
-- **Действия:**
-  1. Установка всех зависимостей (включая devDependencies)
-  2. Генерация Prisma Client
-  3. Сборка TypeScript → JavaScript
+**Stage 2: Production**
+- Базовый образ: `node:20-alpine`
+- Установка только runtime зависимостей
+- Копирование скомпилированного кода из builder
+- Копирование конфигурации и скриптов
+- Создание директорий storage
 
-#### Stage 2: Production
-- **Base:** `node:20-alpine`
-- **Назначение:** Финальный минимальный образ для production
-- **Зависимости:** vips, curl (только runtime)
-- **Действия:**
-  1. Установка только production зависимостей
-  2. Копирование собранного приложения из builder
-  3. Копирование Prisma Client
-  4. Настройка окружения
+## 📁 Важные файлы
 
-### Оптимизации
+### start.sh
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО:** Файл `start.sh` должен находиться в `backend/` директории!
+
+**Расположение:** `backend/start.sh`  
+**Назначение:** Инициализация и запуск приложения
+
+```bash
+#!/bin/sh
+
+# Always create a fresh database in container
+echo "Creating fresh database..."
+npx prisma migrate deploy
+
+# Start the application
+echo "Starting avatar generator application..."
+exec node dist/main.js
+```
+
+**Почему это важно:**
+- Dockerfile копирует `start.sh` из корня контекста (backend/)
+- В `.dockerignore` добавлено исключение `!start.sh`
+- Без этого файла контейнер не запустится
+
+### settings.yaml
+
+**Расположение:** `backend/settings.yaml`  
+**Назначение:** Конфигурация приложения
+
+Монтируется как volume в docker-compose для возможности изменения без пересборки.
+
+## 🚀 Сборка образа
+
+### Через Docker напрямую
+
+```bash
+# Из корня проекта
+docker build -t avatar-backend -f backend/docker/Dockerfile backend/
+
+# Из директории backend
+cd backend
+docker build -t avatar-backend -f docker/Dockerfile .
+```
+
+### Через Docker Compose
+
+```bash
+# Из корня проекта
+docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml build avatar-backend
+
+# Или через скрипты
+./scripts/build.sh sqlite
+```
+
+## 🔧 Конфигурация build context
+
+Docker Compose использует:
+```yaml
+services:
+  avatar-backend:
+    build:
+      context: ../backend      # Контекст сборки
+      dockerfile: docker/Dockerfile  # Относительно context
+```
+
+**Это означает:**
+- Контекст сборки: `backend/` директория
+- Dockerfile: `backend/docker/Dockerfile`
+- Все `COPY` команды относительно `backend/`
+
+## 📦 Что копируется в образ
+
+### Builder stage
+```dockerfile
+COPY package*.json ./           # Для npm install
+COPY src ./src                  # Исходный код
+COPY prisma ./prisma            # Prisma schema
+COPY tsconfig.json ./           # TypeScript config
+COPY nest-cli.json ./           # NestJS config
+```
+
+### Production stage
+```dockerfile
+COPY --from=builder /app/dist ./dist                      # Скомпилированный код
+COPY --from=builder /app/node_modules/.prisma ./...      # Prisma client
+COPY settings.yaml ./                                     # Конфигурация
+COPY start.sh ./start.sh                                  # Startup script ← ВАЖНО!
+```
+
+## 🐛 Troubleshooting
+
+### Ошибка: `/app/start.sh: not found`
+
+**Причина:** Файл `start.sh` не попал в образ
+
+**Решение:**
+
+1. Проверьте наличие файла:
+```bash
+ls -la backend/start.sh
+# Должен существовать и быть исполняемым
+```
+
+2. Проверьте `.dockerignore`:
+```bash
+cat backend/.dockerignore | grep start.sh
+# Не должен игнорироваться (или должен быть !start.sh)
+```
+
+3. Пересоберите образ:
+```bash
+./scripts/build.sh sqlite --build
+# или
+docker-compose -f docker/docker-compose.yml build --no-cache avatar-backend
+```
+
+4. Проверьте что файл попал в образ:
+```bash
+docker run --rm --entrypoint ls avatar-backend -la /app/start.sh
+```
+
+### Ошибка при установке Sharp
+
+**Причина:** Временные проблемы с Alpine репозиториями
+
+**Решение:** В Dockerfile используется retry логика с альтернативными зеркалами (Yandex):
+```dockerfile
+RUN for i in 1 2 3; do \
+    apk update && apk add --no-cache vips-dev python3 make g++ && break || \
+    { echo "Retry $i/3 failed..."; sleep 5; }; \
+  done
+```
+
+### Проблемы с правами доступа
+
+**Проблема:** Ошибки доступа к `storage/` директории
+
+**Решение:**
+
+На хосте:
+```bash
+chmod -R 777 backend/storage
+```
+
+Или в Dockerfile:
+```dockerfile
+RUN mkdir -p storage/avatars storage/database && \
+    chmod -R 777 storage
+```
+
+## ⚙️ Environment Variables
+
+### Build-time (ARG)
+
+Нет build-time переменных.
+
+### Runtime (ENV)
 
 ```dockerfile
-# ✅ Параллельная установка
-RUN npm ci --prefer-offline --no-audit
-
-# ✅ Увеличенная память для сборки больших проектов
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-# ✅ Очистка кэша npm
-RUN npm cache clean --force
-
-# ✅ Multi-stage build - только необходимое в production
-COPY --from=builder /app/dist ./dist
+ENV NODE_ENV=production
+ENV DATABASE_URL="file:./storage/database/database.sqlite"
+ENV CONFIG_PATH="./settings.yaml"
 ```
 
-### Размер образа
-
-```
-Builder stage:  ~500-600 MB (со всеми dev зависимостями)
-Production:     ~200-250 MB (только runtime)
-```
-
-## 🚀 Использование
-
-### Локальная сборка
-
-```bash
-# Из корня проекта
-docker build -f backend/docker/Dockerfile -t avatar-backend:latest ./backend
-
-# Или из директории backend
-cd backend
-docker build -f docker/Dockerfile -t avatar-backend:latest .
+Можно переопределить в docker-compose:
+```yaml
+environment:
+  NODE_ENV: production
+  DATABASE_PROVIDER: sqlite
+  DATABASE_URL: file:./storage/database/database.sqlite
 ```
 
-### С docker-compose
+## 📊 Volumes
 
-```bash
-# Из корня проекта
-docker-compose up --build avatar-backend
-
-# Только backend (без PostgreSQL)
-docker-compose up --build avatar-backend --no-deps
-```
-
-### Запуск контейнера
-
-```bash
-# С SQLite (по умолчанию)
-docker run -p 3000:3000 \
-  -v $(pwd)/backend/storage:/app/storage \
-  avatar-backend:latest
-
-# С PostgreSQL
-docker run -p 3000:3000 \
-  -e DATABASE_URL=postgresql://user:password@postgres:5432/avatar_gen \
-  avatar-backend:latest
-```
-
-## ⚙️ Переменные окружения
-
-### Обязательные
-
-```bash
-NODE_ENV=production              # Режим работы
-DATABASE_URL=file:./prisma/...  # URL подключения к БД
-CONFIG_PATH=./settings.yaml      # Путь к конфигурации
-```
-
-### Опциональные
-
-```bash
-PORT=3000                        # Порт сервера (по умолчанию 3000)
-HOST=0.0.0.0                    # Хост (по умолчанию 0.0.0.0)
-LOG_LEVEL=info                   # Уровень логирования
-```
-
-## 📦 Volumes
-
-### Рекомендуемые монтирования
+Монтируются в docker-compose:
 
 ```yaml
 volumes:
-  # Хранилище (ОБЯЗАТЕЛЬНО для персистентности)
-  # Включает аватары (storage/avatars) и SQLite БД (storage/database)
-  - ./backend/storage:/app/storage
-  
-  # Конфигурация (опционально, для изменений без пересборки)
-  - ./backend/settings.yaml:/app/settings.yaml:ro
-  
-  # Логи (опционально, для доступа к логам)
-  - ./backend/logs:/app/logs
+  - ../backend/storage:/app/storage         # Persistent storage
+  - ../backend/settings.yaml:/app/settings.yaml  # Конфигурация
+  - ../backend/logs:/app/logs               # Логи
 ```
 
 ## 🏥 Health Check
-
-Контейнер включает health check:
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 ```
 
-### Проверка статуса
-
+**Проверка:**
 ```bash
-# Проверка статуса контейнера
-docker ps
-
-# Просмотр health check логов
-docker inspect --format='{{json .State.Health}}' avatar-gen-backend
+docker inspect avatar-gen-backend --format='{{.State.Health.Status}}'
 ```
 
-## 🔧 Конфигурация сборки
+## 🔐 Security
 
-### Build Arguments
+### Best Practices
 
-Можно передать аргументы при сборке:
+1. **Multi-stage build** - минимальный размер production образа
+2. **Non-root user** - TODO: добавить
+3. **Minimal dependencies** - только production deps в final stage
+4. **No secrets in image** - используйте volumes для настроек
+
+### Рекомендации для production
 
 ```dockerfile
-# В Dockerfile (если добавить ARG)
-ARG NODE_VERSION=20
-FROM node:${NODE_VERSION}-alpine
-```
-
-```bash
-# При сборке
-docker build --build-arg NODE_VERSION=20 -t avatar-backend .
-```
-
-### Кэширование слоев
-
-Dockerfile оптимизирован для максимального использования кэша:
-
-```dockerfile
-# 1. Сначала копируем только package*.json
-COPY package*.json ./
-
-# 2. Устанавливаем зависимости (кэшируется если package.json не изменился)
-RUN npm ci
-
-# 3. Затем копируем исходный код
-COPY src ./src
-```
-
-## 🐛 Troubleshooting
-
-### Проблема: Ошибка при установке Sharp
-
-```
-Error: Cannot find module 'sharp'
-```
-
-**Решение:** Убедитесь, что в builder stage установлены зависимости:
-
-```dockerfile
-RUN apk add --no-cache vips-dev python3 make g++
-```
-
-### Проблема: Prisma Client не найден
-
-```
-Error: @prisma/client did not initialize yet
-```
-
-**Решение:** Убедитесь, что Prisma Client генерируется и копируется:
-
-```dockerfile
-# В builder stage
-RUN npx prisma generate
-
-# В production stage
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-```
-
-### Проблема: База данных недоступна
-
-```
-Error: Can't reach database server
-```
-
-**Решение для SQLite:**
-- Проверьте, что volume смонтирован: `-v ./prisma/storage:/app/prisma/storage`
-- Проверьте права доступа к директории
-
-**Решение для PostgreSQL:**
-- Проверьте `DATABASE_URL`
-- Убедитесь, что PostgreSQL контейнер запущен: `docker-compose up postgres`
-- Используйте `depends_on` в docker-compose
-
-### Проблема: Контейнер падает сразу после старта
-
-```bash
-# Просмотр логов
-docker logs avatar-gen-backend
-
-# Подключение к контейнеру для отладки
-docker run -it --entrypoint sh avatar-backend:latest
-```
-
-## 📊 Мониторинг
-
-### Просмотр логов
-
-```bash
-# Все логи
-docker logs avatar-gen-backend
-
-# Следить за логами в реальном времени
-docker logs -f avatar-gen-backend
-
-# Последние 100 строк
-docker logs --tail 100 avatar-gen-backend
-```
-
-### Использование ресурсов
-
-```bash
-# Статистика контейнера
-docker stats avatar-gen-backend
-
-# Детальная информация
-docker inspect avatar-gen-backend
-```
-
-## 🔐 Security Best Practices
-
-### 1. Не запускайте от root
-
-```dockerfile
-# Создайте non-root пользователя (TODO: добавить в Dockerfile)
+# Добавить non-root user
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
 
 USER nodejs
 ```
 
-### 2. Используйте секреты для чувствительных данных
+## 📈 Optimization
 
-```bash
-# Используйте Docker secrets или переменные окружения
-docker run -e DATABASE_PASSWORD_FILE=/run/secrets/db_password ...
+### Размер образа
+
+- **Builder stage:** ~800MB (с dev dependencies)
+- **Production stage:** ~200MB (без dev dependencies)
+
+### Кэширование слоев
+
+```dockerfile
+# 1. Сначала COPY package files (меняются редко)
+COPY package*.json ./
+RUN npm install
+
+# 2. Затем COPY исходный код (меняется часто)
+COPY src ./src
+RUN npm run build
 ```
 
-### 3. Сканируйте образ на уязвимости
+### Параллельная компиляция
 
-```bash
-# С помощью Docker Scout
-docker scout cves avatar-backend:latest
-
-# С помощью Trivy
-trivy image avatar-backend:latest
+```dockerfile
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm run build
 ```
-
-## 🚀 Production Deployment
-
-### Рекомендации для production
-
-1. **Используйте конкретные версии тегов**
-   ```bash
-   docker build -t avatar-backend:1.0.0 .
-   ```
-
-2. **Настройте правильные health checks**
-   ```yaml
-   healthcheck:
-     test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-     interval: 30s
-     timeout: 10s
-     retries: 3
-     start_period: 40s
-   ```
-
-3. **Используйте restart policy**
-   ```yaml
-   restart: unless-stopped
-   ```
-
-4. **Ограничьте ресурсы**
-   ```yaml
-   deploy:
-     resources:
-       limits:
-         cpus: '1.0'
-         memory: 512M
-       reservations:
-         cpus: '0.5'
-         memory: 256M
-   ```
-
-5. **Используйте Docker secrets для credentials**
-   ```bash
-   docker secret create db_password password.txt
-   ```
-
-## 📝 Changelog
-
-### v1.1.0 (2025-10-01)
-- Перемещен Dockerfile в `backend/docker/`
-- Добавлен health check
-- Оптимизирован multi-stage build
-- Добавлена документация
-
-### v1.0.0
-- Первая версия Dockerfile
 
 ## 🔗 Связанные документы
 
+- [Docker Compose Configuration](../../docker/README.md)
+- [Docker Build Fixes](../../docker/DOCKER_BUILD_FIXES.md)
 - [Backend README](../README.md)
-- [Docker Compose Configuration](../../docker-compose.yml)
-- [Deployment Guide](../docs/DEPLOYMENT.md) (TODO)
+- [Backend Docs](../docs/README.md)
 
 ---
 
-**Последнее обновление:** 2025-10-01  
-**Версия:** 1.1.0
-
+**Обновлено:** 2025-10-03  
+**Версия:** 1.1 (исправлена проблема с start.sh)

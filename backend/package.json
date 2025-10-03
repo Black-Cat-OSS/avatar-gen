@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -26,8 +26,12 @@
     "prisma:deploy": "npm run env:generate && prisma migrate deploy"
   },
   "keywords": [],
-  "author": "",
+  "author": "letnull19a",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letnull19A/avatar-gen.git"
+  },
   "dependencies": {
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",
