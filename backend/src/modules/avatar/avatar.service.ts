@@ -69,8 +69,8 @@ export class AvatarService {
 
     try {
       // Validate size parameter
-      if (dto.size && (dto.size <= 4 || dto.size > 9)) {
-        throw new BadRequestException('Size must be between 5 and 9 (2^n where 4 < n <= 9)');
+      if (dto.size && (dto.size < 4 || dto.size > 9)) {
+        throw new BadRequestException('Size must be between 4 and 9 (2^n where 4 <= n <= 9)');
       }
 
       // Get avatar from database
