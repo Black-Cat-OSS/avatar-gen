@@ -1,0 +1,36 @@
+# CODEOWNERS файл для автоматического назначения reviewers
+# Синтаксис: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Глобальные владельцы кода - все файлы
+* @Black-Cat-OSS/avatar-gen-maintainers
+
+# Backend код
+/backend/ @Black-Cat-OSS/backend-team
+
+# Frontend код  
+/frontend/ @Black-Cat-OSS/frontend-team
+
+# CI/CD и GitHub Actions
+/.github/ @Black-Cat-OSS/devops-team
+
+# Docker конфигурации
+/docker/ @Black-Cat-OSS/devops-team
+/docker-compose*.yml @Black-Cat-OSS/devops-team
+
+# Документация
+/docs/ @Black-Cat-OSS/documentation-team
+
+# Конфигурационные файлы
+*.json @Black-Cat-OSS/devops-team
+*.yaml @Black-Cat-OSS/devops-team
+*.yml @Black-Cat-OSS/devops-team
+package.json @Black-Cat-OSS/devops-team
+pnpm-lock.yaml @Black-Cat-OSS/devops-team
+
+# Важные файлы проекта
+README.md @Black-Cat-OSS/avatar-gen-maintainers
+CHANGELOG.md @Black-Cat-OSS/avatar-gen-maintainers
+LICENSE @Black-Cat-OSS/avatar-gen-maintainers
+
+# Отчеты
+/reports/ @Black-Cat-OSS/avatar-gen-maintainers

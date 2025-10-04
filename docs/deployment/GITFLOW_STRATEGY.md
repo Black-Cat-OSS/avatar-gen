@@ -240,6 +240,15 @@ git push origin develop
 
 ## 🛡️ Правила защиты веток
 
+### ⚠️ ВАЖНО: Настройка обязательна!
+
+Для обеспечения качества кода **ОБЯЗАТЕЛЬНО** настроить Branch Protection Rules
+в GitHub.
+
+📖 **Быстрый старт (GitBash):** [GitBash Quick Start](GITBASH_QUICK_START.md)  
+📖 **Подробная инструкция:**
+[Branch Protection Setup](BRANCH_PROTECTION_SETUP.md)
+
 ### Настройки для `main`
 
 ```yaml
@@ -247,12 +256,17 @@ Branch protection rules:
   ✅ Require pull request before merging
   ✅ Require approvals: 1
   ✅ Dismiss stale reviews
+  ✅ Require review from code owners
   ✅ Require status checks to pass
-     - lint-backend
-     - lint-frontend
-     - test-backend (all matrix jobs)
-     - build-frontend
-     - docker-build-test
+      - lint-backend
+      - lint-frontend
+      - test-backend (SQLite + Local)
+      - test-backend (SQLite + S3)
+      - test-backend (PostgreSQL + Local)
+      - test-backend (PostgreSQL + S3)
+      - build-frontend
+      - docker-build-test
+  ✅ Require branches to be up to date
   ✅ Require conversation resolution
   ✅ Include administrators
   ❌ Allow force pushes: Never
@@ -265,12 +279,20 @@ Branch protection rules:
 Branch protection rules:
   ✅ Require pull request before merging
   ✅ Require approvals: 1
+  ✅ Dismiss stale reviews
+  ✅ Require review from code owners
   ✅ Require status checks to pass
-     - lint-backend
-     - lint-frontend
-     - test-backend (fast tests)
+      - lint-backend
+      - lint-frontend
+      - test-backend (SQLite + Local)
+      - test-backend (SQLite + S3)
+      - build-frontend
+      - docker-build-test
+  ✅ Require branches to be up to date
   ✅ Require conversation resolution
+  ✅ Include administrators
   ❌ Allow force pushes: Never
+  ❌ Allow deletions: Never
 ```
 
 ---
