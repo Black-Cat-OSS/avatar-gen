@@ -85,8 +85,8 @@ jobs:
               local:
                 save_path: './storage/test-avatars'
               s3:
-                endpoint: 'https://minio:9000'
-                bucket: 'test-bucket'
+                endpoint: 'https://test-s3-endpoint.com'
+                bucket: 'avatar-gen-test'
                 access_key: 'test-access-key'
                 secret_key: 'test-secret-key'
                 region: 'us-east-1'

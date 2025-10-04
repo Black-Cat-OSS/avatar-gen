@@ -3,6 +3,16 @@ app:
     type: 'local'
     local:
       save_path: './storage/test-avatars'
+    s3:
+      endpoint: 'https://test-s3-endpoint.com'
+      bucket: 'avatar-gen-test' # Тестовый бакет
+      access_key: 'test-access-key'
+      secret_key: 'test-secret-key'
+      region: 'us-east-1'
+      force_path_style: true
+      connection:
+        maxRetries: 1 # Минимальное количество попыток для быстрых тестов
+        retryDelay: 100 # Минимальная задержка
   server:
     port: 3002 # Отдельный порт для тестов
   database:
