@@ -21,6 +21,10 @@ dist-ssr
 backend/.env
 backend/storage
 
+# Backend local settings files (contain confidential data)
+backend/settings.local.yaml
+backend/settings.*.local.yaml
+
 # Frontend .env files
 # Include base .env, .env.development, .env.production
 # Ignore only .env.local files

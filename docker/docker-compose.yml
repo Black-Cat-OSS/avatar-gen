@@ -62,6 +62,8 @@ services:
       - ../backend/storage:/app/storage
       - ../backend/settings.yaml:/app/settings.yaml:ro
       - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
+      - ../backend/settings.local.yaml:/app/settings.local.yaml:ro
+      - ../backend/settings.production.local.yaml:/app/settings.production.local.yaml:ro
       - ../backend/logs:/app/logs
     environment:
       - NODE_ENV=production
