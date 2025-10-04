@@ -6,7 +6,7 @@
 
 ### Docker
 
-- **[Docker Compose Configuration](./docker-compose.md)** ✅  
+- **[Docker Compose Configuration](./DOCKER_COMPOSE.md)** ✅  
   Детальное руководство по docker-compose конфигурации
 
 - **[Docker README](../../docker/README.md)** ✅  
@@ -17,7 +17,7 @@
 
 ### Скрипты управления
 
-- **[Scripts Documentation](../../scripts/README.md)** ✅  
+- **[Scripts Documentation](./SCRIPTS.md)** ✅  
   Полная документация всех скриптов управления
 
 ### Production развертывание
@@ -179,16 +179,16 @@ tail -f frontend/logs/*.log
 
 ## 📚 Детальная документация
 
-- [Docker Compose Configuration](./docker-compose.md) - Детальная конфигурация
+- [Docker Compose Configuration](./DOCKER_COMPOSE.md) - Детальная конфигурация
 - [Docker README](../../docker/README.md) - Структура и использование
-- [Scripts Documentation](../../scripts/README.md) - Все скрипты
+- [Scripts Documentation](./SCRIPTS.md) - Все скрипты
 - [Production Guide](./production.md) - Production рекомендации
 
 ## 🔗 Связанные разделы
 
 - [Development Guide](../development/README.md) - Разработка
 - [Getting Started](../getting-started/README.md) - Быстрый старт
-- [Troubleshooting](../development/troubleshooting.md) - Решение проблем
+- [Troubleshooting](../development/TROUBLESHOOTING.md) - Решение проблем
 
 ---
 

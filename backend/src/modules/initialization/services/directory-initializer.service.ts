@@ -86,9 +86,10 @@ export class DirectoryInitializerService implements OnModuleInit {
     this.logger.debug('Extracting storage directories from config');
 
     // Директория для аватаров
-    if (this.config.app?.save_path) {
-      this.logger.debug(`Avatar save path: ${this.config.app.save_path}`);
-      const avatarDir = dirname(this.config.app.save_path);
+    const storageConfig = this.config.app?.storage;
+    if (storageConfig?.type === 'local' && storageConfig.local?.save_path) {
+      this.logger.debug(`Avatar save path: ${storageConfig.local.save_path}`);
+      const avatarDir = dirname(storageConfig.local.save_path);
       this.logger.debug(`Avatar directory: ${avatarDir}`);
 
       if (avatarDir && avatarDir !== '.') {

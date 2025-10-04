@@ -567,7 +567,7 @@ docker-compose down -v --remove-orphans
 - [Backend Dockerfile](../../backend/docker/README.md)
 - [Docker README](../../docker/README.md)
 - [Docker Build Fixes](../../docker/DOCKER_BUILD_FIXES.md)
-- [Scripts Documentation](../../scripts/README.md)
+- [Scripts Documentation](./SCRIPTS.md)
 - [Backend README](../../backend/README.md)
 - [Frontend README](../../frontend/README.md)
 

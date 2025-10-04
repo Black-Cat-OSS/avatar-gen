@@ -34,13 +34,15 @@ docs/
 ├── development/                   # 🛠️ Разработка
 │   ├── README.md
 │   ├── setup.md                   # Настройка окружения
-│   ├── database.md                # База данных
-│   ├── integration.md             # Frontend-Backend
-│   └── troubleshooting.md         # Решение проблем
+│   ├── DATABASE.md                # База данных
+│   ├── INTEGRATION.md             # Frontend-Backend
+│   └── TROUBLESHOOTING.md         # Решение проблем
 │
 ├── deployment/                    # 🐳 Развертывание
 │   ├── README.md
-│   ├── docker-compose.md          # Docker Compose
+│   ├── DOCKER_COMPOSE.md          # Docker Compose
+│   ├── GATEWAY.md                 # Gateway конфигурация
+│   ├── SCRIPTS.md                 # Скрипты управления
 │   └── production.md              # Production
 │
 ├── api/                          # 📡 API
@@ -53,7 +55,7 @@ docs/
 │
 ├── architecture/                 # 🏗️ Архитектура
 │   ├── README.md
-│   └── overview.md                # Этот файл
+│   └── OVERVIEW.md                # Этот файл
 │
 ├── contributing/                 # 🤝 Контрибуция
 │   ├── README.md

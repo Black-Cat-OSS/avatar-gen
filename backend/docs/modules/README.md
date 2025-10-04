@@ -44,11 +44,53 @@
 
 ### Storage Module
 
-**Статус:** ✅ Production Ready
+**Статус:** ✅ Production Ready  
+**Версия:** 1.0.0  
+**Покрытие тестами:** 100% (94/94 тестов)
 
-Модуль для работы с файловым хранилищем.
+Модуль для работы с хранилищем аватаров. Поддерживает локальное хранилище и S3-совместимые облачные хранилища.
 
-**Документация:** Coming soon
+**Документация:**
+- [Storage Module](./storage/STORAGE_MODULE.md) - Главный модуль с Registry Pattern
+- [Local Storage](./storage/LOCAL_STORAGE.md) - Локальное файловое хранилище
+- [S3 Storage](./storage/S3_STORAGE.md) - Высокоуровневый S3 модуль для аватаров
+- [S3 Module](./s3/README.md) - Корневой S3 модуль (низкоуровневый API)
+
+**Ключевые особенности:**
+- ✅ **Registry Pattern** - легко добавлять новые типы хранилищ
+- ✅ **Type Safety** - интерфейсы `IStorageModule` и `IStorageStrategy`
+- ✅ **Условный импорт** - загружается только нужный модуль
+- ✅ Strategy Pattern для переключения между типами
+- ✅ Dynamic Modules (NestJS best practices)
+- ✅ Автоматический retry для S3 подключения
+- ✅ Полное покрытие тестами
+
+**Архитектура:**
+```
+StorageModule (динамический модуль с Registry)
+├─ LocalStorageModule (implements IStorageModule)
+│  └─ LocalStorageService (implements IStorageStrategy)
+└─ S3StorageModule (implements IStorageModule)
+   └─ S3Service (корневой модуль для S3 API)
+```
+
+### S3 Module (корневой)
+
+**Статус:** ✅ Production Ready  
+**Версия:** 1.0.0  
+**Покрытие тестами:** 100%
+
+Низкоуровневый модуль для работы с S3 API. Может использоваться различными модулями приложения.
+
+**Документация:**
+- [S3 Module](./s3/README.md) - Полное руководство
+
+**Ключевые особенности:**
+- ✅ Низкоуровневый S3 API (upload, get, delete, exists)
+- ✅ Retry логика с настраиваемыми параметрами
+- ✅ Health checks и reconnect
+- ✅ Совместимость с любыми S3-совместимыми хранилищами
+- ✅ Может использоваться для любых данных (не только аватары)
 
 ### Health Module
 

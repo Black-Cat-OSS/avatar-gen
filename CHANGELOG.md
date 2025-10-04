@@ -8,6 +8,58 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Поддержка S3 хранилища**
+  ([#6](https://github.com/Black-Cat-OSS/avatar-gen/issues/6))
+  - Новый `S3Module` для low-level операций с S3
+  - Поддержка S3-совместимых облачных хранилищ (AWS S3, MinIO, Beget S3 и др.)
+  - Strategy pattern для переключения между local и S3 хранилищем
+  - Dynamic modules следуя NestJS best practices
+  - Retry логика для S3 подключений с настраиваемыми параметрами
+  - Полное покрытие unit тестами (94 теста, 100% pass rate)
+  - Подробная документация для storage модулей
+  - Docker compose профиль для S3 deployment
+
+### Changed
+
+- **Скрипты управления улучшены**:
+  - `start.sh` теперь использует флаги `--db` и `--storage` вместо позиционных
+    аргументов
+  - Добавлена поддержка выбора типа хранилища через `--storage s3|local`
+  - Улучшенная валидация параметров и информативные сообщения об ошибках
+- **Документация реорганизована**:
+  - Документация скриптов перенесена из `scripts/README.md` в
+    `docs/deployment/SCRIPTS.md`
+  - Обновлены все ссылки на новое расположение
+  - Добавлен краткий README в `scripts/` со ссылкой на полную документацию
+- **Docker конфигурация улучшена**:
+  - Добавлены DNS серверы (8.8.8.8, 8.8.4.4, 1.1.1.1) для резолвинга S3
+    endpoint'ов
+  - Конфигурационные файлы теперь монтируются как volumes (read-only) вместо
+    копирования в образ
+  - Исправлены пути монтирования: `/app/settings.yaml` вместо
+    `/app/backend/settings.yaml`
+- **Модули хранилища оптимизированы**:
+  - `LocalStorageModule` и `S3StorageModule` теперь пропускают инициализацию
+    если не используются
+  - Graceful degradation: модули не выбрасывают ошибки при неправильной
+    конфигурации
+  - Реструктуризация конфигурации хранилища для поддержки нескольких типов
+- `StorageModule` теперь использует паттерн dynamic modules
+- `YamlConfigService` обновлен с методом `getStorageConfig()`
+- Обновлены Docker конфигурации с переменными окружения для S3
+- Реструктуризированы settings файлы для выбора типа хранилища
+
+### Documentation
+
+- Добавлено `backend/docs/modules/storage/S3_STORAGE.md`
+- Добавлено `backend/docs/modules/storage/LOCAL_STORAGE.md`
+- Добавлено `backend/docs/modules/storage/STORAGE_MODULE.md`
+- Добавлено `backend/docs/STORAGE_CONFIGURATION.md`
+- Добавлено `backend/docker/README.md`
+- Обновлено `backend/docs/modules/README.md`
+
 ### Fixed
 
 - **Поддержка размера 16x16 пикселей**
@@ -68,7 +120,7 @@
 - **Документация Docker**:
   - `docker/README.md` - Основная документация
   - `docker/DOCKER_BUILD_FIXES.md` - Решение проблем сборки
-- **Документация скриптов**: `scripts/README.md`
+- **Документация скриптов**: `docs/deployment/SCRIPTS.md`
 
 ### Changed
 

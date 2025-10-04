@@ -1,101 +1,99 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { Injectable, Logger } from '@nestjs/common';
 import { AvatarObject } from '../../common/interfaces/avatar-object.interface';
+import { IStorageStrategy } from '../../common/interfaces/storage-strategy.interface';
 import { YamlConfigService } from '../../config/yaml-config.service';
+import { LocalStorageService } from './modules/local';
+import { S3StorageService } from './modules/s3';
 
+/**
+ * Сервис хранилища аватаров
+ *
+ * Использует паттерн Strategy для поддержки различных типов хранилищ (local, s3).
+ * Выбор стратегии происходит в конструкторе на основе конфигурации.
+ *
+ * StorageService является singleton и инициализируется один раз при старте приложения.
+ *
+ * @class StorageService
+ */
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
+  private readonly strategy: IStorageStrategy;
 
-  constructor(private readonly configService: YamlConfigService) {}
+  constructor(
+    private readonly configService: YamlConfigService,
+    localStorageService: LocalStorageService,
+    s3StorageService: S3StorageService,
+  ) {
+    const storageConfig = this.configService.getStorageConfig();
+    const storageType = storageConfig.type;
 
+    if (storageType === 's3') {
+      if (!s3StorageService) {
+        throw new Error('S3StorageService is not available but configured as storage type');
+      }
+      this.strategy = s3StorageService;
+      this.logger.log('Using S3 storage strategy');
+    } else {
+      if (!localStorageService) {
+        throw new Error('LocalStorageService is not available but configured as storage type');
+      }
+      this.strategy = localStorageService;
+      this.logger.log('Using local storage strategy');
+    }
+
+    this.logger.log(`StorageService initialized with ${this.getStorageType()} storage`);
+  }
+
+  /**
+   * Сохранение аватара
+   *
+   * @param {AvatarObject} avatarObject - Объект аватара для сохранения
+   * @returns {Promise<string>} Путь или URL сохраненного аватара
+   * @throws {Error} Если сохранение не удалось
+   */
   async saveAvatar(avatarObject: AvatarObject): Promise<string> {
-    const id = avatarObject.meta_data_name;
-    const filePath = this.getFilePath(id);
-
-    try {
-      const dir = dirname(filePath);
-      if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
-        this.logger.log(`Created directory: ${dir}`);
-      }
-
-      const serializedData = JSON.stringify({
-        ...avatarObject,
-        image_4n: Array.from(avatarObject.image_4n),
-        image_5n: Array.from(avatarObject.image_5n),
-        image_6n: Array.from(avatarObject.image_6n),
-        image_7n: Array.from(avatarObject.image_7n),
-        image_8n: Array.from(avatarObject.image_8n),
-        image_9n: Array.from(avatarObject.image_9n),
-      });
-
-      writeFileSync(filePath, serializedData);
-      this.logger.log(`Avatar saved to: ${filePath}`);
-
-      return filePath;
-    } catch (error) {
-      this.logger.error(`Failed to save avatar: ${error.message}`, error);
-      throw new Error(`Failed to save avatar: ${error.message}`);
-    }
+    return this.strategy.saveAvatar(avatarObject);
   }
 
+  /**
+   * Загрузка аватара
+   *
+   * @param {string} id - Идентификатор аватара
+   * @returns {Promise<AvatarObject>} Объект аватара
+   * @throws {Error} Если аватар не найден или загрузка не удалась
+   */
   async loadAvatar(id: string): Promise<AvatarObject> {
-    const filePath = this.getFilePath(id);
-
-    try {
-      if (!existsSync(filePath)) {
-        throw new NotFoundException(`Avatar with ID ${id} not found`);
-      }
-
-      const fileContent = readFileSync(filePath, 'utf8');
-      const data = JSON.parse(fileContent);
-
-      const avatarObject: AvatarObject = {
-        meta_data_name: data.meta_data_name,
-        meta_data_created_at: new Date(data.meta_data_created_at),
-        image_4n: Buffer.from(data.image_4n),
-        image_5n: Buffer.from(data.image_5n),
-        image_6n: Buffer.from(data.image_6n),
-        image_7n: Buffer.from(data.image_7n),
-        image_8n: Buffer.from(data.image_8n),
-        image_9n: Buffer.from(data.image_9n),
-      };
-
-      this.logger.log(`Avatar loaded from: ${filePath}`);
-      return avatarObject;
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Failed to load avatar: ${error.message}`, error);
-      throw new Error(`Failed to load avatar: ${error.message}`);
-    }
+    return this.strategy.loadAvatar(id);
   }
 
+  /**
+   * Удаление аватара
+   *
+   * @param {string} id - Идентификатор аватара
+   * @returns {Promise<void>}
+   * @throws {Error} Если удаление не удалось
+   */
   async deleteAvatar(id: string): Promise<void> {
-    const filePath = this.getFilePath(id);
-
-    try {
-      if (existsSync(filePath)) {
-        const fs = await import('fs');
-        fs.unlinkSync(filePath);
-        this.logger.log(`Avatar deleted: ${filePath}`);
-      } else {
-        throw new NotFoundException(`Avatar with ID ${id} not found`);
-      }
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Failed to delete avatar: ${error.message}`, error);
-      throw new Error(`Failed to delete avatar: ${error.message}`);
-    }
+    return this.strategy.deleteAvatar(id);
   }
 
-  private getFilePath(id: string): string {
-    const savePath = this.configService.getSavePath();
-    return join(savePath, `${id}.obj`);
+  /**
+   * Проверка существования аватара
+   *
+   * @param {string} id - Идентификатор аватара
+   * @returns {Promise<boolean>} true если аватар существует
+   */
+  async exists(id: string): Promise<boolean> {
+    return this.strategy.exists(id);
+  }
+
+  /**
+   * Получение типа используемого хранилища
+   *
+   * @returns {string} Тип хранилища ('local' или 's3')
+   */
+  getStorageType(): string {
+    return this.configService.getStorageConfig().type;
   }
 }

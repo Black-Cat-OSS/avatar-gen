@@ -77,10 +77,10 @@ COPY --from=builder /app/prisma ./prisma
 # Create storage directories
 RUN mkdir -p storage/avatars storage/database
 
-# Copy configuration files and startup script
-COPY settings.yaml ./
+# Copy startup script only (конфигурации монтируются через volumes)
 COPY start.sh ./start.sh
 
+# Don't copy configuration files - they should be mounted as volumes
 # Don't copy existing database - create fresh one in container
 # This avoids permission and cross-platform issues
 

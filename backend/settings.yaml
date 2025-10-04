@@ -1,17 +1,30 @@
 app:
-  save_path: './storage/avatars'
+  storage:
+    type: 's3' # local или s3
+    # local:
+    #   save_path: './storage/avatars'
+    s3:
+      endpoint: 'https://your-s3-endpoint.com'
+      bucket: 'your-bucket-name'
+      access_key: 'YOUR_S3_ACCESS_KEY'
+      secret_key: 'YOUR_S3_SECRET_KEY'
+      region: 'us-east-1'
+      force_path_style: true
+      connection:
+        maxRetries: 3
+        retryDelay: 2000
   server:
     host: '0.0.0.0'
     port: 3000
   database:
-    driver: 'sqlite'
+    driver: 'postgresql'
     connection:
       maxRetries: 3
       retryDelay: 2000
-    sqlite_params:
-      url: 'file:./storage/database/database.sqlite'
+    # sqlite_params:
+    #   url: 'file:./storage/database/database.sqlite'
     network:
-      host: 'localhost' # для локальной разработки
+      host: 'postgres' # для Docker используем имя сервиса
       port: 5432
       database: 'avatar_gen'
       username: 'postgres'

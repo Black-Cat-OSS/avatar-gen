@@ -7,7 +7,7 @@ import { AvatarService } from './avatar.service';
 import { GeneratorModule } from './modules';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, StorageModule, GeneratorModule],
+  imports: [ConfigModule, DatabaseModule, StorageModule.register(), GeneratorModule],
   controllers: [AvatarController],
   providers: [AvatarService],
   exports: [AvatarService],

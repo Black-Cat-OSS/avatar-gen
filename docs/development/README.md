@@ -9,17 +9,17 @@
 - **[Setup Guide](./setup.md)** 🟡 Создается  
   Пошаговая настройка окружения разработки
 
-- **[Database Setup](./database.md)** ✅  
+- **[Database Setup](./DATABASE.md)** ✅  
   Настройка и работа с базами данных (SQLite / PostgreSQL)
 
 ### Интеграция и разработка
 
-- **[Frontend-Backend Integration](./integration.md)** ✅  
+- **[Frontend-Backend Integration](./INTEGRATION.md)** ✅  
   Интеграция frontend и backend, работа с API
 
 ### Решение проблем
 
-- **[Troubleshooting](./troubleshooting.md)** ✅  
+- **[Troubleshooting](./TROUBLESHOOTING.md)** ✅  
   Устранение частых проблем при разработке
 
 ## 🚀 Быстрый старт для разработчиков
@@ -119,7 +119,7 @@ pnpm run lint         # Линтинг всего проекта
 
 ## 🐛 Troubleshooting
 
-См. [Troubleshooting Guide](./troubleshooting.md) для решения частых проблем.
+См. [Troubleshooting Guide](./TROUBLESHOOTING.md) для решения частых проблем.
 
 ## 🔗 Связанные разделы
 

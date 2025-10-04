@@ -300,7 +300,7 @@ npm run prisma:deploy   # Deploy миграций (prod)
 ### Docker
 
 - [Docker Compose](../../docker/README.md) - Docker Compose конфигурация
-- [Scripts](../../scripts/README.md) - Скрипты управления
+- [Scripts](../../docs/deployment/SCRIPTS.md) - Скрипты управления
 
 ## 💡 Best Practices
 

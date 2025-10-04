@@ -1,288 +1,289 @@
 # Backend Docker Configuration
 
-Конфигурация Docker для backend приложения Avatar Generator.
+Документация по Docker конфигурации backend сервиса Avatar Generator.
 
-## 📋 Структура
+## 📦 Содержание
 
-```
-backend/
-├── docker/
-│   ├── Dockerfile        # Multi-stage build конфигурация
-│   └── README.md         # Этот файл
-├── start.sh              # Startup script (ВАЖНО!)
-├── settings.yaml         # Конфигурация
-└── ...
-```
+- [Dockerfile](#dockerfile) - Multi-stage сборка приложения
+- [Конфигурации](#конфигурации) - Монтирование конфигурационных файлов
+- [Использование](#использование) - Примеры запуска
+- [Переменные окружения](#переменные-окружения) - Конфигурация через env
+- [Storage Configuration](#storage-configuration) - Настройка хранилища
 
-## 🐳 Dockerfile
+---
 
-### Multi-stage build
+## Конфигурации
 
-**Stage 1: Builder**
-- Базовый образ: `node:20-alpine`
-- Установка зависимостей для Sharp (vips-dev, python3, make, g++)
-- Копирование исходного кода
-- Генерация Prisma client
-- Компиляция TypeScript → JavaScript
+### ⚠️ Важно: Конфигурации монтируются как volumes
 
-**Stage 2: Production**
-- Базовый образ: `node:20-alpine`
-- Установка только runtime зависимостей
-- Копирование скомпилированного кода из builder
-- Копирование конфигурации и скриптов
-- Создание директорий storage
+**Конфигурационные файлы НЕ копируются в Docker образ!**
 
-## 📁 Важные файлы
+Dockerfile **НЕ содержит** строку `COPY settings.yaml`. Вместо этого конфигурации монтируются при запуске:
 
-### start.sh
-
-**⚠️ КРИТИЧЕСКИ ВАЖНО:** Файл `start.sh` должен находиться в `backend/` директории!
-
-**Расположение:** `backend/start.sh`  
-**Назначение:** Инициализация и запуск приложения
-
-```bash
-#!/bin/sh
-
-# Always create a fresh database in container
-echo "Creating fresh database..."
-npx prisma migrate deploy
-
-# Start the application
-echo "Starting avatar generator application..."
-exec node dist/main.js
-```
-
-**Почему это важно:**
-- Dockerfile копирует `start.sh` из корня контекста (backend/)
-- В `.dockerignore` добавлено исключение `!start.sh`
-- Без этого файла контейнер не запустится
-
-### settings.yaml
-
-**Расположение:** `backend/settings.yaml`  
-**Назначение:** Конфигурация приложения
-
-Монтируется как volume в docker-compose для возможности изменения без пересборки.
-
-## 🚀 Сборка образа
-
-### Через Docker напрямую
-
-```bash
-# Из корня проекта
-docker build -t avatar-backend -f backend/docker/Dockerfile backend/
-
-# Из директории backend
-cd backend
-docker build -t avatar-backend -f docker/Dockerfile .
-```
-
-### Через Docker Compose
-
-```bash
-# Из корня проекта
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml build avatar-backend
-
-# Или через скрипты
-./scripts/build.sh sqlite
-```
-
-## 🔧 Конфигурация build context
-
-Docker Compose использует:
 ```yaml
+# docker-compose.yml
 services:
   avatar-backend:
-    build:
-      context: ../backend      # Контекст сборки
-      dockerfile: docker/Dockerfile  # Относительно context
+    volumes:
+      - ../backend/settings.yaml:/app/settings.yaml:ro
+      - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
 ```
 
-**Это означает:**
-- Контекст сборки: `backend/` директория
-- Dockerfile: `backend/docker/Dockerfile`
-- Все `COPY` команды относительно `backend/`
+### Преимущества подхода
 
-## 📦 Что копируется в образ
+1. **Безопасность** - credentials не включаются в образ
+2. **Гибкость** - разные конфиги для разных окружений без пересборки
+3. **Read-only** - контейнер не может изменить конфигурацию
+4. **Быстрое обновление** - изменил конфиг → перезапустил контейнер
 
-### Builder stage
-```dockerfile
-COPY package*.json ./           # Для npm install
-COPY src ./src                  # Исходный код
-COPY prisma ./prisma            # Prisma schema
-COPY tsconfig.json ./           # TypeScript config
-COPY nest-cli.json ./           # NestJS config
-```
+### Обязательные файлы
 
-### Production stage
-```dockerfile
-COPY --from=builder /app/dist ./dist                      # Скомпилированный код
-COPY --from=builder /app/node_modules/.prisma ./...      # Prisma client
-COPY settings.yaml ./                                     # Конфигурация
-COPY start.sh ./start.sh                                  # Startup script ← ВАЖНО!
-```
+Перед запуском контейнера убедитесь что существуют:
 
-## 🐛 Troubleshooting
-
-### Ошибка: `/app/start.sh: not found`
-
-**Причина:** Файл `start.sh` не попал в образ
-
-**Решение:**
-
-1. Проверьте наличие файла:
 ```bash
-ls -la backend/start.sh
-# Должен существовать и быть исполняемым
+backend/
+├── settings.yaml              # Базовая конфигурация (обязательно)
+└── settings.production.yaml   # Production конфигурация (обязательно)
 ```
 
-2. Проверьте `.dockerignore`:
+Если их нет:
 ```bash
-cat backend/.dockerignore | grep start.sh
-# Не должен игнорироваться (или должен быть !start.sh)
+# Создайте из примера
+cp backend/settings.yaml backend/settings.production.yaml
+# Отредактируйте под ваше окружение
 ```
 
-3. Пересоберите образ:
+### Путь в контейнере
+
+- Хост: `backend/settings.yaml` → Контейнер: `/app/settings.yaml`
+- Хост: `backend/settings.production.yaml` → Контейнер: `/app/settings.production.yaml`
+
+### Изменение конфигурации
+
 ```bash
-./scripts/build.sh sqlite --build
-# или
-docker-compose -f docker/docker-compose.yml build --no-cache avatar-backend
+# 1. Отредактируйте файл на хосте
+nano backend/settings.production.yaml
+
+# 2. Перезапустите контейнер
+docker-compose -f docker/docker-compose.yml restart avatar-backend
+
+# Готово! Новая конфигурация применена
 ```
 
-4. Проверьте что файл попал в образ:
+---
+
+## Dockerfile
+
+### Архитектура
+
+Multi-stage build для оптимизации размера образа:
+
+1. **Builder stage** - сборка приложения
+   - Установка всех зависимостей
+   - Генерация Prisma client
+   - Компиляция TypeScript → JavaScript
+
+2. **Production stage** - финальный образ
+   - Только production зависимости
+   - Скомпилированный код
+   - Runtime окружение
+
+### Особенности
+
+- ✅ Alpine Linux для минимального размера
+- ✅ Поддержка Sharp (image processing)
+- ✅ Retry логика для установки пакетов
+- ✅ Health check
+- ✅ Оптимизация кэширования слоев
+
+---
+
+## Использование
+
+### Локальная сборка
+
 ```bash
-docker run --rm --entrypoint ls avatar-backend -la /app/start.sh
+# Сборка образа
+docker build -f docker/Dockerfile -t avatar-backend:latest .
+
+# Запуск контейнера (с локальным хранилищем)
+docker run -p 3000:3000 \
+  -v $(pwd)/storage:/app/storage \
+  -e NODE_ENV=production \
+  avatar-backend:latest
 ```
 
-### Ошибка при установке Sharp
+### С S3 хранилищем
 
-**Причина:** Временные проблемы с Alpine репозиториями
-
-**Решение:** В Dockerfile используется retry логика с альтернативными зеркалами (Yandex):
-```dockerfile
-RUN for i in 1 2 3; do \
-    apk update && apk add --no-cache vips-dev python3 make g++ && break || \
-    { echo "Retry $i/3 failed..."; sleep 5; }; \
-  done
-```
-
-### Проблемы с правами доступа
-
-**Проблема:** Ошибки доступа к `storage/` директории
-
-**Решение:**
-
-На хосте:
 ```bash
-chmod -R 777 backend/storage
+docker run -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e STORAGE_TYPE=s3 \
+  -e S3_ENDPOINT=https://s3.example.com \
+  -e S3_BUCKET=my-bucket \
+  -e S3_ACCESS_KEY=your-key \
+  -e S3_SECRET_KEY=your-secret \
+  avatar-backend:latest
 ```
 
-Или в Dockerfile:
-```dockerfile
-RUN mkdir -p storage/avatars storage/database && \
-    chmod -R 777 storage
-```
+---
 
-## ⚙️ Environment Variables
+## Переменные окружения
 
-### Build-time (ARG)
+### Обязательные
 
-Нет build-time переменных.
+| Переменная | Описание | Пример |
+|-----------|----------|--------|
+| `NODE_ENV` | Окружение | `production` |
+| `CONFIG_PATH` | Путь к конфигу | `./settings.yaml` |
 
-### Runtime (ENV)
+### Для PostgreSQL
 
-```dockerfile
-ENV NODE_ENV=production
-ENV DATABASE_URL="file:./storage/database/database.sqlite"
-ENV CONFIG_PATH="./settings.yaml"
-```
+| Переменная | Описание | Пример |
+|-----------|----------|--------|
+| `DATABASE_URL` | Connection string | `postgresql://user:pass@host:5432/db` |
 
-Можно переопределить в docker-compose:
+### Для S3 Storage
+
+| Переменная | Обязательная | Описание | Пример |
+|-----------|--------------|----------|--------|
+| `STORAGE_TYPE` | ✅ Да | Тип хранилища | `s3` |
+| `S3_ENDPOINT` | ✅ Да | URL endpoint | `https://s3.example.com` |
+| `S3_BUCKET` | ✅ Да | Имя бакета | `my-bucket` |
+| `S3_ACCESS_KEY` | ✅ Да | Access key | `AKIAIOSFODNN7EXAMPLE` |
+| `S3_SECRET_KEY` | ✅ Да | Secret key | `wJalrXUtnFEMI/K7MDENG/...` |
+| `S3_REGION` | ❌ Нет | Регион | `us-east-1` (по умолчанию) |
+| `S3_FORCE_PATH_STYLE` | ❌ Нет | Path-style URLs | `true` (по умолчанию) |
+
+---
+
+## Storage Configuration
+
+### Local Storage (по умолчанию)
+
 ```yaml
-environment:
-  NODE_ENV: production
-  DATABASE_PROVIDER: sqlite
-  DATABASE_URL: file:./storage/database/database.sqlite
+# settings.production.yaml
+app:
+  storage:
+    type: 'local'
+    local:
+      save_path: './storage/avatars'
 ```
 
-## 📊 Volumes
-
-Монтируются в docker-compose:
-
+**Docker volumes:**
 ```yaml
 volumes:
-  - ../backend/storage:/app/storage         # Persistent storage
-  - ../backend/settings.yaml:/app/settings.yaml  # Конфигурация
-  - ../backend/logs:/app/logs               # Логи
+  - ./storage:/app/storage  # Монтируем локальную директорию
 ```
 
-## 🏥 Health Check
+### S3 Storage
+
+```yaml
+# settings.production.yaml
+app:
+  storage:
+    type: 's3'
+    s3:
+      endpoint: 'https://s3.example.com'
+      bucket: 'avatars'
+      # ... остальные параметры из переменных окружения
+```
+
+**Docker volumes:**
+```yaml
+volumes:
+  # storage директория НЕ монтируется - используется S3
+  - ./logs:/app/logs
+```
+
+**Environment:**
+```yaml
+environment:
+  - STORAGE_TYPE=s3
+  - S3_ENDPOINT=https://s3.example.com
+  - S3_BUCKET=avatars
+  - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+  - S3_SECRET_KEY=${S3_SECRET_KEY}
+```
+
+---
+
+## Health Check
+
+Контейнер автоматически проверяет здоровье приложения:
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 ```
 
-**Проверка:**
-```bash
-docker inspect avatar-gen-backend --format='{{.State.Health.Status}}'
-```
-
-## 🔐 Security
-
-### Best Practices
-
-1. **Multi-stage build** - минимальный размер production образа
-2. **Non-root user** - TODO: добавить
-3. **Minimal dependencies** - только production deps в final stage
-4. **No secrets in image** - используйте volumes для настроек
-
-### Рекомендации для production
-
-```dockerfile
-# Добавить non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
-    chown -R nodejs:nodejs /app
-
-USER nodejs
-```
-
-## 📈 Optimization
-
-### Размер образа
-
-- **Builder stage:** ~800MB (с dev dependencies)
-- **Production stage:** ~200MB (без dev dependencies)
-
-### Кэширование слоев
-
-```dockerfile
-# 1. Сначала COPY package files (меняются редко)
-COPY package*.json ./
-RUN npm install
-
-# 2. Затем COPY исходный код (меняется часто)
-COPY src ./src
-RUN npm run build
-```
-
-### Параллельная компиляция
-
-```dockerfile
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm run build
-```
-
-## 🔗 Связанные документы
-
-- [Docker Compose Configuration](../../docker/README.md)
-- [Docker Build Fixes](../../docker/DOCKER_BUILD_FIXES.md)
-- [Backend README](../README.md)
-- [Backend Docs](../docs/README.md)
+**Параметры:**
+- `interval: 30s` - проверка каждые 30 секунд
+- `timeout: 3s` - таймаут для проверки
+- `start-period: 5s` - время на запуск приложения
+- `retries: 3` - количество неудачных проверок перед признанием unhealthy
 
 ---
 
-**Обновлено:** 2025-10-03  
-**Версия:** 1.1 (исправлена проблема с start.sh)
+## Troubleshooting
+
+### Контейнер не запускается с S3
+
+**Проверьте:**
+1. Все S3 переменные окружения установлены
+2. S3 endpoint доступен из контейнера
+3. Credentials корректны
+4. Бакет существует
+
+```bash
+# Проверка логов
+docker logs avatar-gen-backend
+
+# Проверка переменных окружения
+docker exec avatar-gen-backend env | grep S3
+```
+
+### Permission denied на storage директории
+
+**Для local storage:**
+```bash
+# Установите правильные права
+chmod -R 755 backend/storage
+chown -R 1000:1000 backend/storage
+```
+
+**Для S3:**
+Проблема не возникает, так как storage директория не используется
+
+---
+
+## Примеры
+
+### Development с локальным хранилищем
+
+```bash
+docker build -f docker/Dockerfile -t avatar-backend:dev .
+docker run -p 3001:3000 \
+  -v $(pwd)/storage:/app/storage \
+  -e NODE_ENV=development \
+  avatar-backend:dev
+```
+
+### Production с S3
+
+```bash
+docker build -f docker/Dockerfile -t avatar-backend:prod .
+docker run -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e STORAGE_TYPE=s3 \
+  -e S3_ENDPOINT=https://s3.example.com \
+  -e S3_BUCKET=prod-avatars \
+  -e S3_ACCESS_KEY=${S3_ACCESS_KEY} \
+  -e S3_SECRET_KEY=${S3_SECRET_KEY} \
+  avatar-backend:prod
+```
+
+---
+
+**Обновлено:** 2025-10-04  
+**Версия:** 0.0.2
