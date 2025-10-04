@@ -10,77 +10,105 @@
 
 ### Added
 
-- **GitHub Actions CI/CD Pipeline**
-  ([#9](https://github.com/Black-Cat-OSS/avatar-gen/issues/9))
-  - Полный CI/CD pipeline с автоматическим тестированием и развертыванием
-  - Матричное тестирование для всех комбинаций БД и хранилищ
-  - Поддержка локальных конфигураций `settings.local.yaml` и
-    `settings.{NODE_ENV}.local.yaml`
-  - Автоматическое развертывание на production сервер через SSH
-  - Интеграционные тесты с Docker Compose
-  - Подробная документация по DevOps интеграции
-
-- **Поддержка S3 хранилища**
-  ([#6](https://github.com/Black-Cat-OSS/avatar-gen/issues/6))
-  - Новый `S3Module` для low-level операций с S3
-  - Поддержка S3-совместимых облачных хранилищ (AWS S3, MinIO, Beget S3 и др.)
-  - Strategy pattern для переключения между local и S3 хранилищем
-  - Dynamic modules следуя NestJS best practices
-  - Retry логика для S3 подключений с настраиваемыми параметрами
-  - Полное покрытие unit тестами (94 теста, 100% pass rate)
-  - Подробная документация для storage модулей
-  - Docker compose профиль для S3 deployment
-
 ### Changed
-
-- **Скрипты управления улучшены**:
-  - `start.sh` теперь использует флаги `--db` и `--storage` вместо позиционных
-    аргументов
-  - Добавлена поддержка выбора типа хранилища через `--storage s3|local`
-  - Улучшенная валидация параметров и информативные сообщения об ошибках
-- **Документация реорганизована**:
-  - Документация скриптов перенесена из `scripts/README.md` в
-    `docs/deployment/SCRIPTS.md`
-  - Обновлены все ссылки на новое расположение
-  - Добавлен краткий README в `scripts/` со ссылкой на полную документацию
-- **Docker конфигурация улучшена**:
-  - Добавлены DNS серверы (8.8.8.8, 8.8.4.4, 1.1.1.1) для резолвинга S3
-    endpoint'ов
-  - Конфигурационные файлы теперь монтируются как volumes (read-only) вместо
-    копирования в образ
-  - Исправлены пути монтирования: `/app/settings.yaml` вместо
-    `/app/backend/settings.yaml`
-- **Модули хранилища оптимизированы**:
-  - `LocalStorageModule` и `S3StorageModule` теперь пропускают инициализацию
-    если не используются
-  - Graceful degradation: модули не выбрасывают ошибки при неправильной
-    конфигурации
-  - Реструктуризация конфигурации хранилища для поддержки нескольких типов
-- `StorageModule` теперь использует паттерн dynamic modules
-- `YamlConfigService` обновлен с методом `getStorageConfig()`
-- Обновлены Docker конфигурации с переменными окружения для S3
-- Реструктуризированы settings файлы для выбора типа хранилища
-
-### Documentation
-
-- Добавлено `backend/docs/modules/storage/S3_STORAGE.md`
-- Добавлено `backend/docs/modules/storage/LOCAL_STORAGE.md`
-- Добавлено `backend/docs/modules/storage/STORAGE_MODULE.md`
-- Добавлено `backend/docs/STORAGE_CONFIGURATION.md`
-- Добавлено `backend/docker/README.md`
-- Обновлено `backend/docs/modules/README.md`
 
 ### Fixed
 
-- **Поддержка размера 16x16 пикселей**
-  ([#3](https://github.com/Black-Cat-OSS/avatar-gen/issues/3))
-  - Исправлена валидация size параметра в GetAvatarDto (минимум изменен с 5
-    на 4)
-  - Исправлена валидация size в AvatarService (изменено условие с `<= 4` на
-    `< 4`)
-  - Обновлена API документация для поддержки `size=4` (16x16px)
-  - Обновлены README файлы с информацией о размере 16x16
-  - Исправлены тесты для корректной валидации нового диапазона размеров (4-9)
+## [0.0.3] - 2025-10-04
+
+### Added
+
+- **GitHub Actions CI/CD Pipeline**
+  ([#9](https://github.com/Black-Cat-OSS/avatar-gen/issues/9))
+  - Полный CI/CD pipeline с автоматическим тестированием и развертыванием
+  - Матричное тестирование для всех комбинаций БД и хранилищ (SQLite +
+    PostgreSQL, Local + S3)
+  - GitFlow стратегия: fast tests для PR в develop, full tests для PR в main
+  - Автоматическое развертывание на production сервер через SSH
+  - Branch Protection Rules для предотвращения мержа без проверок
+  - Интеграционные тесты с Docker Compose и PostgreSQL
+  - Поддержка GitHub Secrets для S3 тестирования
+  - Автоматическое обновление всех GitHub Actions до последних версий
+  - Подробная документация по DevOps интеграции и развертыванию
+
+- **Локальные конфигурации** для конфиденциальных данных
+  - Поддержка `settings.local.yaml` и `settings.{NODE_ENV}.local.yaml`
+  - Файлы исключены из Git для безопасности
+  - Автоматическое объединение с базовой конфигурацией
+  - Поддержка переменных окружения в YAML (`${VARIABLE:-default}`)
+  - Динамическая загрузка тестовых конфигураций через `TEST_MATRIX_CONFIG`
+
+- **Матричное тестирование**
+  - SQLite + Local Storage
+  - SQLite + S3 Storage
+  - PostgreSQL + Local Storage
+  - PostgreSQL + S3 Storage
+  - Изолированный тестовый S3 бакет для безопасности
+  - Автоматическое создание тестовых конфигураций
+
+- **Branch Protection и GitFlow**
+  - Защита веток main и develop от несанкционированного мержа
+  - Обязательные code reviews и status checks
+  - Автоматическая настройка через GitHub CLI
+  - GitBash совместимость для Windows пользователей
+  - CODEOWNERS файл для автоматического назначения ревьюеров
+
+- **Обновленная документация**
+  - 15+ новых документов по CI/CD, развертыванию и тестированию
+  - GitFlow стратегия и Branch Protection настройки
+  - Руководства по настройке GitHub Secrets
+  - Быстрый старт для тестирования
+  - Полное руководство по workflows
+
+### Fixed
+
+- **E2E тесты**
+  - Добавлен отсутствующий `jest-e2e.json` конфигурационный файл
+  - Исправлен импорт supertest с `import * as` на `import`
+  - Добавлены типы `@types/supertest` в devDependencies
+  - Решена ошибка "TypeError: request is not a function"
+  - E2E тесты теперь корректно запускаются в CI/CD
+
+- **GitHub Actions обновления**
+  - `actions/upload-artifact` обновлен с v3 до v4
+  - `actions/cache` обновлен с v3 до v4
+  - `codecov/codecov-action` обновлен с v3 до v4
+  - `pnpm/action-setup` обновлен с v2 до v4
+  - `docker/build-push-action` обновлен с v5 до v6
+  - Все deprecated версии заменены на актуальные
+
+- **Lockfile автоматизация**
+  - Решена проблема с устаревшим `pnpm-lock.yaml`
+  - Предложены решения для автоматического обновления lockfile
+  - Pre-commit hooks для проверки актуальности lockfile
+  - GitHub Actions для автоматического обновления в CI/CD
+
+### Documentation
+
+- Добавлено `docs/deployment/GITHUB_SECRETS_CONFIGURATION.md`
+- Добавлено `docs/deployment/WORKFLOWS_GUIDE.md`
+- Добавлено `docs/deployment/GITFLOW_STRATEGY.md`
+- Добавлено `docs/deployment/BRANCH_PROTECTION_SETUP.md`
+- Добавлено `docs/deployment/GITBASH_QUICK_START.md`
+- Добавлено `docs/testing/QUICK_START_TESTING.md`
+- Добавлено `backend/docs/CONFIGURATION_LOCAL_SETTINGS.md`
+- Добавлено `backend/docs/testing/S3_TEST_CONFIGURATION.md`
+- Добавлено `scripts/setup-branch-protection.sh`
+- Добавлено `scripts/generate-test-config.sh`
+- Добавлено `.github/CODEOWNERS`
+- Обновлено `backend/docs/testing/TESTING.md`
+- Обновлено `scripts/README.md`
+
+### Reports
+
+- `reports/FEATURE_ISSUE_9_GITHUB_ACTIONS_CI_CD.md`
+- `reports/FEATURE_ISSUE_9_FINAL_SUMMARY.md`
+- `reports/BRANCH_PROTECTION_GITBASH_IMPLEMENTATION.md`
+- `reports/FIX_GITHUB_ACTIONS_VERSIONS.md`
+- `reports/WORKFLOWS_AUDIT_2025-10-04.md`
+- `reports/WORKFLOWS_FINAL_OPTIMIZATION.md`
+- `reports/FIX_E2E_TESTS_JEST_CONFIG.md`
+- `reports/FIX_E2E_TEST_REQUEST_ERROR.md`
 
 ## [0.0.2] - 2025-10-03
 
