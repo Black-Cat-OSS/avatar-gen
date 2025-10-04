@@ -10,6 +10,16 @@
 
 ### Added
 
+- **GitHub Actions CI/CD Pipeline**
+  ([#9](https://github.com/Black-Cat-OSS/avatar-gen/issues/9))
+  - Полный CI/CD pipeline с автоматическим тестированием и развертыванием
+  - Матричное тестирование для всех комбинаций БД и хранилищ
+  - Поддержка локальных конфигураций `settings.local.yaml` и
+    `settings.{NODE_ENV}.local.yaml`
+  - Автоматическое развертывание на production сервер через SSH
+  - Интеграционные тесты с Docker Compose
+  - Подробная документация по DevOps интеграции
+
 - **Поддержка S3 хранилища**
   ([#6](https://github.com/Black-Cat-OSS/avatar-gen/issues/6))
   - Новый `S3Module` для low-level операций с S3
