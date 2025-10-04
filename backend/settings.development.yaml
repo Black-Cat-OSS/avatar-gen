@@ -1,4 +1,16 @@
 app:
+  storage:
+    type: 's3' # используем s3 для разработки
+    s3:
+      endpoint: 'https://your-s3-endpoint.com'
+      bucket: 'your-bucket-name'
+      access_key: 'YOUR_S3_ACCESS_KEY'
+      secret_key: 'YOUR_S3_SECRET_KEY'
+      region: 'us-east-1'
+      force_path_style: true
+      connection:
+        maxRetries: 5
+        retryDelay: 1000
   server:
     port: 3001 # Разный порт для разработки
   database:

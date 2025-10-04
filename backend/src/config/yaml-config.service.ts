@@ -42,9 +42,22 @@ export class YamlConfigService {
   private loadConfig(): void {
     try {
       // Загружаем основной файл конфигурации
-      // Используем путь относительно backend директории
-      const baseConfigPath =
-        process.env.CONFIG_PATH || join(process.cwd(), 'backend', 'settings.yaml');
+      // Поддержка двух путей: для Docker (/app/) и для локальной разработки (project_root/backend/)
+      let baseConfigPath = process.env.CONFIG_PATH;
+
+      if (!baseConfigPath) {
+        const dockerPath = join(process.cwd(), 'settings.yaml');
+        const localPath = join(process.cwd(), 'backend', 'settings.yaml');
+
+        // Проверяем Docker путь первым (если файл в корне - мы в Docker)
+        if (existsSync(dockerPath)) {
+          baseConfigPath = dockerPath;
+        } else if (existsSync(localPath)) {
+          baseConfigPath = localPath;
+        } else {
+          baseConfigPath = localPath; // Fallback для ошибки
+        }
+      }
 
       this.logger.debug(`Looking for configuration file at: ${baseConfigPath}`);
 
@@ -70,7 +83,12 @@ export class YamlConfigService {
       this.logger.debug(`Current NODE_ENV: ${nodeEnv}`);
 
       if (nodeEnv && ['development', 'production', 'test'].includes(nodeEnv)) {
-        const envConfigPath = join(process.cwd(), 'backend', `settings.${nodeEnv}.yaml`);
+        // Определяем базовую директорию из baseConfigPath
+        const baseDir = baseConfigPath.includes('/backend/')
+          ? join(process.cwd(), 'backend')
+          : process.cwd();
+
+        const envConfigPath = join(baseDir, `settings.${nodeEnv}.yaml`);
         this.logger.debug(`Looking for environment config at: ${envConfigPath}`);
 
         if (existsSync(envConfigPath)) {
@@ -116,8 +134,21 @@ export class YamlConfigService {
     return this.config;
   }
 
+  /**
+   * @deprecated Use getStorageConfig() instead
+   */
   getSavePath(): string {
-    return this.config.app.save_path;
+    if (this.config.app.storage.type === 'local') {
+      return this.config.app.storage.local?.save_path || './storage/avatars';
+    }
+    this.logger.warn(
+      'getSavePath() called but storage type is not local. This method is deprecated.',
+    );
+    return './storage/avatars';
+  }
+
+  getStorageConfig() {
+    return this.config.app.storage;
   }
 
   getServerConfig() {

@@ -97,7 +97,7 @@ curl http://localhost:3000/api/health
 
 Если возникли проблемы:
 
-1. Проверьте [Troubleshooting Guide](../development/troubleshooting.md)
+1. Проверьте [Troubleshooting Guide](../development/TROUBLESHOOTING.md)
 2. Проверьте [Docker Build Fixes](../../docker/DOCKER_BUILD_FIXES.md)
 3. Создайте issue в GitHub
 

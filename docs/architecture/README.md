@@ -4,7 +4,7 @@
 
 ## 📚 Содержание
 
-- **[Project Overview](./overview.md)** ✅  
+- **[Project Overview](./OVERVIEW.md)** ✅  
   Общий обзор архитектуры проекта, структура директорий, data flow
 
 - **[Backend Architecture](../../backend/docs/README.md)** ✅  

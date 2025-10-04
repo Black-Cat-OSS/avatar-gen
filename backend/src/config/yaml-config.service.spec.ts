@@ -11,7 +11,12 @@ describe('YamlConfigService', () => {
 
   const mockConfig = {
     app: {
-      save_path: './storage/avatars',
+      storage: {
+        type: 'local',
+        local: {
+          save_path: './storage/avatars',
+        },
+      },
       server: {
         host: 'localhost',
         port: 3000,
@@ -31,7 +36,10 @@ describe('YamlConfigService', () => {
 
   const validYamlConfig = `
 app:
-  save_path: "./storage/avatars"
+  storage:
+    type: "local"
+    local:
+      save_path: "./storage/avatars"
   server:
     host: "localhost"
     port: 3000
@@ -67,7 +75,10 @@ app:
     it('should load configuration successfully', () => {
       mockedFs.readFileSync.mockReturnValue(`
         app:
-          save_path: "./storage/avatars"
+          storage:
+            type: "local"
+            local:
+              save_path: "./storage/avatars"
           server:
             host: "localhost"
             port: 3000
@@ -89,7 +100,8 @@ app:
         const config = newService.getConfig();
 
         expect(config).toBeDefined();
-        expect(config.app.save_path).toBe('./storage/avatars');
+        expect(config.app.storage.type).toBe('local');
+        expect(config.app.storage.local?.save_path).toBe('./storage/avatars');
         expect(config.app.server.host).toBe('localhost');
         expect(config.app.server.port).toBe(3000);
       } finally {
@@ -100,7 +112,10 @@ app:
     it('should throw error for invalid configuration', () => {
       mockedFs.readFileSync.mockReturnValue(`
         app:
-          save_path: ""  # Invalid: empty string
+          storage:
+            type: "local"
+            local:
+              save_path: ""  # Invalid: empty string
           server:
             host: "localhost"
             port: 3000
@@ -141,7 +156,10 @@ app:
     it('should return configuration', () => {
       mockedFs.readFileSync.mockReturnValue(`
         app:
-          save_path: "./storage/avatars"
+          storage:
+            type: "local"
+            local:
+              save_path: "./storage/avatars"
           server:
             host: "localhost"
             port: 3000
@@ -173,7 +191,10 @@ app:
     it('should return save path', () => {
       mockedFs.readFileSync.mockReturnValue(`
         app:
-          save_path: "./storage/avatars"
+          storage:
+            type: "local"
+            local:
+              save_path: "./storage/avatars"
           server:
             host: "localhost"
             port: 3000
@@ -204,7 +225,10 @@ app:
     it('should return server configuration', () => {
       mockedFs.readFileSync.mockReturnValue(`
         app:
-          save_path: "./storage/avatars"
+          storage:
+            type: "local"
+            local:
+              save_path: "./storage/avatars"
           server:
             host: "localhost"
             port: 3000
@@ -237,7 +261,10 @@ app:
     it('should return database configuration', () => {
       mockedFs.readFileSync.mockReturnValue(`
         app:
-          save_path: "./storage/avatars"
+          storage:
+            type: "local"
+            local:
+              save_path: "./storage/avatars"
           server:
             host: "localhost"
             port: 3000

@@ -48,9 +48,9 @@ cd .. && pnpm run dev
 
 **Руководство для разработчиков**
 
-- [Database Setup](./development/database.md) - Настройка БД (SQLite/PostgreSQL)
-- [Frontend-Backend Integration](./development/integration.md) - Интеграция
-- [Troubleshooting](./development/troubleshooting.md) - Решение проблем
+- [Database Setup](./development/DATABASE.md) - Настройка БД (SQLite/PostgreSQL)
+- [Frontend-Backend Integration](./development/INTEGRATION.md) - Интеграция
+- [Troubleshooting](./development/TROUBLESHOOTING.md) - Решение проблем
 
 → [Перейти к разделу](./development/README.md)
 
@@ -58,10 +58,10 @@ cd .. && pnpm run dev
 
 **Развертывание и production**
 
-- [Docker Compose Configuration](./deployment/docker-compose.md) - Полная
+- [Docker Compose Configuration](./deployment/DOCKER_COMPOSE.md) - Полная
   конфигурация
 - [Docker README](../docker/README.md) - Основная документация Docker
-- [Scripts Documentation](../scripts/README.md) - Скрипты управления
+- [Scripts Documentation](./deployment/SCRIPTS.md) - Скрипты управления
 
 → [Перейти к разделу](./deployment/README.md)
 
@@ -131,8 +131,8 @@ cd .. && pnpm run dev
 **Я разработчик**
 
 - [Development Setup](./development/README.md)
-- [Database](./development/database.md)
-- [Troubleshooting](./development/troubleshooting.md)
+- [Database](./development/DATABASE.md)
+- [Troubleshooting](./development/TROUBLESHOOTING.md)
 
 **Мне нужна API документация**
 
@@ -146,8 +146,8 @@ cd .. && pnpm run dev
 **Я хочу развернуть проект**
 
 - [Docker Deploy](./deployment/README.md)
-- [Docker Compose](./deployment/docker-compose.md)
-- [Scripts](../scripts/README.md)
+- [Docker Compose](./deployment/DOCKER_COMPOSE.md)
+- [Scripts](./deployment/SCRIPTS.md)
 
 **Мне нужна информация об архитектуре**
 
@@ -294,7 +294,7 @@ npm run storybook    # Storybook UI
 - [Backend Docs](../backend/docs/README.md) - Полная документация backend
 - [Frontend Docs](../frontend/docs/README.md) - Полная документация frontend
 - [Docker Docs](../docker/README.md) - Docker конфигурация
-- [Scripts Docs](../scripts/README.md) - Все скрипты
+- [Scripts Docs](./deployment/SCRIPTS.md) - Все скрипты
 
 ---
 
@@ -315,9 +315,9 @@ npm run storybook    # Storybook UI
 <summary><b>Development (Разработка)</b></summary>
 
 - [Development Hub](./development/README.md)
-- [Database Setup](./development/database.md) ✅
-- [Integration Guide](./development/integration.md) ✅
-- [Troubleshooting](./development/troubleshooting.md) ✅
+- [Database Setup](./development/DATABASE.md) ✅
+- [Integration Guide](./development/INTEGRATION.md) ✅
+- [Troubleshooting](./development/TROUBLESHOOTING.md) ✅
 - Setup Guide 🟡 (в разработке)
 
 </details>
@@ -326,10 +326,10 @@ npm run storybook    # Storybook UI
 <summary><b>Deployment (Развертывание)</b></summary>
 
 - [Deployment Hub](./deployment/README.md)
-- [Docker Compose Configuration](./deployment/docker-compose.md) ✅
+- [Docker Compose Configuration](./deployment/DOCKER_COMPOSE.md) ✅
 - [Docker README](../docker/README.md) ✅
 - [Docker Build Fixes](../docker/DOCKER_BUILD_FIXES.md) ✅
-- [Scripts Documentation](../scripts/README.md) ✅
+- [Scripts Documentation](./deployment/SCRIPTS.md) ✅
 - Production Guide 🟡 (в разработке)
 
 </details>
@@ -403,7 +403,7 @@ npm run storybook    # Storybook UI
 **Не нашли что искали?**
 
 1. Используйте навигацию выше по категориям
-2. Проверьте [Troubleshooting](./development/troubleshooting.md)
+2. Проверьте [Troubleshooting](./development/TROUBLESHOOTING.md)
 3. Посмотрите [Backend Docs](../backend/docs/README.md)
 4. Создайте issue на GitHub
 

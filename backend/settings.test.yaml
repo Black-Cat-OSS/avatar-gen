@@ -1,5 +1,8 @@
 app:
-  save_path: './storage/test-avatars'
+  storage:
+    type: 'local'
+    local:
+      save_path: './storage/test-avatars'
   server:
     port: 3002 # Отдельный порт для тестов
   database:
