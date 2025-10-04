@@ -24,7 +24,7 @@ on:
 
 env:
   NODE_VERSION: '20'
-  PNPM_VERSION: '8'
+  PNPM_VERSION: '10'
 
 jobs:
   lint-backend:
@@ -63,10 +63,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-backend-
 
       - name: Install dependencies
-        run: |
-          echo "Checking pnpm-lock.yaml..."
-          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
-          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
@@ -110,10 +107,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-frontend-
 
       - name: Install dependencies
-        run: |
-          echo "Checking pnpm-lock.yaml..."
-          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
-          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run linter
         run: pnpm run lint
@@ -192,10 +186,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-backend-
 
       - name: Install dependencies
-        run: |
-          echo "Checking pnpm-lock.yaml..."
-          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
-          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
@@ -306,10 +297,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-frontend-
 
       - name: Install dependencies
-        run: |
-          echo "Checking pnpm-lock.yaml..."
-          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
-          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm run build
