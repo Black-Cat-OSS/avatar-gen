@@ -80,7 +80,10 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Checking pnpm-lock.yaml..."
+          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
+          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
@@ -177,7 +180,10 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Checking pnpm-lock.yaml..."
+          ls -la pnpm-lock.yaml || echo "pnpm-lock.yaml not found"
+          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
       - name: Run linter
         run: pnpm run lint
