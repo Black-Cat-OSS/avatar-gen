@@ -4,11 +4,11 @@ app:
     local:
       save_path: './storage/test-avatars'
     s3:
-      endpoint: 'https://test-s3-endpoint.com'
-      bucket: 'avatar-gen-test' # Тестовый бакет
-      access_key: 'test-access-key'
-      secret_key: 'test-secret-key'
-      region: 'us-east-1'
+      endpoint: '${TEST_S3_ENDPOINT:-https://test-s3-endpoint.com}'
+      bucket: '${TEST_S3_BUCKET:-avatar-gen-test}' # Тестовый бакет
+      access_key: '${TEST_S3_ACCESS_KEY:-test-access-key}'
+      secret_key: '${TEST_S3_SECRET_KEY:-test-secret-key}'
+      region: '${TEST_S3_REGION:-us-east-1}'
       force_path_style: true
       connection:
         maxRetries: 1 # Минимальное количество попыток для быстрых тестов

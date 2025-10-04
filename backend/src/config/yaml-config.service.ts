@@ -39,6 +39,28 @@ export class YamlConfigService {
     return result;
   }
 
+  /**
+   * Обрабатывает переменные окружения в YAML контенте
+   * Поддерживает синтаксис: ${VARIABLE_NAME:-default_value}
+   */
+  private processEnvironmentVariables(content: string): string {
+    return content.replace(/\$\{([^}:]+)(:-[^}]*)?\}/g, (match, varName, defaultValue) => {
+      const envValue = process.env[varName];
+      
+      if (envValue !== undefined) {
+        return envValue;
+      }
+      
+      // Если есть значение по умолчанию, используем его
+      if (defaultValue && defaultValue.startsWith(':-')) {
+        return defaultValue.substring(2); // Убираем ':-'
+      }
+      
+      // Если переменная не найдена и нет значения по умолчанию, возвращаем пустую строку
+      return '';
+    });
+  }
+
   private loadConfig(): void {
     try {
       // Загружаем основной файл конфигурации
@@ -75,7 +97,8 @@ export class YamlConfigService {
         `Configuration file contents length: ${baseFileContents.length} characters`,
       );
 
-      const baseConfig = yaml.load(baseFileContents);
+      const processedContents = this.processEnvironmentVariables(baseFileContents);
+      const baseConfig = yaml.load(processedContents);
       this.logger.debug(`Base configuration loaded: ${JSON.stringify(baseConfig, null, 2)}`);
 
       let finalConfig = baseConfig;
@@ -96,7 +119,8 @@ export class YamlConfigService {
           `Local config file contents length: ${localFileContents.length} characters`,
         );
 
-        const localConfig = yaml.load(localFileContents);
+        const processedLocalContents = this.processEnvironmentVariables(localFileContents);
+        const localConfig = yaml.load(processedLocalContents);
         this.logger.debug(
           `Local configuration loaded: ${JSON.stringify(localConfig, null, 2)}`,
         );
@@ -124,7 +148,8 @@ export class YamlConfigService {
             `Environment config file contents length: ${envFileContents.length} characters`,
           );
 
-          const envConfig = yaml.load(envFileContents);
+          const processedEnvContents = this.processEnvironmentVariables(envFileContents);
+          const envConfig = yaml.load(processedEnvContents);
           this.logger.debug(
             `Environment configuration loaded: ${JSON.stringify(envConfig, null, 2)}`,
           );
@@ -150,7 +175,8 @@ export class YamlConfigService {
             `Environment local config file contents length: ${envLocalFileContents.length} characters`,
           );
 
-          const envLocalConfig = yaml.load(envLocalFileContents);
+          const processedEnvLocalContents = this.processEnvironmentVariables(envLocalFileContents);
+          const envLocalConfig = yaml.load(processedEnvLocalContents);
           this.logger.debug(
             `Environment local configuration loaded: ${JSON.stringify(envLocalConfig, null, 2)}`,
           );

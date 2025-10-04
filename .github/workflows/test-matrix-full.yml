@@ -108,6 +108,7 @@ jobs:
 
       - name: Create test configuration
         run: |
+          # Создаем базовую конфигурацию
           cat > settings.test.matrix.yaml << EOF
           app:
             storage:
@@ -115,11 +116,11 @@ jobs:
               local:
                 save_path: './storage/test-avatars'
               s3:
-                endpoint: 'https://test-s3-endpoint.com'
-                bucket: 'avatar-gen-test'
-                access_key: 'test-access-key'
-                secret_key: 'test-secret-key'
-                region: 'us-east-1'
+                endpoint: '${{ secrets.TEST_S3_ENDPOINT || 'https://test-s3-endpoint.com' }}'
+                bucket: '${{ secrets.TEST_S3_BUCKET || 'avatar-gen-test' }}'
+                access_key: '${{ secrets.TEST_S3_ACCESS_KEY || 'test-access-key' }}'
+                secret_key: '${{ secrets.TEST_S3_SECRET_KEY || 'test-secret-key' }}'
+                region: '${{ secrets.TEST_S3_REGION || 'us-east-1' }}'
                 force_path_style: true
                 connection:
                   maxRetries: 1
