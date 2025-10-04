@@ -78,16 +78,39 @@ export class YamlConfigService {
       let finalConfig = baseConfig;
       this.logger.debug(`Initial configuration: ${JSON.stringify(baseConfig, null, 2)}`);
 
+      // Загружаем локальную конфигурацию (settings.local.yaml)
+      const baseDir = baseConfigPath.includes('/backend/')
+        ? join(process.cwd(), 'backend')
+        : process.cwd();
+
+      const localConfigPath = join(baseDir, 'settings.local.yaml');
+      this.logger.debug(`Looking for local config at: ${localConfigPath}`);
+
+      if (existsSync(localConfigPath)) {
+        this.logger.log(`Loading local configuration from: ${localConfigPath}`);
+        const localFileContents = readFileSync(localConfigPath, 'utf8');
+        this.logger.debug(
+          `Local config file contents length: ${localFileContents.length} characters`,
+        );
+
+        const localConfig = yaml.load(localFileContents);
+        this.logger.debug(
+          `Local configuration loaded: ${JSON.stringify(localConfig, null, 2)}`,
+        );
+
+        // Объединяем конфигурации, где localConfig переопределяет baseConfig
+        finalConfig = this.deepMerge(finalConfig, localConfig);
+        this.logger.log(`Local configuration loaded and merged successfully`);
+        this.logger.debug(`After local merge configuration: ${JSON.stringify(finalConfig, null, 2)}`);
+      } else {
+        this.logger.debug('Local configuration file not found, using base configuration only');
+      }
+
       // Если определен NODE_ENV, пытаемся загрузить среду-специфичную конфигурацию
       const nodeEnv = process.env.NODE_ENV;
       this.logger.debug(`Current NODE_ENV: ${nodeEnv}`);
 
       if (nodeEnv && ['development', 'production', 'test'].includes(nodeEnv)) {
-        // Определяем базовую директорию из baseConfigPath
-        const baseDir = baseConfigPath.includes('/backend/')
-          ? join(process.cwd(), 'backend')
-          : process.cwd();
-
         const envConfigPath = join(baseDir, `settings.${nodeEnv}.yaml`);
         this.logger.debug(`Looking for environment config at: ${envConfigPath}`);
 
@@ -104,13 +127,37 @@ export class YamlConfigService {
           );
 
           // Объединяем конфигурации, где envConfig переопределяет baseConfig
-          finalConfig = this.deepMerge(baseConfig, envConfig);
+          finalConfig = this.deepMerge(finalConfig, envConfig);
           this.logger.log(`Environment-specific configuration loaded and merged successfully`);
-          this.logger.debug(`Final merged configuration: ${JSON.stringify(finalConfig, null, 2)}`);
+          this.logger.debug(`After env merge configuration: ${JSON.stringify(finalConfig, null, 2)}`);
         } else {
           this.logger.warn(
             `Environment-specific configuration file not found: ${envConfigPath}, using base configuration only`,
           );
+        }
+
+        // Загружаем локальную среду-специфичную конфигурацию (settings.{NODE_ENV}.local.yaml)
+        const envLocalConfigPath = join(baseDir, `settings.${nodeEnv}.local.yaml`);
+        this.logger.debug(`Looking for environment local config at: ${envLocalConfigPath}`);
+
+        if (existsSync(envLocalConfigPath)) {
+          this.logger.log(`Loading environment-specific local configuration from: ${envLocalConfigPath}`);
+          const envLocalFileContents = readFileSync(envLocalConfigPath, 'utf8');
+          this.logger.debug(
+            `Environment local config file contents length: ${envLocalFileContents.length} characters`,
+          );
+
+          const envLocalConfig = yaml.load(envLocalFileContents);
+          this.logger.debug(
+            `Environment local configuration loaded: ${JSON.stringify(envLocalConfig, null, 2)}`,
+          );
+
+          // Объединяем конфигурации, где envLocalConfig переопределяет все предыдущие
+          finalConfig = this.deepMerge(finalConfig, envLocalConfig);
+          this.logger.log(`Environment-specific local configuration loaded and merged successfully`);
+          this.logger.debug(`Final configuration after all merges: ${JSON.stringify(finalConfig, null, 2)}`);
+        } else {
+          this.logger.debug('Environment-specific local configuration file not found');
         }
       } else {
         this.logger.debug('No valid NODE_ENV set, using base configuration only');

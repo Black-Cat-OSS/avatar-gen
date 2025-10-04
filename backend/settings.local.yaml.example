@@ -1,0 +1,40 @@
+# Локальная конфигурация для разработки
+# Этот файл НЕ должен быть в git - содержит конфиденциальные данные
+# Скопируйте этот файл в settings.local.yaml и заполните реальными значениями
+
+app:
+  storage:
+    type: 'local' # или 's3' для локальной разработки
+    # local:
+    #   save_path: './storage/avatars'
+    # s3:
+    #   endpoint: 'https://your-local-s3-endpoint.com'
+    #   bucket: 'your-local-bucket'
+    #   access_key: 'YOUR_LOCAL_S3_ACCESS_KEY'
+    #   secret_key: 'YOUR_LOCAL_S3_SECRET_KEY'
+    #   region: 'us-east-1'
+    #   force_path_style: true
+    #   connection:
+    #     maxRetries: 3
+    #     retryDelay: 2000
+  server:
+    host: 'localhost'
+    port: 3000
+  database:
+    driver: 'sqlite' # или 'postgresql' для локальной разработки
+    connection:
+      maxRetries: 3
+      retryDelay: 2000
+    # sqlite_params:
+    #   url: 'file:./storage/database/database.local.sqlite'
+    # network:
+    #   host: 'localhost'
+    #   port: 5432
+    #   database: 'avatar_gen_local'
+    #   username: 'postgres'
+    #   password: 'your_local_password'
+    #   ssl: false
+  logging:
+    level: 'debug'
+    verbose: true
+    pretty: true
