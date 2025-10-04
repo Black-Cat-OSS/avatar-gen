@@ -45,7 +45,10 @@ export class YamlConfigService {
       // Поддержка двух путей: для Docker (/app/) и для локальной разработки (project_root/backend/)
       let baseConfigPath = process.env.CONFIG_PATH;
 
-      if (!baseConfigPath) {
+      // Поддержка матричной конфигурации для тестов
+      if (process.env.TEST_MATRIX_CONFIG && existsSync(process.env.TEST_MATRIX_CONFIG)) {
+        baseConfigPath = process.env.TEST_MATRIX_CONFIG;
+      } else if (!baseConfigPath) {
         const dockerPath = join(process.cwd(), 'settings.yaml');
         const localPath = join(process.cwd(), 'backend', 'settings.yaml');
 

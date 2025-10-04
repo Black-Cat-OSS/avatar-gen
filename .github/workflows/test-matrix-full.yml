@@ -1,0 +1,252 @@
+name: Full Matrix Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      test_postgresql:
+        description: 'Test with PostgreSQL'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  test-backend-matrix:
+    name: Test Backend (Matrix)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite, postgresql]
+        storage: [local, s3]
+        include:
+          # SQLite + Local Storage
+          - database: sqlite
+            storage: local
+            test_name: 'SQLite + Local Storage'
+          # SQLite + S3 Storage
+          - database: sqlite
+            storage: s3
+            test_name: 'SQLite + S3 Storage'
+          # PostgreSQL + Local Storage (только при ручном запуске или PR)
+          - database: postgresql
+            storage: local
+            test_name: 'PostgreSQL + Local Storage'
+          # PostgreSQL + S3 Storage (только при ручном запуске или PR)
+          - database: postgresql
+            storage: s3
+            test_name: 'PostgreSQL + S3 Storage'
+    defaults:
+      run:
+        working-directory: backend
+
+    # PostgreSQL сервис только для PostgreSQL тестов
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: avatar_gen_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        profiles:
+          - postgresql
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-backend-${{ hashFiles('backend/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-backend-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
+
+      - name: Wait for PostgreSQL
+        if: matrix.database == 'postgresql'
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
+
+      - name: Create test configuration
+        run: |
+          cat > settings.test.matrix.yaml << EOF
+          app:
+            storage:
+              type: '${{ matrix.storage }}'
+              local:
+                save_path: './storage/test-avatars'
+              s3:
+                endpoint: 'https://minio:9000'
+                bucket: 'test-bucket'
+                access_key: 'test-access-key'
+                secret_key: 'test-secret-key'
+                region: 'us-east-1'
+                force_path_style: true
+                connection:
+                  maxRetries: 1
+                  retryDelay: 100
+            database:
+              driver: '${{ matrix.database }}'
+              connection:
+                maxRetries: 3
+                retryDelay: 1000
+              sqlite_params:
+                url: 'file:./storage/test-database/database.test.sqlite'
+              network:
+                host: 'localhost'
+                port: 5432
+                database: 'avatar_gen_test'
+                username: 'postgres'
+                password: 'password'
+                ssl: false
+            logging:
+              level: 'error'
+              verbose: false
+              pretty: false
+          EOF
+
+      - name: Create test directories
+        run: |
+          mkdir -p storage/test-avatars
+          mkdir -p storage/test-database
+
+      - name: Run unit tests
+        run: pnpm run test
+        env:
+          NODE_ENV: test
+          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
+
+      - name: Run e2e tests
+        run: pnpm run test:e2e
+        env:
+          NODE_ENV: test
+          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend-${{ matrix.database }}-${{ matrix.storage }}
+          name: backend-coverage-${{ matrix.database }}-${{ matrix.storage }}
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test-backend-matrix
+    strategy:
+      matrix:
+        profile: [sqlite, postgresql]
+    defaults:
+      run:
+        working-directory: .
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: avatar_gen_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        profiles:
+          - postgresql
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for PostgreSQL
+        if: matrix.profile == 'postgresql'
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
+
+      - name: Build and test with Docker Compose
+        run: |
+          # Создаем тестовую конфигурацию
+          cp backend/settings.test.yaml backend/settings.test.${{ matrix.profile }}.yaml
+
+          # Запускаем с нужным профилем
+          docker compose -f docker/docker-compose.yml \
+            -f docker/docker-compose.${{ matrix.profile }}.yml \
+            --profile ${{ matrix.profile }} \
+            up --build -d
+
+          # Ждем готовности сервисов
+          sleep 30
+
+          # Проверяем health endpoints
+          curl -f http://localhost:3000/api/health || exit 1
+          curl -f http://localhost:80/health || exit 1
+
+          # Останавливаем
+          docker compose -f docker/docker-compose.yml \
+            -f docker/docker-compose.${{ matrix.profile }}.yml \
+            --profile ${{ matrix.profile }} \
+            down
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.yml down --volumes --remove-orphans || true

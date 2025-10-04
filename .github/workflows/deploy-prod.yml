@@ -12,11 +12,32 @@ env:
 
 jobs:
   test-backend:
-    name: Test Backend
+    name: Test Backend (Fast)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite]
+        storage: [local, s3]
     defaults:
       run:
         working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: avatar_gen_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        profiles:
+          - postgresql
 
     steps:
       - name: Checkout code
@@ -55,15 +76,55 @@ jobs:
       - name: Run linter
         run: pnpm run lint
 
+      - name: Create test configuration
+        run: |
+          cat > settings.test.matrix.yaml << EOF
+          app:
+            storage:
+              type: '${{ matrix.storage }}'
+              local:
+                save_path: './storage/test-avatars'
+              s3:
+                endpoint: 'https://minio:9000'
+                bucket: 'test-bucket'
+                access_key: 'test-access-key'
+                secret_key: 'test-secret-key'
+                region: 'us-east-1'
+                force_path_style: true
+                connection:
+                  maxRetries: 1
+                  retryDelay: 100
+            database:
+              driver: '${{ matrix.database }}'
+              connection:
+                maxRetries: 1
+                retryDelay: 100
+              sqlite_params:
+                url: 'file:./storage/test-database/database.test.sqlite'
+              network:
+                host: 'localhost'
+                port: 5432
+                database: 'avatar_gen_test'
+                username: 'postgres'
+                password: 'password'
+                ssl: false
+            logging:
+              level: 'error'
+              verbose: false
+              pretty: false
+          EOF
+
       - name: Run tests
         run: pnpm run test
         env:
           NODE_ENV: test
+          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
 
       - name: Run e2e tests
         run: pnpm run test:e2e
         env:
           NODE_ENV: test
+          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
 
   test-frontend:
     name: Test Frontend

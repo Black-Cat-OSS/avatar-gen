@@ -60,7 +60,7 @@ backend/settings.*.local.yaml
 **Этапы:**
 1. **Lint Backend** - проверка кода ESLint
 2. **Lint Frontend** - проверка кода ESLint
-3. **Test Backend** - unit и e2e тесты + coverage
+3. **Test Backend (Fast)** - быстрые unit и e2e тесты с SQLite (матрично: local + S3 storage)
 4. **Build Frontend** - production сборка
 5. **Docker Build Test** - тестовая сборка всех образов
 
@@ -68,6 +68,27 @@ backend/settings.*.local.yaml
 - Кэширование pnpm store для ускорения установки зависимостей
 - Параллельное выполнение независимых задач
 - Сохранение артефактов сборки
+- Матричное тестирование для быстрой обратной связи
+
+#### 2.2 Full Matrix Testing (`.github/workflows/test-matrix-full.yml`)
+
+**Триггеры:**
+- Pull Request в `main` или `develop`
+- Ручной запуск через workflow_dispatch
+
+**Матрица тестирования:**
+- **Базы данных:** SQLite, PostgreSQL
+- **Хранилища:** Local Storage, S3 Storage
+- **Комбинации:** 4 варианта
+
+**Этапы:**
+1. **Test Backend (Matrix)** - полное матричное тестирование всех комбинаций
+2. **Integration Tests** - интеграционные тесты с Docker Compose
+
+**Преимущества:**
+- Полное покрытие всех конфигураций
+- Раннее обнаружение проблем совместимости
+- Тестирование в реальных условиях
 
 #### 2.2 Production Deploy Workflow (`.github/workflows/deploy-prod.yml`)
 

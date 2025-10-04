@@ -18,9 +18,29 @@
 
 1. **Lint Backend** - проверка кода backend на соответствие стандартам
 2. **Lint Frontend** - проверка кода frontend на соответствие стандартам
-3. **Test Backend** - запуск unit и e2e тестов backend
+3. **Test Backend (Fast)** - быстрые unit и e2e тесты с SQLite (матрично:
+   local + S3 storage)
 4. **Build Frontend** - сборка production версии frontend
 5. **Docker Build Test** - тестовая сборка всех Docker образов
+
+### 1.1. Full Matrix Testing (`.github/workflows/test-matrix-full.yml`)
+
+Запускается при:
+
+- Pull Request в `main` или `develop`
+- Ручной запуск через workflow_dispatch
+
+**Матрица тестирования:**
+
+- **Базы данных:** SQLite, PostgreSQL
+- **Хранилища:** Local Storage, S3 Storage
+- **Комбинации:** 4 варианта (SQLite+Local, SQLite+S3, PostgreSQL+Local,
+  PostgreSQL+S3)
+
+Этапы:
+
+1. **Test Backend (Matrix)** - полное матричное тестирование всех комбинаций
+2. **Integration Tests** - интеграционные тесты с Docker Compose
 
 ### 2. Production Deploy Workflow (`.github/workflows/deploy-prod.yml`)
 
