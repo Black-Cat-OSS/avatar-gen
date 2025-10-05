@@ -344,15 +344,58 @@ jobs:
           touch backend/storage/database/database.sqlite
           chmod -R 777 backend/storage
 
-          # Создаем docker-compose.override.yml для отключения монтирования конфигов
-          # В CI полагаемся ТОЛЬКО на переменные окружения
+          # Создаем минимальный settings.yaml с поддержкой ENV переменных
+          cat > backend/settings.yaml << 'EOF'
+          app:
+            storage:
+              type: '${STORAGE_TYPE:-local}'
+              local:
+                save_path: './storage/avatars'
+              s3:
+                endpoint: '${S3_ENDPOINT:-http://localhost:9000}'
+                bucket: '${S3_BUCKET:-avatars}'
+                access_key: '${S3_ACCESS_KEY:-minioadmin}'
+                secret_key: '${S3_SECRET_KEY:-minioadmin}'
+                region: '${S3_REGION:-us-east-1}'
+                force_path_style: true
+                connection:
+                  maxRetries: 3
+                  retryDelay: 2000
+            server:
+              host: '0.0.0.0'
+              port: 3000
+            database:
+              driver: '${DATABASE_PROVIDER:-sqlite}'
+              connection:
+                maxRetries: 3
+                retryDelay: 2000
+              sqlite_params:
+                url: '${DATABASE_URL:-file:./storage/database/database.sqlite}'
+              network:
+                host: '${DB_HOST:-postgres}'
+                port: 5432
+                database: '${DB_NAME:-avatar_gen}'
+                username: '${DB_USER:-postgres}'
+                password: '${DB_PASSWORD:-password}'
+                ssl: false
+            logging:
+              level: 'info'
+              verbose: false
+              pretty: true
+          EOF
+
+          echo "=== Created settings.yaml ==="
+          cat backend/settings.yaml
+
+          # Создаем docker-compose.override.yml для использования нашего settings.yaml
           cat > docker/docker-compose.override.yml << 'EOF'
           services:
             avatar-backend:
               volumes:
-                # Монтируем только storage, БЕЗ конфигов
+                # Монтируем storage, logs и наш settings.yaml
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
+                - ../backend/settings.yaml:/app/settings.yaml:ro
           EOF
 
           echo "=== Storage directory permissions ==="
