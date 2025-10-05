@@ -18,12 +18,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "env:generate": "node scripts/generate-env.js",
-    "prisma:generate": "npm run env:generate && prisma generate",
-    "prisma:migrate": "npm run env:generate && prisma migrate dev",
-    "prisma:studio": "npm run env:generate && prisma studio",
-    "prisma:reset": "npm run env:generate && prisma migrate reset",
-    "prisma:deploy": "npm run env:generate && prisma migrate deploy"
+    "prisma:generate": "node scripts/prisma-runner.js generate",
+    "prisma:migrate": "node scripts/prisma-runner.js migrate dev",
+    "prisma:studio": "node scripts/prisma-runner.js studio",
+    "prisma:reset": "node scripts/prisma-runner.js migrate reset",
+    "prisma:deploy": "node scripts/prisma-runner.js migrate deploy"
   },
   "keywords": [],
   "author": "letnull19a",
