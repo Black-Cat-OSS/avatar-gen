@@ -74,22 +74,36 @@ jobs:
 
     services:
       postgres:
-        image: ${{ matrix.database == 'postgresql' && 'postgres:17-alpine' || '' }}
+        image: postgres:16-alpine
         env:
-          POSTGRES_DB: avatar_gen_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
+          POSTGRES_DB: avatar_gen_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Wait for PostgreSQL
+        if: matrix.database == 'postgresql'
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          echo "PostgreSQL failed to start"
+          exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -120,16 +134,6 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
-
-      - name: Wait for PostgreSQL
-        if: matrix.database == 'postgresql'
-        run: |
-          echo "Waiting for PostgreSQL to be ready..."
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "PostgreSQL is unavailable - sleeping"
-            sleep 2
-          done
-          echo "PostgreSQL is up and running"
 
       - name: Create test configuration
         run: |
