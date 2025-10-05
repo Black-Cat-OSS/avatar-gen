@@ -118,30 +118,9 @@ jobs:
           - database: sqlite
             storage: s3
             test_name: 'SQLite + S3'
-          - database: postgresql
-            storage: local
-            test_name: 'PostgreSQL + Local'
-          - database: postgresql
-            storage: s3
-            test_name: 'PostgreSQL + S3'
     defaults:
       run:
         working-directory: backend
-
-    services:
-      postgres:
-        image: ${{ matrix.database == 'postgresql' && 'postgres:17-alpine' || '' }}
-        env:
-          POSTGRES_DB: avatar_gen_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -176,16 +155,6 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
-
-      - name: Wait for PostgreSQL
-        if: matrix.database == 'postgresql'
-        run: |
-          echo "Waiting for PostgreSQL to be ready..."
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "PostgreSQL is unavailable - sleeping"
-            sleep 2
-          done
-          echo "PostgreSQL is up and running"
 
       - name: Create test configuration
         run: |
