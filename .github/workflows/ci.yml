@@ -8,11 +8,6 @@ on:
       - main
     types: [opened, synchronize, reopened]
 
-  # Push в develop - быстрые тесты после мерджа
-  push:
-    branches:
-      - develop
-
   # Ручной запуск для тестирования
   workflow_dispatch:
     inputs:
