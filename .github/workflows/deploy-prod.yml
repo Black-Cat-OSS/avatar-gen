@@ -367,11 +367,18 @@ jobs:
           mkdir -p backend/storage/database
           mkdir -p backend/storage/avatars
 
+          # Создаем пустой файл БД и устанавливаем права (777 для Docker)
+          touch backend/storage/database/database.sqlite
+          chmod -R 777 backend/storage
+
           # Проверяем, что файл создан правильно
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
           echo "==========================="
           ls -la backend/settings.yaml
+          echo "=== Storage directory permissions ==="
+          ls -la backend/storage/
+          ls -la backend/storage/database/
 
       - name: Start services with Docker Compose
         run: |
