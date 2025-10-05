@@ -4,6 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { YamlConfigService } from '../../../config/yaml-config.service';
 import { IDatabaseConnection, DatabaseInfo } from '../interfaces';
+import {
+  SqliteDirectoryNotFoundException,
+  SqliteDatabaseFileNotFoundException,
+  SqliteDirectoryPermissionException,
+  SqliteDatabaseFilePermissionException,
+} from '../exceptions';
 
 /**
  * Сервис для работы с SQLite базой данных
@@ -111,7 +117,54 @@ export class SqliteDatabaseService implements IDatabaseConnection {
       ].join('\n');
 
       this.logger.error(errorMessage);
-      throw new Error(`SQLite database directory does not exist: ${dbDirectory}`);
+      throw new SqliteDirectoryNotFoundException(dbDirectory);
+    }
+    
+    // Проверяем права на запись в директорию
+    try {
+      fs.accessSync(dbDirectory, fs.constants.W_OK);
+    } catch {
+      let dirStats;
+      let dirPerms = 'unknown';
+      let dirOwner = 'unknown';
+      
+      try {
+        dirStats = fs.statSync(dbDirectory);
+        dirPerms = '0' + (dirStats.mode & parseInt('777', 8)).toString(8);
+        dirOwner = `uid:${dirStats.uid} gid:${dirStats.gid}`;
+      } catch {
+        // Игнорируем ошибку получения статистики
+      }
+
+      const processInfo = `uid:${process.getuid?.()} gid:${process.getgid?.()}`;
+      
+      const errorMessage = [
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '❌ SQLite Database Error: No write permission for directory',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `📁 Directory: ${dbDirectory}`,
+        `📊 Directory permissions: ${dirPerms}`,
+        `👤 Directory owner: ${dirOwner}`,
+        `🔧 Process running as: ${processInfo}`,
+        '',
+        '📝 Solution:',
+        '   1. Grant write permissions to the directory:',
+        `      chmod 777 "${dbDirectory}"`,
+        '',
+        '   2. In Docker, ensure proper volume permissions:',
+        `      docker run -v "$(pwd)/storage:/app/storage:rw" ...`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n');
+
+      this.logger.error(errorMessage);
+      throw new SqliteDirectoryPermissionException(
+        dbDirectory,
+        dirPerms,
+        dirOwner,
+        processInfo,
+      );
     }
 
     // Проверяем существование файла базы данных
@@ -137,30 +190,57 @@ export class SqliteDatabaseService implements IDatabaseConnection {
       ].join('\n');
 
       this.logger.error(errorMessage);
-      throw new Error(`SQLite database file does not exist: ${this.databaseFilePath}`);
+      throw new SqliteDatabaseFileNotFoundException(this.databaseFilePath);
     }
 
     // Проверяем права на чтение/запись
     try {
       fs.accessSync(this.databaseFilePath, fs.constants.R_OK | fs.constants.W_OK);
     } catch {
+      // Получаем детальную информацию о файле и процессе
+      let fileStats;
+      let filePerms = 'unknown';
+      let fileOwner = 'unknown';
+      
+      try {
+        fileStats = fs.statSync(this.databaseFilePath);
+        // Преобразуем права в восьмеричный формат (например, 0644)
+        filePerms = '0' + (fileStats.mode & parseInt('777', 8)).toString(8);
+        fileOwner = `uid:${fileStats.uid} gid:${fileStats.gid}`;
+      } catch {
+        // Игнорируем ошибку получения статистики
+      }
+
+      const processInfo = `uid:${process.getuid?.()} gid:${process.getgid?.()}`;
+      
       const errorMessage = [
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         '❌ SQLite Database Error: Insufficient permissions',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         '',
         `📂 Database file: ${this.databaseFilePath}`,
+        `📊 File permissions: ${filePerms}`,
+        `👤 File owner: ${fileOwner}`,
+        `🔧 Process running as: ${processInfo}`,
         '',
         '📝 Solution:',
-        '   Grant read/write permissions to the database file:',
-        `   chmod 666 "${this.databaseFilePath}"`,
+        '   1. Grant read/write permissions to the database file:',
+        `      chmod 666 "${this.databaseFilePath}"`,
+        '',
+        '   2. Or grant permissions to the entire directory:',
+        `      chmod -R 777 "${dbDirectory}"`,
+        '',
+        '   3. In Docker, ensure the volume has correct permissions',
         '',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       ].join('\n');
 
       this.logger.error(errorMessage);
-      throw new Error(
-        `Insufficient permissions for SQLite database file: ${this.databaseFilePath}`,
+      throw new SqliteDatabaseFilePermissionException(
+        this.databaseFilePath,
+        filePerms,
+        fileOwner,
+        processInfo,
       );
     }
 
