@@ -336,11 +336,31 @@ jobs:
 
       - name: Create test configuration files
         run: |
-          # Копируем примеры конфигураций для тестирования
-          cp backend/settings.test.yaml backend/settings.yaml || true
-          cp backend/settings.test.yaml backend/settings.production.yaml || true
-          cp backend/settings.test.yaml backend/settings.local.yaml || true
-          cp backend/settings.test.yaml backend/settings.production.local.yaml || true
+          # Создаем конфигурацию для интеграционных тестов с SQLite файлом
+          cat > backend/settings.yaml << 'EOF'
+          app:
+            storage:
+              type: 'local'
+              local:
+                save_path: './storage/avatars'
+            server:
+              port: 3000
+            database:
+              driver: 'sqlite'
+              connection:
+                maxRetries: 3
+                retryDelay: 1000
+              sqlite_params:
+                url: 'file:./storage/database/database.sqlite'
+            logging:
+              level: 'info'
+              verbose: false
+              pretty: true
+          EOF
+
+          # Создаем директории для SQLite
+          mkdir -p backend/storage/database
+          mkdir -p backend/storage/avatars
 
       - name: Start services with Docker Compose
         run: |
