@@ -124,16 +124,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Тесты для PR в develop - SQLite + PostgreSQL (production DB)
+        # Полная матрица тестов для PR в develop
+        # (SQLite, PostgreSQL) × (Local, S3)
         database: [sqlite, postgresql]
-        storage: [local]
+        storage: [local, s3]
         include:
           - database: sqlite
             storage: local
             test_name: 'SQLite + Local'
+          - database: sqlite
+            storage: s3
+            test_name: 'SQLite + S3'
           - database: postgresql
             storage: local
             test_name: 'PostgreSQL + Local'
+          - database: postgresql
+            storage: s3
+            test_name: 'PostgreSQL + S3'
     defaults:
       run:
         working-directory: backend
