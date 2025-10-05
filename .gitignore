@@ -16,9 +16,7 @@ dist
 dist-ssr
 *.local
 
-# Environment files
-# Backend .env is auto-generated from settings.yaml
-backend/.env
+# Backend storage (SQLite database, avatars, logs)
 backend/storage
 
 # Backend local settings files (contain confidential data)
