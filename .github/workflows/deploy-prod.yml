@@ -1,11 +1,13 @@
 name: Production Deploy Pipeline
 
 on:
-  # Автоматический деплой только при push в main
-  # (после мерджа PR из develop)
-  #
-  # Pipeline: тесты → сборка → интеграция → деплой
-  # Примечание: Линтинг пропущен, т.к. код уже прошел проверку в CI
+  # PR в main (develop → main) - полное тестирование БЕЗ деплоя
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+  # Push в main (после мерджа) - полное тестирование + ДЕПЛОЙ
   push:
     branches:
       - main
@@ -23,6 +25,11 @@ on:
         required: false
         default: false
         type: boolean
+      force_deploy:
+        description: 'Force deploy (even on PR)'
+        required: false
+        default: false
+        type: boolean
 
 env:
   NODE_VERSION: '20'
@@ -32,8 +39,12 @@ jobs:
   # ========================================
   # Stage 1: Unit & E2E Tests
   # ========================================
-  # Примечание: Линтинг пропущен, т.к. код уже прошел проверку в CI
-  # при PR в develop и PR в main (2-3 проверки до деплоя)
+  # Примечание: Линтинг пропущен, т.к. код уже прошел проверку
+  # в CI workflow при PR в develop
+  #
+  # Этот workflow запускается для:
+  # - PR в main: полное тестирование БЕЗ деплоя
+  # - Push в main: полное тестирование + ДЕПЛОЙ
   test-backend:
     name: Test Backend (${{ matrix.test_name }})
     runs-on: ubuntu-latest
@@ -346,10 +357,15 @@ jobs:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
     needs: [integration-test]
-    # Деплой даже если интеграционные тесты пропущены
-    if: always() && (needs.integration-test.result == 'success' || needs.integration-test.result == 'skipped')
+    # Деплой только при:
+    # - push в main (после мерджа PR)
+    # - ручной запуск с force_deploy=true
+    # НЕ деплоим при PR в main (только тестируем)
+    if: |
+      always() &&
+      (needs.integration-test.result == 'success' || needs.integration-test.result == 'skipped') &&
+      (github.event_name == 'push' || github.event.inputs.force_deploy == 'true')
     environment: production
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

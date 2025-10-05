@@ -1,21 +1,15 @@
-name: CI
+name: CI (Develop)
 
 on:
-  # PR в develop (feature/fix ветки) и main (develop → main) - тестирование
+  # Только PR в develop (feature/fix ветки) - быстрые тесты
+  # Полные тесты запускаются в Production Deploy Pipeline при PR в main
   pull_request:
     branches:
       - develop
-      - main
     types: [opened, synchronize, reopened]
 
   # Ручной запуск для тестирования
   workflow_dispatch:
-    inputs:
-      run_full_matrix:
-        description: 'Run full matrix tests (including PostgreSQL)'
-        required: false
-        default: false
-        type: boolean
 
 env:
   NODE_VERSION: '20'
@@ -114,11 +108,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Логика выбора тестов:
-        # - PR в main: полные тесты (SQLite + PostgreSQL)
-        # - PR в develop или push в develop: быстрые тесты (только SQLite)
-        # - Ручной запуск с run_full_matrix=true: полные тесты
-        database: ${{ (github.base_ref == 'main' || github.event.inputs.run_full_matrix == 'true') && fromJSON('["sqlite", "postgresql"]') || fromJSON('["sqlite"]') }}
+        # Быстрые тесты для PR в develop - только SQLite
+        database: [sqlite]
         storage: [local, s3]
         include:
           - database: sqlite
