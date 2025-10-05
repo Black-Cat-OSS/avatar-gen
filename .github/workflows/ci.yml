@@ -105,19 +105,35 @@ jobs:
     name: Test Backend (${{ matrix.test_name }})
     runs-on: ubuntu-latest
     needs: [lint-backend]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: avatar_gen_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     strategy:
       fail-fast: false
       matrix:
-        # Быстрые тесты для PR в develop - только SQLite
-        database: [sqlite]
-        storage: [local, s3]
+        # Тесты для PR в develop - SQLite + PostgreSQL (production DB)
+        database: [sqlite, postgresql]
+        storage: [local]
         include:
           - database: sqlite
             storage: local
             test_name: 'SQLite + Local'
-          - database: sqlite
-            storage: s3
-            test_name: 'SQLite + S3'
+          - database: postgresql
+            storage: local
+            test_name: 'PostgreSQL + Local'
     defaults:
       run:
         working-directory: backend
@@ -125,6 +141,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Wait for PostgreSQL
+        if: matrix.database == 'postgresql'
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          echo "PostgreSQL failed to start"
+          exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
