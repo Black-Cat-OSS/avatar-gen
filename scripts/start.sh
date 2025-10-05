@@ -18,7 +18,7 @@
 
 set -e
 
-PROFILE="sqlite"
+DB_TYPE="sqlite"
 BUILD_FLAG=""
 STORAGE_TYPE="local"
 
@@ -26,7 +26,7 @@ STORAGE_TYPE="local"
 while [ $# -gt 0 ]; do
     case "$1" in
         --db)
-            PROFILE="$2"
+            DB_TYPE="$2"
             shift 2
             ;;
         --storage)
@@ -52,8 +52,15 @@ while [ $# -gt 0 ]; do
 done
 
 echo "🚀 Starting Avatar Generator..."
-echo "📦 Database: $PROFILE"
+echo "📦 Database: $DB_TYPE"
 echo "💾 Storage: $STORAGE_TYPE"
+
+# Validate database type
+if [ "$DB_TYPE" != "sqlite" ] && [ "$DB_TYPE" != "postgresql" ]; then
+    echo "❌ Invalid database type: $DB_TYPE"
+    echo "Valid database types: sqlite, postgresql"
+    exit 1
+fi
 
 # Validate storage type
 if [ "$STORAGE_TYPE" != "local" ] && [ "$STORAGE_TYPE" != "s3" ]; then
@@ -81,28 +88,24 @@ else
     echo "✅ External network already exists"
 fi
 
-# Build compose files list based on profile and storage
-COMPOSE_FILES="-f docker/docker-compose.yml"
-PROFILE_FLAG=""
+# Setup environment variables for docker-compose
+export DATABASE_PROVIDER=$DB_TYPE
+export STORAGE_TYPE=$STORAGE_TYPE
 
-# Add database profile
-if [ "$PROFILE" = "sqlite" ]; then
+# Setup database URL based on type
+if [ "$DB_TYPE" = "sqlite" ]; then
     echo "🔨 Using SQLite database..."
-    COMPOSE_FILES="$COMPOSE_FILES -f docker/docker-compose.sqlite.yml"
-elif [ "$PROFILE" = "postgresql" ]; then
+    export DATABASE_URL="file:./storage/database/database.sqlite"
+    PROFILE_FLAG=""
+elif [ "$DB_TYPE" = "postgresql" ]; then
     echo "🔨 Using PostgreSQL database..."
-    COMPOSE_FILES="$COMPOSE_FILES -f docker/docker-compose.postgresql.yml"
+    export DATABASE_URL="postgresql://postgres:password@postgres:5432/avatar_gen"
     PROFILE_FLAG="--profile postgresql"
-else
-    echo "❌ Invalid profile: $PROFILE"
-    echo "Valid profiles: sqlite, postgresql"
-    exit 1
 fi
 
-# Add storage profile
+# Setup storage configuration
 if [ "$STORAGE_TYPE" = "s3" ]; then
     echo "💾 Using S3 storage..."
-    COMPOSE_FILES="$COMPOSE_FILES -f docker/docker-compose.s3.yml"
     
     # Warn if S3 credentials are not set
     if [ -z "$S3_BUCKET" ] || [ -z "$S3_ACCESS_KEY" ] || [ -z "$S3_SECRET_KEY" ]; then
@@ -117,11 +120,14 @@ fi
 # Start services
 echo ""
 echo "🚀 Starting services..."
-echo "📝 Compose files: $COMPOSE_FILES"
-[ -n "$PROFILE_FLAG" ] && echo "🏷️  Profile: $PROFILE_FLAG"
+echo "🏷️  Profile: ${PROFILE_FLAG:-default}"
+echo "🌍 Environment:"
+echo "   DATABASE_PROVIDER=$DATABASE_PROVIDER"
+echo "   DATABASE_URL=$DATABASE_URL"
+echo "   STORAGE_TYPE=$STORAGE_TYPE"
 echo ""
 
-docker-compose $COMPOSE_FILES $PROFILE_FLAG up $BUILD_FLAG
+docker-compose -f docker/docker-compose.yml $PROFILE_FLAG up $BUILD_FLAG
 
 echo ""
 echo "✅ Services started!"
