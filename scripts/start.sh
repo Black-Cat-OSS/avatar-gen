@@ -5,16 +5,21 @@
 # Usage: ./start.sh [options]
 #
 # Options: 
-#   --db TYPE           Database type: sqlite (default) | postgresql
+#   --db TYPE           Database type: sqlite (default) | postgresql | postgresql-external
 #   --storage TYPE      Storage type: local (default) | s3
 #   --build | -b        Rebuild images before starting
 #
 # Examples:
 #   ./start.sh                                      # SQLite + local storage
-#   ./start.sh --db postgresql                      # PostgreSQL + local storage
+#   ./start.sh --db postgresql                      # PostgreSQL (container) + local storage
+#   ./start.sh --db postgresql-external             # PostgreSQL (external) + local storage
 #   ./start.sh --storage s3                         # SQLite + S3 storage
 #   ./start.sh --db postgresql --storage s3         # PostgreSQL + S3 storage
 #   ./start.sh --db postgresql --storage s3 -b      # PostgreSQL + S3 + rebuild
+#
+# Note: For postgresql-external, set DATABASE_URL environment variable first:
+#   export DATABASE_URL=postgresql://user:password@host:5432/dbname
+#   ./start.sh --db postgresql-external
 
 set -e
 
@@ -43,9 +48,12 @@ while [ $# -gt 0 ]; do
             echo "Usage: ./start.sh [options]"
             echo ""
             echo "Options:"
-            echo "  --db TYPE        Database type: sqlite (default) | postgresql"
+            echo "  --db TYPE        Database type: sqlite (default) | postgresql | postgresql-external"
             echo "  --storage TYPE   Storage type: local (default) | s3"
             echo "  --build | -b     Rebuild images before starting"
+            echo ""
+            echo "Note: For postgresql-external, set DATABASE_URL first:"
+            echo "  export DATABASE_URL=postgresql://user:password@host:5432/dbname"
             exit 1
             ;;
     esac
@@ -56,9 +64,9 @@ echo "📦 Database: $DB_TYPE"
 echo "💾 Storage: $STORAGE_TYPE"
 
 # Validate database type
-if [ "$DB_TYPE" != "sqlite" ] && [ "$DB_TYPE" != "postgresql" ]; then
+if [ "$DB_TYPE" != "sqlite" ] && [ "$DB_TYPE" != "postgresql" ] && [ "$DB_TYPE" != "postgresql-external" ]; then
     echo "❌ Invalid database type: $DB_TYPE"
-    echo "Valid database types: sqlite, postgresql"
+    echo "Valid database types: sqlite, postgresql, postgresql-external"
     exit 1
 fi
 
@@ -89,18 +97,33 @@ else
 fi
 
 # Setup environment variables for docker-compose
-export DATABASE_PROVIDER=$DB_TYPE
 export STORAGE_TYPE=$STORAGE_TYPE
 
-# Setup database URL based on type
+# Setup database configuration based on type
 if [ "$DB_TYPE" = "sqlite" ]; then
     echo "🔨 Using SQLite database..."
+    export DATABASE_PROVIDER="sqlite"
     export DATABASE_URL="file:./storage/database/database.sqlite"
     PROFILE_FLAG=""
 elif [ "$DB_TYPE" = "postgresql" ]; then
-    echo "🔨 Using PostgreSQL database..."
+    echo "🔨 Using PostgreSQL database (container)..."
+    export DATABASE_PROVIDER="postgresql"
     export DATABASE_URL="postgresql://postgres:password@postgres:5432/avatar_gen"
     PROFILE_FLAG="--profile postgresql"
+elif [ "$DB_TYPE" = "postgresql-external" ]; then
+    echo "🔨 Using PostgreSQL database (external)..."
+    export DATABASE_PROVIDER="postgresql"
+    
+    # Check if DATABASE_URL is set
+    if [ -z "$DATABASE_URL" ]; then
+        echo "❌ ERROR: DATABASE_URL environment variable is not set!"
+        echo "   Please set it before running this script:"
+        echo "   export DATABASE_URL=postgresql://user:password@host:5432/dbname"
+        exit 1
+    fi
+    
+    echo "   Connection: $DATABASE_URL"
+    PROFILE_FLAG=""
 fi
 
 # Setup storage configuration

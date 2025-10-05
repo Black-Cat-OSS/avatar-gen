@@ -52,10 +52,17 @@ services:
 
   # Avatar Backend Service
   # По умолчанию: SQLite + Local Storage
+  # 
   # Конфигурация через переменные окружения:
   #   DATABASE_PROVIDER=sqlite|postgresql
   #   DATABASE_URL=...
   #   STORAGE_TYPE=local|s3
+  #   USE_POSTGRES_CONTAINER=false  # для внешней БД
+  #
+  # Примеры:
+  # 1. SQLite + Local: docker-compose up
+  # 2. PostgreSQL (контейнер): docker-compose --profile postgresql up
+  # 3. PostgreSQL (внешняя): DATABASE_PROVIDER=postgresql DATABASE_URL=... docker-compose up
   avatar-backend:
     build:
       context: ../backend

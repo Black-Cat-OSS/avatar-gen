@@ -24,12 +24,28 @@ frontend/docker/
 Начиная с версии 3.0, проект использует **единый файл docker-compose.yml** с
 профилями вместо множества отдельных файлов.
 
-### Доступные профили
+### Доступные конфигурации
 
 - **default** (без профиля) - SQLite + Local Storage
-- **postgresql** - PostgreSQL Database + Local Storage
-- **s3** - SQLite + S3 Storage (через переменные окружения)
-- **postgresql + s3** - PostgreSQL + S3 Storage (комбинация)
+- **postgresql** (профиль) - PostgreSQL Database в контейнере (для
+  разработки/тестирования)
+- **postgresql-external** - Внешняя PostgreSQL Database (для продакшена)
+- **s3** - S3 Storage (через переменные окружения)
+
+### Когда использовать контейнер PostgreSQL vs внешнюю БД
+
+**Контейнер PostgreSQL** (`--profile postgresql`):
+
+- ✅ Локальная разработка
+- ✅ Тестирование
+- ✅ CI/CD pipelines
+- ❌ НЕ для продакшена
+
+**Внешняя PostgreSQL**:
+
+- ✅ Продакшен (управляемая БД: AWS RDS, Azure Database, etc.)
+- ✅ Staging окружение с готовой БД
+- ✅ Любой случай, когда БД уже существует
 
 ## 🚀 Использование
 
@@ -69,7 +85,7 @@ app:
       save_path: './storage/avatars'
 ```
 
-### Запуск с PostgreSQL
+### Запуск с PostgreSQL (контейнер для разработки/тестирования)
 
 ```bash
 # Используя Docker Compose напрямую
@@ -81,9 +97,47 @@ docker-compose -f docker/docker-compose.yml --profile postgresql up
 
 **Что происходит:**
 
-- Запускается сервис `postgres` (включается только с профилем `postgresql`)
-- Backend настраивается на подключение к PostgreSQL
+- Запускается сервис `postgres` (контейнер PostgreSQL 17 Alpine)
+- Backend настраивается на подключение к контейнеру
 - DATABASE_PROVIDER автоматически устанавливается в `postgresql`
+- **Использование:** локальная разработка, тестирование, CI/CD
+
+### Запуск с внешней PostgreSQL (продакшен)
+
+```bash
+# Установите URL вашей внешней БД
+export DATABASE_URL=postgresql://user:password@your-db-host:5432/avatar_gen
+
+# Запустите без контейнера postgres
+./scripts/start.sh --db postgresql-external
+
+# Или напрямую через docker-compose
+DATABASE_PROVIDER=postgresql \
+DATABASE_URL=postgresql://user:password@your-db-host:5432/avatar_gen \
+docker-compose -f docker/docker-compose.yml up
+```
+
+**Что происходит:**
+
+- Контейнер PostgreSQL НЕ запускается
+- Backend подключается к вашей внешней БД
+- Используется для продакшена с управляемыми БД (AWS RDS, Azure, etc.)
+
+**Примеры внешних БД:**
+
+```bash
+# AWS RDS
+export DATABASE_URL=postgresql://admin:secret@mydb.abc123.us-east-1.rds.amazonaws.com:5432/avatar_gen
+
+# Azure Database for PostgreSQL
+export DATABASE_URL=postgresql://admin@myserver:secret@myserver.postgres.database.azure.com:5432/avatar_gen
+
+# Google Cloud SQL
+export DATABASE_URL=postgresql://user:pass@/avatar_gen?host=/cloudsql/project:region:instance
+
+# Собственный сервер
+export DATABASE_URL=postgresql://dbuser:dbpass@192.168.1.100:5432/avatar_gen
+```
 
 ### Запуск с S3 хранилищем
 
@@ -153,16 +207,24 @@ Backend настраивается через следующие перемен�
 | `S3_SECRET_KEY`     | -                                         | Secret key для S3                  |
 | `S3_REGION`         | `us-east-1`                               | Регион S3                          |
 
+**Примечание:** При использовании внешней PostgreSQL просто установите
+`DATABASE_URL` на вашу БД, контейнер postgres запускаться не будет.
+
 ### Ручное управление через docker-compose
 
 ```bash
 # SQLite + Local Storage (default)
 docker-compose -f docker/docker-compose.yml up
 
-# PostgreSQL + Local Storage
+# PostgreSQL (контейнер) + Local Storage - для разработки
 DATABASE_PROVIDER=postgresql \
 DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen \
 docker-compose -f docker/docker-compose.yml --profile postgresql up
+
+# PostgreSQL (внешняя) + Local Storage - для продакшена
+DATABASE_PROVIDER=postgresql \
+DATABASE_URL=postgresql://user:password@external-db-host:5432/avatar_gen \
+docker-compose -f docker/docker-compose.yml up
 
 # SQLite + S3 Storage
 STORAGE_TYPE=s3 \
@@ -172,15 +234,15 @@ S3_ACCESS_KEY=xxx \
 S3_SECRET_KEY=yyy \
 docker-compose -f docker/docker-compose.yml up
 
-# PostgreSQL + S3 Storage
+# PostgreSQL (внешняя) + S3 Storage - типичный продакшен
 DATABASE_PROVIDER=postgresql \
-DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen \
+DATABASE_URL=postgresql://user:password@external-db-host:5432/avatar_gen \
 STORAGE_TYPE=s3 \
 S3_ENDPOINT=https://s3.example.com \
 S3_BUCKET=my-bucket \
 S3_ACCESS_KEY=xxx \
 S3_SECRET_KEY=yyy \
-docker-compose -f docker/docker-compose.yml --profile postgresql up
+docker-compose -f docker/docker-compose.yml up
 ```
 
 ## 🐳 Сервисы
@@ -338,11 +400,55 @@ pg_isready -U postgres -d avatar_gen
 - Retries: 5
 - Start period: 30s
 
+## 🌟 Типичные сценарии использования
+
+### Разработка / Тестирование
+
+```bash
+# Все в контейнерах, легко запустить и удалить
+./scripts/start.sh --db postgresql
+
+# Или с S3 для тестирования
+./scripts/start.sh --db postgresql --storage s3
+```
+
+### Продакшен
+
+```bash
+# Внешние управляемые сервисы
+export DATABASE_URL=postgresql://user:pass@prod-db.example.com:5432/avatar_gen
+export S3_ENDPOINT=https://s3.amazonaws.com
+export S3_BUCKET=prod-avatars
+export S3_ACCESS_KEY=xxx
+export S3_SECRET_KEY=yyy
+
+./scripts/start.sh --db postgresql-external --storage s3
+```
+
+### CI/CD Pipeline
+
+```yaml
+# GitHub Actions / GitLab CI пример
+services:
+  postgres:
+    image: postgres:17-alpine
+    env:
+      POSTGRES_DB: avatar_gen_test
+      POSTGRES_PASSWORD: test
+
+env:
+  DATABASE_URL: postgresql://postgres:test@postgres:5432/avatar_gen_test
+
+run: |
+  docker-compose --profile postgresql up -d
+  npm test
+```
+
 ## 📝 Примечания
 
 1. **Единый файл конфигурации** - все настройки в `docker-compose.yml`
-2. **Профили для опциональных сервисов** - PostgreSQL запускается только при
-   явном указании
+2. **Профиль postgresql только для контейнера** - внешняя БД работает без
+   профиля
 3. **Управление через переменные окружения** - гибкая настройка без дублирования
    файлов
 4. **Dockerfile пути** - указывают на файлы в `backend/docker/` и
@@ -352,6 +458,9 @@ pg_isready -U postgres -d avatar_gen
    - ✅ Монтируются как volumes при запуске контейнера
    - ✅ Можно изменять без пересборки образа
    - ✅ Используется read-only режим для безопасности
+6. **PostgreSQL контейнер vs внешняя:**
+   - ✅ Контейнер: разработка, тестирование, CI/CD
+   - ✅ Внешняя: продакшен, staging с готовой БД
 
 ## 🔄 Изменение конфигурации без пересборки
 
