@@ -109,75 +109,61 @@ app:
 
 ---
 
-## 🚀 Генерация конфигурации
+## 🚀 Работа с конфигурацией
 
-### Скрипт generate-env.js
+### Прямое использование YAML (без .env)
 
-Скрипт автоматически:
-1. Читает `settings.yaml` (базовая конфигурация)
-2. Проверяет `NODE_ENV`
-3. Загружает `settings.{NODE_ENV}.yaml` если существует
-4. Мержит конфигурации
-5. Генерирует `.env` файл
-6. Обновляет `prisma/schema.prisma` с правильным provider
+Backend **не использует .env файлы**. Вся конфигурация хранится только в YAML файлах:
 
-### Использование
+1. Приложение читает `settings.yaml` напрямую через `YamlConfigService`
+2. Для Prisma команд используется утилита `prisma-runner.js`, которая:
+   - Читает YAML конфигурацию
+   - Вычисляет `DATABASE_URL`
+   - Устанавливает его в `process.env` перед запуском Prisma
+
+### Использование Prisma команд
+
+Все Prisma команды автоматически читают DATABASE_URL из YAML:
 
 ```bash
-# Без NODE_ENV (используется базовая конфигурация - SQLite)
-node scripts/generate-env.js
+# Генерация Prisma client (читает settings.yaml)
+npm run prisma:generate
 
-# С NODE_ENV=development (SQLite для разработки)
-NODE_ENV=development node scripts/generate-env.js
+# Миграции (читает settings.yaml или settings.{NODE_ENV}.yaml)
+npm run prisma:migrate
 
-# С NODE_ENV=production (PostgreSQL для production)
-NODE_ENV=production node scripts/generate-env.js
+# Production деплой (с NODE_ENV=production)
+NODE_ENV=production npm run prisma:deploy
 
-# С NODE_ENV=test (SQLite in-memory для тестов)
-NODE_ENV=test node scripts/generate-env.js
+# Prisma Studio
+npm run prisma:studio
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 # Development
-$env:NODE_ENV="development"; node scripts/generate-env.js
+npm run prisma:generate
 
 # Production
-$env:NODE_ENV="production"; node scripts/generate-env.js
+$env:NODE_ENV="production"; npm run prisma:deploy
 ```
 
 ---
 
-## 📊 Примеры вывода
+## 📊 Как это работает
 
-### SQLite (default)
-
+### Приложение
 ```
-Loading base configuration from: E:\...\backend\settings.yaml
-Current NODE_ENV: not set
-No valid NODE_ENV set, using base configuration only
-✓ Prisma schema updated for sqlite
-✓ .env file generated successfully
-  Environment: default
-  Database Provider: sqlite
-  Database URL: file:./storage/database/database.sqlite
+settings.yaml → YamlConfigService → DatabaseService → PrismaClient
 ```
 
-### PostgreSQL (production)
+### Prisma CLI
+```
+settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
+```
 
-```
-Loading base configuration from: E:\...\backend\settings.yaml
-Current NODE_ENV: production
-Looking for environment config at: E:\...\backend\settings.production.yaml
-Loading environment-specific configuration from: E:\...\backend\settings.production.yaml
-Environment-specific configuration merged successfully
-✓ Prisma schema updated for postgresql
-✓ .env file generated successfully
-  Environment: production
-  Database Provider: postgresql
-  Database URL: postgresql://postgres:password@postgres:5432/avatar_gen
-```
+Нет промежуточных .env файлов - все читается напрямую из YAML!
 
 ---
 
@@ -262,10 +248,10 @@ npm test
 # 1. Запустите PostgreSQL
 docker-compose up postgres -d
 
-# 2. Сгенерируйте production конфигурацию
-NODE_ENV=production node scripts/generate-env.js
+# 2. Запустите миграции с production окружением
+NODE_ENV=production npm run prisma:deploy
 
-# 3. Запустите миграции
+# 3. Запустите приложение
 npm run prisma:migrate
 
 # 4. Запустите приложение
@@ -278,38 +264,26 @@ npm run start:dev
 
 ### Проблема: Backend подключается к SQLite вместо PostgreSQL
 
-**Причина:** Не установлена переменная `NODE_ENV=production` перед генерацией `.env`
+**Причина:** Не установлена переменная `NODE_ENV=production`
 
 **Решение:**
 ```bash
-# 1. Установите NODE_ENV
-export NODE_ENV=production
+# 1. Проверьте, что settings.production.yaml существует
+cat backend/settings.production.yaml
 
-# 2. Перегенерируйте .env
-node scripts/generate-env.js
+# 2. Запустите с правильным окружением
+NODE_ENV=production npm run start
 
-# 3. Проверьте .env файл
-cat .env
-
-# Должно быть:
-# DATABASE_URL="postgresql://postgres:password@postgres:5432/avatar_gen"
+# 3. Для Prisma команд также используйте NODE_ENV
+NODE_ENV=production npm run prisma:migrate
 ```
 
 ### Проблема: Prisma schema использует неправильный provider
 
-**Причина:** `.env` файл не был перегенерирован после изменения конфигурации
+**Примечание:** Начиная с версии без .env, `prisma/schema.prisma` статичен с `provider = "sqlite"`.
+PostgreSQL поддерживается через runtime конфигурацию в приложении.
 
-**Решение:**
-```bash
-# Перегенерируйте с правильным NODE_ENV
-NODE_ENV=production node scripts/generate-env.js
-
-# Проверьте prisma/schema.prisma
-cat prisma/schema.prisma | grep provider
-
-# Должно быть:
-# provider = "postgresql"
-```
+**Решение:** Prisma schema не нужно менять. Приложение автоматически использует правильный провайдер на основе YAML конфигурации.
 
 ### Проблема: PostgreSQL не запускается в Docker
 
@@ -341,10 +315,9 @@ docker-compose logs postgres
 
 - `backend/settings.yaml` - Базовая конфигурация
 - `backend/settings.production.yaml` - Production конфигурация с PostgreSQL
-- `backend/scripts/generate-env.js` - Скрипт генерации .env
+- `backend/scripts/prisma-runner.js` - Утилита для Prisma команд с DATABASE_URL из YAML
 - `backend/src/config/yaml-config.service.ts` - Сервис загрузки конфигурации
-- `backend/.env` - Сгенерированные переменные окружения (gitignore)
-- `backend/prisma/schema.prisma` - Prisma схема (автогенерируемая)
+- `backend/prisma/schema.prisma` - Prisma схема (статичная, provider="sqlite")
 
 ---
 
