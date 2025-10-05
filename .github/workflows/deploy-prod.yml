@@ -334,35 +334,8 @@ jobs:
       - name: Create external network
         run: docker network create avatar-gen-external
 
-      - name: Create test configuration files
+      - name: Prepare integration test environment
         run: |
-          # Создаем базовую конфигурацию для интеграционных тестов с SQLite файлом
-          cat > backend/settings.yaml << 'EOF'
-          app:
-            storage:
-              type: 'local'
-              local:
-                save_path: './storage/avatars'
-            server:
-              port: 3000
-            database:
-              driver: 'sqlite'
-              connection:
-                maxRetries: 3
-                retryDelay: 1000
-              sqlite_params:
-                url: 'file:./storage/database/database.sqlite'
-            logging:
-              level: 'info'
-              verbose: false
-              pretty: true
-          EOF
-
-          # Создаем пустые файлы для других конфигураций, чтобы не было ошибок монтирования
-          touch backend/settings.production.yaml
-          touch backend/settings.local.yaml
-          touch backend/settings.production.local.yaml
-
           # Создаем директории для SQLite
           mkdir -p backend/storage/database
           mkdir -p backend/storage/avatars
@@ -371,14 +344,23 @@ jobs:
           touch backend/storage/database/database.sqlite
           chmod -R 777 backend/storage
 
-          # Проверяем, что файл создан правильно
-          echo "=== Created settings.yaml ==="
-          cat backend/settings.yaml
-          echo "==========================="
-          ls -la backend/settings.yaml
+          # Создаем docker-compose.override.yml для отключения монтирования конфигов
+          # В CI полагаемся ТОЛЬКО на переменные окружения
+          cat > docker/docker-compose.override.yml << 'EOF'
+          services:
+            avatar-backend:
+              volumes:
+                # Монтируем только storage, БЕЗ конфигов
+                - ../backend/storage:/app/storage
+                - ../backend/logs:/app/logs
+          EOF
+
           echo "=== Storage directory permissions ==="
           ls -la backend/storage/
           ls -la backend/storage/database/
+
+          echo "=== Docker Compose Override ==="
+          cat docker/docker-compose.override.yml
 
       - name: Start services with Docker Compose
         run: |
@@ -386,6 +368,14 @@ jobs:
           export DATABASE_URL="file:./storage/database/database.sqlite"
           export DATABASE_PROVIDER="sqlite"
           export STORAGE_TYPE="local"
+          export NODE_ENV="production"
+
+          echo "=== Environment Variables ==="
+          echo "DATABASE_URL=$DATABASE_URL"
+          echo "DATABASE_PROVIDER=$DATABASE_PROVIDER"
+          echo "STORAGE_TYPE=$STORAGE_TYPE"
+          echo "NODE_ENV=$NODE_ENV"
+          echo "============================"
 
           docker compose -f docker/docker-compose.yml up --build -d
           echo "Waiting for services to be ready..."
@@ -400,6 +390,10 @@ jobs:
           echo "=== Backend Container Logs ==="
           docker compose -f docker/docker-compose.yml logs avatar-backend | head -100
           echo "=============================="
+
+          echo "=== Backend Container Environment (if running) ==="
+          docker compose -f docker/docker-compose.yml exec -T avatar-backend env | grep -E "(DATABASE|STORAGE|NODE_ENV|CONFIG)" || echo "Container not running or exec failed"
+          echo "===================================================="
 
       - name: Check backend health
         run: |

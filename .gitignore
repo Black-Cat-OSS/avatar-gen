@@ -45,6 +45,9 @@ frontend/.env.production.local
 
 storybook-static
 
+# Docker Compose override files (generated in CI)
+docker/docker-compose.override.yml
+
 _task.md
 _issue.md
 reports/
