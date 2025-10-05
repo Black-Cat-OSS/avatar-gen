@@ -3,7 +3,9 @@ name: Production Deploy Pipeline
 on:
   # Автоматический деплой только при push в main
   # (после мерджа PR из develop)
-  # Включает: полное тестирование → сборку → интеграцию → деплой
+  #
+  # Pipeline: тесты → сборка → интеграция → деплой
+  # Примечание: Линтинг пропущен, т.к. код уже прошел проверку в CI
   push:
     branches:
       - main
@@ -28,64 +30,13 @@ env:
 
 jobs:
   # ========================================
-  # Stage 1: Linting
+  # Stage 1: Unit & E2E Tests
   # ========================================
-  lint:
-    name: Lint Code
-    runs-on: ubuntu-latest
-    if: github.event.inputs.skip_tests != 'true'
-    strategy:
-      matrix:
-        component: [backend, frontend]
-    defaults:
-      run:
-        working-directory: ${{ matrix.component }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ matrix.component }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', matrix.component)) }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-${{ matrix.component }}-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        if: matrix.component == 'backend'
-        run: pnpm exec prisma generate
-
-      - name: Run linter
-        run: pnpm run lint
-
-  # ========================================
-  # Stage 2: Unit & E2E Tests
-  # ========================================
+  # Примечание: Линтинг пропущен, т.к. код уже прошел проверку в CI
+  # при PR в develop и PR в main (2-3 проверки до деплоя)
   test-backend:
     name: Test Backend (${{ matrix.test_name }})
     runs-on: ubuntu-latest
-    needs: [lint]
     if: github.event.inputs.skip_tests != 'true'
     strategy:
       fail-fast: false
@@ -229,12 +180,11 @@ jobs:
           name: backend-coverage-${{ matrix.database }}-${{ matrix.storage }}
 
   # ========================================
-  # Stage 3: Build Frontend
+  # Stage 2: Build Frontend
   # ========================================
   build-frontend:
     name: Build Frontend
     runs-on: ubuntu-latest
-    needs: [lint]
     if: github.event.inputs.skip_tests != 'true'
     defaults:
       run:
@@ -282,7 +232,7 @@ jobs:
           retention-days: 1
 
   # ========================================
-  # Stage 4: Docker Images Build
+  # Stage 3: Docker Images Build
   # ========================================
   build-images:
     name: Build Docker Images
@@ -328,7 +278,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ========================================
-  # Stage 5: Integration Tests
+  # Stage 4: Integration Tests
   # ========================================
   integration-test:
     name: Integration Test (Docker Compose)
@@ -390,7 +340,7 @@ jobs:
         run: docker compose -f docker/docker-compose.yml down --volumes
 
   # ========================================
-  # Stage 6: Production Deployment
+  # Stage 5: Production Deployment
   # ========================================
   deploy:
     name: Deploy to Production Server
