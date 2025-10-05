@@ -46,7 +46,7 @@ jobs:
       run:
         working-directory: backend
 
-    # PostgreSQL сервис только для PostgreSQL тестов
+    # PostgreSQL сервис для PostgreSQL тестов
     services:
       postgres:
         image: postgres:17-alpine
@@ -61,8 +61,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        profiles:
-          - postgresql
 
     steps:
       - name: Checkout code
@@ -195,8 +193,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        profiles:
-          - postgresql
 
     steps:
       - name: Checkout code
@@ -229,10 +225,16 @@ jobs:
           cp backend/settings.test.yaml backend/settings.test.${{ matrix.profile }}.yaml
 
           # Запускаем с нужным профилем
-          docker compose -f docker/docker-compose.yml \
-            -f docker/docker-compose.${{ matrix.profile }}.yml \
-            --profile ${{ matrix.profile }} \
-            up --build -d
+          if [ "${{ matrix.profile }}" = "postgresql" ]; then
+            # PostgreSQL профиль
+            docker compose -f docker/docker-compose.yml \
+              --profile postgresql \
+              up --build -d
+          else
+            # SQLite (без профиля)
+            docker compose -f docker/docker-compose.yml \
+              up --build -d
+          fi
 
           # Ждем готовности сервисов
           sleep 30
@@ -242,10 +244,11 @@ jobs:
           curl -f http://localhost:80/health || exit 1
 
           # Останавливаем
-          docker compose -f docker/docker-compose.yml \
-            -f docker/docker-compose.${{ matrix.profile }}.yml \
-            --profile ${{ matrix.profile }} \
-            down
+          if [ "${{ matrix.profile }}" = "postgresql" ]; then
+            docker compose -f docker/docker-compose.yml --profile postgresql down
+          else
+            docker compose -f docker/docker-compose.yml down
+          fi
 
       - name: Cleanup
         if: always()

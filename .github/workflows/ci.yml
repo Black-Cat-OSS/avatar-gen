@@ -1,11 +1,11 @@
 name: CI
 
 on:
-  # PR в develop (feature/fix ветки) и main (develop ветка)
+  # PR в develop (feature/fix ветки) и main (develop → main) - тестирование
   pull_request:
     branches:
-      - develop # Быстрые тесты для feature/fix
-      - main # Полные тесты перед production
+      - develop
+      - main
     types: [opened, synchronize, reopened]
 
   # Push в develop - быстрые тесты после мерджа
