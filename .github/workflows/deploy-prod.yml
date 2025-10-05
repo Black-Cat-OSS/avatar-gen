@@ -336,7 +336,7 @@ jobs:
 
       - name: Create test configuration files
         run: |
-          # Создаем конфигурацию для интеграционных тестов с SQLite файлом
+          # Создаем базовую конфигурацию для интеграционных тестов с SQLite файлом
           cat > backend/settings.yaml << 'EOF'
           app:
             storage:
@@ -358,18 +358,41 @@ jobs:
               pretty: true
           EOF
 
+          # Создаем пустые файлы для других конфигураций, чтобы не было ошибок монтирования
+          touch backend/settings.production.yaml
+          touch backend/settings.local.yaml
+          touch backend/settings.production.local.yaml
+
           # Создаем директории для SQLite
           mkdir -p backend/storage/database
           mkdir -p backend/storage/avatars
 
+          # Проверяем, что файл создан правильно
+          echo "=== Created settings.yaml ==="
+          cat backend/settings.yaml
+          echo "==========================="
+          ls -la backend/settings.yaml
+
       - name: Start services with Docker Compose
         run: |
+          # Явно устанавливаем DATABASE_URL для избежания переопределения
+          export DATABASE_URL="file:./storage/database/database.sqlite"
+          export DATABASE_PROVIDER="sqlite"
+          export STORAGE_TYPE="local"
+
           docker compose -f docker/docker-compose.yml up --build -d
           echo "Waiting for services to be ready..."
           sleep 45
 
       - name: Check container status
         run: docker compose -f docker/docker-compose.yml ps
+
+      - name: Show backend logs for debugging
+        if: always()
+        run: |
+          echo "=== Backend Container Logs ==="
+          docker compose -f docker/docker-compose.yml logs avatar-backend | head -100
+          echo "=============================="
 
       - name: Check backend health
         run: |
