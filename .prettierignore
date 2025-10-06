@@ -41,6 +41,9 @@ pnpm-lock.yaml
 .git/
 .gitignore
 
+# GitHub workflows (contain bash heredoc that breaks YAML formatting)
+.github/workflows/
+
 # Backups
 backups/
 *.backup
