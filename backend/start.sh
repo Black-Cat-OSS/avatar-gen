@@ -37,9 +37,14 @@ else
   exit 1
 fi
 
+# Удаляем старый Prisma Client (критично для переключения provider)
+echo "🧹 Cleaning old Prisma Client..."
+rm -rf /app/node_modules/.prisma
+rm -rf /app/node_modules/@prisma/client
+
 # Генерируем Prisma Client с правильным provider
 echo "🔧 Generating Prisma Client for $DATABASE_PROVIDER..."
-npx prisma generate
+npx prisma generate --schema=/app/prisma/schema.prisma
 
 # Синхронизируем схему базы данных
 # Используем db push вместо migrate deploy для контейнеров,
