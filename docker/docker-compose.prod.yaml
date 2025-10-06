@@ -1,3 +1,5 @@
+name: ava-gen
+
 services:
   # Nginx Gateway (Reverse Proxy)
   gateway:
