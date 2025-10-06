@@ -5,20 +5,25 @@
 # Usage: ./start.sh [options]
 #
 # Options: 
-#   --db TYPE           Database type: sqlite (default) | postgresql
+#   --db TYPE           Database type: sqlite (default) | postgresql | postgresql-external
 #   --storage TYPE      Storage type: local (default) | s3
 #   --build | -b        Rebuild images before starting
 #
 # Examples:
 #   ./start.sh                                      # SQLite + local storage
-#   ./start.sh --db postgresql                      # PostgreSQL + local storage
+#   ./start.sh --db postgresql                      # PostgreSQL (container) + local storage
+#   ./start.sh --db postgresql-external             # PostgreSQL (external) + local storage
 #   ./start.sh --storage s3                         # SQLite + S3 storage
 #   ./start.sh --db postgresql --storage s3         # PostgreSQL + S3 storage
 #   ./start.sh --db postgresql --storage s3 -b      # PostgreSQL + S3 + rebuild
+#
+# Note: For postgresql-external, set DATABASE_URL environment variable first:
+#   export DATABASE_URL=postgresql://user:password@host:5432/dbname
+#   ./start.sh --db postgresql-external
 
 set -e
 
-PROFILE="sqlite"
+DB_TYPE="sqlite"
 BUILD_FLAG=""
 STORAGE_TYPE="local"
 
@@ -26,7 +31,7 @@ STORAGE_TYPE="local"
 while [ $# -gt 0 ]; do
     case "$1" in
         --db)
-            PROFILE="$2"
+            DB_TYPE="$2"
             shift 2
             ;;
         --storage)
@@ -43,17 +48,27 @@ while [ $# -gt 0 ]; do
             echo "Usage: ./start.sh [options]"
             echo ""
             echo "Options:"
-            echo "  --db TYPE        Database type: sqlite (default) | postgresql"
+            echo "  --db TYPE        Database type: sqlite (default) | postgresql | postgresql-external"
             echo "  --storage TYPE   Storage type: local (default) | s3"
             echo "  --build | -b     Rebuild images before starting"
+            echo ""
+            echo "Note: For postgresql-external, set DATABASE_URL first:"
+            echo "  export DATABASE_URL=postgresql://user:password@host:5432/dbname"
             exit 1
             ;;
     esac
 done
 
 echo "🚀 Starting Avatar Generator..."
-echo "📦 Database: $PROFILE"
+echo "📦 Database: $DB_TYPE"
 echo "💾 Storage: $STORAGE_TYPE"
+
+# Validate database type
+if [ "$DB_TYPE" != "sqlite" ] && [ "$DB_TYPE" != "postgresql" ] && [ "$DB_TYPE" != "postgresql-external" ]; then
+    echo "❌ Invalid database type: $DB_TYPE"
+    echo "Valid database types: sqlite, postgresql, postgresql-external"
+    exit 1
+fi
 
 # Validate storage type
 if [ "$STORAGE_TYPE" != "local" ] && [ "$STORAGE_TYPE" != "s3" ]; then
@@ -81,28 +96,39 @@ else
     echo "✅ External network already exists"
 fi
 
-# Build compose files list based on profile and storage
-COMPOSE_FILES="-f docker/docker-compose.yml"
-PROFILE_FLAG=""
+# Setup environment variables for docker-compose
+export STORAGE_TYPE=$STORAGE_TYPE
 
-# Add database profile
-if [ "$PROFILE" = "sqlite" ]; then
+# Setup database configuration based on type
+if [ "$DB_TYPE" = "sqlite" ]; then
     echo "🔨 Using SQLite database..."
-    COMPOSE_FILES="$COMPOSE_FILES -f docker/docker-compose.sqlite.yml"
-elif [ "$PROFILE" = "postgresql" ]; then
-    echo "🔨 Using PostgreSQL database..."
-    COMPOSE_FILES="$COMPOSE_FILES -f docker/docker-compose.postgresql.yml"
+    export DATABASE_PROVIDER="sqlite"
+    export DATABASE_URL="file:./storage/database/database.sqlite"
+    PROFILE_FLAG=""
+elif [ "$DB_TYPE" = "postgresql" ]; then
+    echo "🔨 Using PostgreSQL database (container)..."
+    export DATABASE_PROVIDER="postgresql"
+    export DATABASE_URL="postgresql://postgres:password@postgres:5432/avatar_gen"
     PROFILE_FLAG="--profile postgresql"
-else
-    echo "❌ Invalid profile: $PROFILE"
-    echo "Valid profiles: sqlite, postgresql"
-    exit 1
+elif [ "$DB_TYPE" = "postgresql-external" ]; then
+    echo "🔨 Using PostgreSQL database (external)..."
+    export DATABASE_PROVIDER="postgresql"
+    
+    # Check if DATABASE_URL is set
+    if [ -z "$DATABASE_URL" ]; then
+        echo "❌ ERROR: DATABASE_URL environment variable is not set!"
+        echo "   Please set it before running this script:"
+        echo "   export DATABASE_URL=postgresql://user:password@host:5432/dbname"
+        exit 1
+    fi
+    
+    echo "   Connection: $DATABASE_URL"
+    PROFILE_FLAG=""
 fi
 
-# Add storage profile
+# Setup storage configuration
 if [ "$STORAGE_TYPE" = "s3" ]; then
     echo "💾 Using S3 storage..."
-    COMPOSE_FILES="$COMPOSE_FILES -f docker/docker-compose.s3.yml"
     
     # Warn if S3 credentials are not set
     if [ -z "$S3_BUCKET" ] || [ -z "$S3_ACCESS_KEY" ] || [ -z "$S3_SECRET_KEY" ]; then
@@ -117,11 +143,14 @@ fi
 # Start services
 echo ""
 echo "🚀 Starting services..."
-echo "📝 Compose files: $COMPOSE_FILES"
-[ -n "$PROFILE_FLAG" ] && echo "🏷️  Profile: $PROFILE_FLAG"
+echo "🏷️  Profile: ${PROFILE_FLAG:-default}"
+echo "🌍 Environment:"
+echo "   DATABASE_PROVIDER=$DATABASE_PROVIDER"
+echo "   DATABASE_URL=$DATABASE_URL"
+echo "   STORAGE_TYPE=$STORAGE_TYPE"
 echo ""
 
-docker-compose $COMPOSE_FILES $PROFILE_FLAG up $BUILD_FLAG
+docker-compose -f docker/docker-compose.yml $PROFILE_FLAG up $BUILD_FLAG
 
 echo ""
 echo "✅ Services started!"

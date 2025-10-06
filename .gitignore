@@ -16,9 +16,7 @@ dist
 dist-ssr
 *.local
 
-# Environment files
-# Backend .env is auto-generated from settings.yaml
-backend/.env
+# Backend storage (SQLite database, avatars, logs)
 backend/storage
 
 # Frontend .env files
@@ -40,6 +38,9 @@ frontend/.env.production.local
 *.sw?
 
 storybook-static
+
+# Docker Compose override files (generated in CI)
+docker/docker-compose.override.yml
 
 _task.md
 _issue.md

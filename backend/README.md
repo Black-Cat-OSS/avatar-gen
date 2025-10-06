@@ -242,11 +242,19 @@ docker run -p 3000:3000 \
 - `npm run test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:cov` - Run tests with coverage
+<<<<<<< HEAD
 - `npm run prisma:generate` - Generate Prisma client
 - `npm run prisma:migrate` - Run database migrations
 - `npm run prisma:studio` - Open Prisma Studio
 - `npm run prisma:reset` - Reset database (development only)
 - `npm run prisma:deploy` - Deploy migrations to production
+=======
+- `npm run prisma:generate` - Generate Prisma client (reads DATABASE_URL from YAML)
+- `npm run prisma:migrate` - Run database migrations (reads DATABASE_URL from YAML)
+- `npm run prisma:deploy` - Deploy migrations to production
+- `npm run prisma:studio` - Open Prisma Studio (database GUI)
+- `npm run prisma:reset` - Reset database (development only)
+>>>>>>> 9579945 (feat(ci): Optimize deploy pipeline)
 
 ### Project Structure
 
