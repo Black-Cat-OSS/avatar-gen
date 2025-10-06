@@ -20,11 +20,6 @@ on:
         required: false
         default: false
         type: boolean
-      skip_integration:
-        description: 'Skip integration tests'
-        required: false
-        default: false
-        type: boolean
       force_deploy:
         description: 'Force deploy (even on PR)'
         required: false
@@ -33,7 +28,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
   pull-requests: read
 
 env:
@@ -324,298 +318,19 @@ jobs:
           cache-to: type=gha,mode=max,scope=gateway
 
   # ========================================
-  # Stage 4: Integration Tests
-  # ========================================
-  integration-test:
-    name: Integration Test (SQLite + Local)
-    runs-on: ubuntu-latest
-    needs: [build-backend-image, build-frontend-image, build-gateway-image]
-    if: github.event.inputs.skip_integration != 'true'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Create external network
-        run: docker network create avatar-gen-external
-
-      - name: Prepare integration test environment
-        run: |
-          echo "Preparing environment for SQLite + Local Storage test..."
-
-          # Создаем директории для storage
-          mkdir -p backend/storage/database
-          mkdir -p backend/storage/avatars
-
-          # Создаем пустой файл БД для SQLite и устанавливаем права
-          touch backend/storage/database/database.sqlite
-          chmod -R 777 backend/storage
-
-          # Создаем пустые конфиг файлы, чтобы Docker не создал их как директории
-          touch backend/settings.local.yaml
-          touch backend/settings.production.local.yaml
-          touch backend/settings.production.yaml
-
-          # Создаем минимальный settings.yaml для базового теста
-          cat > backend/settings.yaml << 'EOF'
-          app:
-            storage:
-              type: 'local'
-              local:
-                save_path: './storage/avatars'
-            server:
-              host: '0.0.0.0'
-              port: 3000
-            database:
-              driver: 'sqlite'
-              connection:
-                maxRetries: 3
-                retryDelay: 2000
-              sqlite_params:
-                url: 'file:./storage/database/database.sqlite'
-            logging:
-              level: 'info'
-              verbose: false
-              pretty: true
-          EOF
-
-          echo "=== Created settings.yaml ==="
-          cat backend/settings.yaml
-
-          # Создаем docker-compose.override.yml для CI
-          # КРИТИЧНО: Отключаем рестарты для тестов!
-          cat > docker/docker-compose.override.yml << 'EOF'
-          services:
-            avatar-backend:
-              restart: "no"
-              volumes:
-                - ../backend/storage:/app/storage
-                - ../backend/logs:/app/logs
-                - ../backend/settings.yaml:/app/settings.yaml:ro
-                - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
-            
-            avatar-frontend:
-              restart: "no"
-            
-            gateway:
-              restart: "no"
-          EOF
-
-          echo "=== Docker Compose Override ==="
-          cat docker/docker-compose.override.yml
-
-          echo "=== Storage directory permissions ==="
-          ls -la backend/storage/
-          ls -la backend/storage/database/
-
-      - name: Start services with Docker Compose
-        run: |
-          echo "🗄️  Starting services with SQLite + Local Storage..."
-          docker compose -f docker/docker-compose.yml up --build -d
-
-          echo "Waiting for services to be ready..."
-          sleep 30
-
-      - name: Check container status
-        run: |
-          echo "=== Docker Compose Services ==="
-          docker compose -f docker/docker-compose.yml ps
-
-      - name: Show backend logs for debugging
-        if: always()
-        run: |
-          echo "=== Backend Container Logs ==="
-          docker compose -f docker/docker-compose.yml logs avatar-backend
-          echo "==========================================================="
-
-      - name: Check backend health
-        run: |
-          echo "Checking backend health endpoint..."
-          for i in {1..10}; do
-            if curl -f http://localhost:3000/api/health; then
-              echo "Backend is healthy!"
-              exit 0
-            fi
-            echo "Attempt $i failed, retrying..."
-            sleep 5
-          done
-          echo "Backend health check failed after 10 attempts"
-          docker compose -f docker/docker-compose.yml logs avatar-backend
-          exit 1
-
-      - name: Check frontend health
-        run: |
-          echo "Checking frontend health endpoint..."
-          curl -f http://localhost:80/health || (docker compose -f docker/docker-compose.yml logs avatar-frontend && exit 1)
-
-      - name: Check gateway
-        run: |
-          echo "Checking gateway..."
-          curl -f http://localhost:80/ || (docker compose -f docker/docker-compose.yml logs gateway && exit 1)
-
-      - name: Collect logs on failure
-        if: failure()
-        run: |
-          echo "=== Collecting logs from containers ==="
-          mkdir -p test-artifacts/docker-logs
-
-          # Сохраняем логи из всех контейнеров
-          echo "Collecting docker compose logs..."
-          docker compose -f docker/docker-compose.yml logs > test-artifacts/docker-logs/all-services.log 2>&1 || true
-          docker compose -f docker/docker-compose.yml logs avatar-backend > test-artifacts/docker-logs/backend.log 2>&1 || true
-          docker compose -f docker/docker-compose.yml logs avatar-frontend > test-artifacts/docker-logs/frontend.log 2>&1 || true
-          docker compose -f docker/docker-compose.yml logs gateway > test-artifacts/docker-logs/gateway.log 2>&1 || true
-
-          # Сохраняем статус контейнеров
-          docker compose -f docker/docker-compose.yml ps > test-artifacts/container-status.txt 2>&1 || true
-          docker ps -a > test-artifacts/docker-ps.txt 2>&1 || true
-
-          echo "=== Logs collected to test-artifacts/ ==="
-          ls -la test-artifacts/
-
-      - name: Upload logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-test-logs-sqlite-local-${{ github.run_id }}
-          path: test-artifacts/
-          retention-days: 7
-          if-no-files-found: warn
-
-      - name: Create GitHub Issue with logs on failure
-        if: failure() && github.event_name == 'push'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const testName = 'SQLite + Local';
-            const database = 'sqlite';
-            const storage = 'local';
-            const branch = '${{ github.ref_name }}';
-            const sha = '${{ github.sha }}';
-            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
-            const commitUrl = '${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}';
-            const actor = '${{ github.actor }}';
-            const workflow = '${{ github.workflow }}';
-
-            // Читаем логи из test-artifacts
-            let backendLogs = '';
-            let containerStatus = '';
-
-            try {
-              backendLogs = fs.readFileSync('test-artifacts/docker-logs/backend.log', 'utf8');
-            } catch (e) {
-              backendLogs = `Could not read backend logs: ${e.message}`;
-            }
-
-            try {
-              containerStatus = fs.readFileSync('test-artifacts/container-status.txt', 'utf8');
-            } catch (e) {
-              containerStatus = `Could not read container status: ${e.message}`;
-            }
-
-            // Создаём Gist с полными логами (permanent storage)
-            let gistUrl = '';
-            try {
-              const gist = await github.rest.gists.create({
-                public: false,
-                description: `Integration Test Logs - ${testName} - ${sha.substring(0, 7)}`,
-                files: {
-                  'backend-full.log': { 
-                    content: backendLogs.substring(0, 1000000) || 'No logs available'  // Gist limit 1MB per file
-                  },
-                  'container-status.txt': { 
-                    content: containerStatus || 'No status available' 
-                  }
-                }
-              });
-              gistUrl = gist.data.html_url;
-              console.log(`Created Gist: ${gistUrl}`);
-            } catch (e) {
-              console.log(`Could not create gist: ${e.message}`);
-            }
-
-            // Берём последние 100 строк для issue body
-            const logLines = backendLogs.split('\n');
-            const lastLines = logLines.slice(-100).join('\n');
-
-            const body = `## Integration Test Failure Report
-
-            **Test Variant:** ${testName}
-            **Database:** ${database}
-            **Storage:** ${storage}
-            **Branch:** \`${branch}\`
-            **Commit:** ${sha.substring(0, 7)}
-            **Triggered by:** @${actor}
-
-            ### Environment
-            - **DATABASE_PROVIDER:** \`${database}\`
-            - **STORAGE_TYPE:** \`${storage}\`
-            - **NODE_ENV:** \`production\`
-
-            ### Quick Links
-            - [🔧 Workflow Run](${runUrl})
-            - [📝 Commit](${commitUrl})
-            ${gistUrl ? `- [📋 Full Logs (Gist - permanent)](${gistUrl})` : ''}
-            - [📦 Artifacts (expires in 7 days)](${runUrl}#artifacts)
-
-            ### Container Status
-            <details>
-            <summary>Click to expand</summary>
-
-            \`\`\`
-            ${containerStatus}
-            \`\`\`
-            </details>
-
-            ### Backend Logs (last 100 lines)
-            <details>
-            <summary>Click to expand</summary>
-
-            \`\`\`
-            ${lastLines}
-            \`\`\`
-            </details>
-
-            ### Next Steps
-            1. Check [full logs in Gist](${gistUrl || runUrl}) (permanent) or [Artifacts](${runUrl}#artifacts) (7 days)
-            2. Review backend container startup sequence
-            3. Verify Prisma schema generation
-            4. Check database connectivity (\`${database}\`)
-            5. Verify storage configuration (\`${storage}\`)
-
-            ---
-            *Auto-created by GitHub Actions - Workflow: \`${workflow}\`*`;
-
-            const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `CI Failure: Integration Test ${testName}`,
-              body: body,
-              labels: ['ci-failure', 'integration-test', 'automated', `db:${database}`, `storage:${storage}`]
-            });
-
-            console.log(`Created issue #${issue.data.number}`);
-
-      - name: Stop services
-        if: always()
-        run: docker compose -f docker/docker-compose.yml down --volumes
-
-  # ========================================
-  # Stage 5: Production Deployment
+  # Stage 4: Production Deployment
   # ========================================
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    needs: [integration-test]
+    needs: [test-backend, build-backend-image, build-frontend-image, build-gateway-image]
     # Деплой только при:
     # - push в main (после мерджа PR)
     # - ручной запуск с force_deploy=true
     # НЕ деплоим при PR в main (только тестируем)
     if: |
       always() &&
-      (needs.integration-test.result == 'success' || needs.integration-test.result == 'skipped') &&
+      (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') &&
       (github.event_name == 'push' || github.event.inputs.force_deploy == 'true')
     environment: production
     steps:
