@@ -11,6 +11,13 @@ PROFILE="${1:-sqlite}"
 echo "🚀 Building Docker images..."
 echo "📦 Profile: $PROFILE"
 
+# Validate profile
+if [ "$PROFILE" != "sqlite" ] && [ "$PROFILE" != "postgresql" ]; then
+    echo "❌ Invalid profile: $PROFILE"
+    echo "Valid profiles: sqlite, postgresql"
+    exit 1
+fi
+
 # Change to project root
 cd "$(dirname "$0")/.."
 
@@ -20,26 +27,17 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Clean up previous builds (optional, commented out for speed)
-# echo "🧹 Cleaning up previous builds..."
-# docker system prune -f
-# docker builder prune -f
-
 # Set environment variables for BuildKit
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
 # Build with docker-compose in parallel
 if [ "$PROFILE" = "sqlite" ]; then
-    echo "🔨 Building with SQLite profile (parallel build)..."
-    docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml build --parallel
+    echo "🔨 Building with default profile (SQLite + local storage)..."
+    docker-compose -f docker/docker-compose.yml build --parallel
 elif [ "$PROFILE" = "postgresql" ]; then
-    echo "🔨 Building with PostgreSQL profile (parallel build)..."
-    docker-compose -f docker/docker-compose.yml -f docker/docker-compose.postgresql.yml --profile postgresql build --parallel
-else
-    echo "❌ Invalid profile: $PROFILE"
-    echo "Valid profiles: sqlite, postgresql"
-    exit 1
+    echo "🔨 Building with PostgreSQL profile..."
+    docker-compose -f docker/docker-compose.yml --profile postgresql build --parallel
 fi
 
 # Show image sizes
@@ -52,7 +50,11 @@ echo "✅ Build completed successfully!"
 echo ""
 echo "To start services:"
 if [ "$PROFILE" = "sqlite" ]; then
-    echo "  docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml up"
+    echo "  ./scripts/start.sh"
+    echo "  # or"
+    echo "  docker-compose -f docker/docker-compose.yml up"
 else
-    echo "  docker-compose -f docker/docker-compose.yml -f docker/docker-compose.postgresql.yml --profile postgresql up"
+    echo "  ./scripts/start.sh --db postgresql"
+    echo "  # or"
+    echo "  docker-compose -f docker/docker-compose.yml --profile postgresql up"
 fi

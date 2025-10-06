@@ -25,7 +25,7 @@ services:
       - internal
       - external
 
-  # PostgreSQL Database (только для профиля postgresql)
+  # PostgreSQL Database (профиль: postgresql)
   postgres:
     image: postgres:17-alpine
     container_name: avatar-gen-postgres
@@ -51,6 +51,18 @@ services:
       - backend-db
 
   # Avatar Backend Service
+  # По умолчанию: SQLite + Local Storage
+  # 
+  # Конфигурация через переменные окружения:
+  #   DATABASE_PROVIDER=sqlite|postgresql
+  #   DATABASE_URL=...
+  #   STORAGE_TYPE=local|s3
+  #   USE_POSTGRES_CONTAINER=false  # для внешней БД
+  #
+  # Примеры:
+  # 1. SQLite + Local: docker-compose up
+  # 2. PostgreSQL (контейнер): docker-compose --profile postgresql up
+  # 3. PostgreSQL (внешняя): DATABASE_PROVIDER=postgresql DATABASE_URL=... docker-compose up
   avatar-backend:
     build:
       context: ../backend
@@ -66,17 +78,20 @@ services:
       - ../backend/settings.production.local.yaml:/app/settings.production.local.yaml:ro
       - ../backend/logs:/app/logs
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
       - CONFIG_PATH=./settings.yaml
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/avatar_gen
-      # S3 Storage (опционально, раскомментируйте если используете S3)
-      # - STORAGE_TYPE=s3
-      # - S3_ENDPOINT=https://your-s3-endpoint.com
-      # - S3_BUCKET=my-bucket-name
-      # - S3_ACCESS_KEY=your-access-key
-      # - S3_SECRET_KEY=your-secret-key
-      # - S3_REGION=us-east-1
-      # - S3_FORCE_PATH_STYLE=true
+      # Database configuration (по умолчанию SQLite)
+      - DATABASE_PROVIDER=${DATABASE_PROVIDER:-sqlite}
+      - DATABASE_URL=${DATABASE_URL:-file:./storage/database/database.sqlite}
+      # Storage configuration (по умолчанию local)
+      - STORAGE_TYPE=${STORAGE_TYPE:-local}
+      # S3 Configuration (используется только если STORAGE_TYPE=s3)
+      - S3_ENDPOINT=${S3_ENDPOINT:-}
+      - S3_BUCKET=${S3_BUCKET:-}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - S3_FORCE_PATH_STYLE=${S3_FORCE_PATH_STYLE:-true}
     dns:
       - 8.8.8.8
       - 8.8.4.4

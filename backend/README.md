@@ -237,12 +237,11 @@ docker run -p 3000:3000 \
 - `npm run test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:cov` - Run tests with coverage
-- `npm run env:generate` - Generate .env file from settings.yaml
-- `npm run prisma:generate` - Generate .env file and Prisma client
-- `npm run prisma:migrate` - Generate .env file and run database migrations
-- `npm run prisma:studio` - Generate .env file and open Prisma Studio
-- `npm run prisma:reset` - Generate .env file and reset database (development only)
-- `npm run prisma:deploy` - Generate .env file and deploy migrations to production
+- `npm run prisma:generate` - Generate Prisma client (reads DATABASE_URL from YAML)
+- `npm run prisma:migrate` - Run database migrations (reads DATABASE_URL from YAML)
+- `npm run prisma:deploy` - Deploy migrations to production
+- `npm run prisma:studio` - Open Prisma Studio (database GUI)
+- `npm run prisma:reset` - Reset database (development only)
 
 ### Project Structure
 
