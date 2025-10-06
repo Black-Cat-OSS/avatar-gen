@@ -410,14 +410,25 @@ jobs:
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
 
-          # Создаем docker-compose.override.yml для монтирования файлов в CI
+          # Создаем docker-compose.override.yml для CI
+          # КРИТИЧНО: Отключаем рестарты для тестов!
           cat > docker/docker-compose.override.yml << 'EOF'
           services:
             avatar-backend:
+              restart: "no"
               volumes:
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
+            
+            postgres:
+              restart: "no"
+            
+            avatar-frontend:
+              restart: "no"
+            
+            gateway:
+              restart: "no"
           EOF
 
           echo "=== Docker Compose Override ==="
@@ -429,18 +440,18 @@ jobs:
 
       - name: Start services with Docker Compose (${{ matrix.test_name }})
         run: |
-          # Устанавливаем переменные окружения из матрицы
-          export DATABASE_URL="${{ matrix.db_url }}"
-          export DATABASE_PROVIDER="${{ matrix.database }}"
-          export STORAGE_TYPE="local"
-          export NODE_ENV="production"
+          # Создаём .env файл для docker-compose
+          # КРИТИЧНО: export НЕ передаёт переменные в docker-compose!
+          cat > docker/.env << EOF
+          DATABASE_URL=${{ matrix.db_url }}
+          DATABASE_PROVIDER=${{ matrix.database }}
+          STORAGE_TYPE=local
+          NODE_ENV=production
+          EOF
 
-          echo "=== Environment Variables ==="
-          echo "DATABASE_URL=$DATABASE_URL"
-          echo "DATABASE_PROVIDER=$DATABASE_PROVIDER"
-          echo "STORAGE_TYPE=$STORAGE_TYPE"
-          echo "NODE_ENV=$NODE_ENV"
-          echo "============================"
+          echo "=== Created docker/.env file ==="
+          cat docker/.env
+          echo "================================="
 
           # Запускаем сервисы
           # Для PostgreSQL используем профиль --profile postgresql
@@ -528,6 +539,9 @@ jobs:
           echo "Copying logs from backend volume..."
           docker compose -f docker/docker-compose.yml exec -T avatar-backend ls -la /app/logs 2>&1 | tee test-artifacts/logs/volume-listing.txt || true
           docker cp avatar-gen-backend:/app/logs test-artifacts/backend-app-logs 2>&1 || true
+
+          # Копируем .env файл для диагностики
+          cp docker/.env test-artifacts/docker-env-file.txt 2>&1 || true
 
           # Сохраняем статус контейнеров
           docker compose -f docker/docker-compose.yml ps > test-artifacts/container-status.txt 2>&1 || true
