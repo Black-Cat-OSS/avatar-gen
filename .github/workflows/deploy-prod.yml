@@ -338,7 +338,7 @@ jobs:
             use_postgres_service: false
           - database: postgresql
             test_name: 'PostgreSQL'
-            db_url: 'postgresql://postgres:password@host.docker.internal:5432/avatar_gen_test'
+            db_url: 'postgresql://postgres:password@172.17.0.1:5432/avatar_gen_test'
             use_postgres_service: true
 
     services:
@@ -437,9 +437,7 @@ jobs:
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
-              extra_hosts:
-                # Для PostgreSQL GitHub service: контейнер может подключиться через host.docker.internal
-                - "host.docker.internal:host-gateway"
+              # Для PostgreSQL используем docker bridge network (172.17.0.1)
           EOF
 
           echo "=== Storage directory permissions ==="
@@ -457,11 +455,11 @@ jobs:
           export STORAGE_TYPE="local"
           export NODE_ENV="production"
 
-          # Для PostgreSQL нужен доступ к GitHub service через host.docker.internal
+          # Для PostgreSQL нужен доступ к GitHub service через docker bridge
           if [ "${{ matrix.database }}" = "postgresql" ]; then
-            export DB_HOST="host.docker.internal"
+            export DB_HOST="172.17.0.1"
             export DB_NAME="avatar_gen_test"
-            echo "Using GitHub PostgreSQL service on host.docker.internal:5432"
+            echo "Using GitHub PostgreSQL service on 172.17.0.1:5432 (docker bridge)"
           fi
 
           echo "=== Environment Variables ==="
