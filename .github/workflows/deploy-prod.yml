@@ -535,42 +535,51 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `🔴 Integration Test Failed: ${{ matrix.test_name }}`,
-              body: `## Integration Test Failure Report
+            const testName = '${{ matrix.test_name }}';
+            const database = '${{ matrix.database }}';
+            const dbUrl = '${{ matrix.db_url }}';
+            const branch = '${{ github.ref_name }}';
+            const sha = '${{ github.sha }}';
+            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+            const commitUrl = '${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}';
+            const actor = '${{ github.actor }}';
+            const workflow = '${{ github.workflow }}';
 
-            **Test Variant:** ${{ matrix.test_name }}
-            **Database:** ${{ matrix.database }}
-            **Branch:** \`${{ github.ref_name }}\`
-            **Commit:** ${{ github.sha }}
-            **Workflow Run:** [View Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            **Triggered by:** @${{ github.actor }}
+            const body = `## Integration Test Failure Report
+
+            **Test Variant:** ${testName}
+            **Database:** ${database}
+            **Branch:** \`${branch}\`
+            **Commit:** ${sha}
+            **Triggered by:** @${actor}
 
             ### Environment
-            - **DATABASE_URL:** \`${{ matrix.db_url }}\`
-            - **DATABASE_PROVIDER:** \`${{ matrix.database }}\`
+            - **DATABASE_URL:** \`${dbUrl}\`
+            - **DATABASE_PROVIDER:** \`${database}\`
             - **NODE_ENV:** \`production\`
 
             ### Quick Links
-            - [Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            - [Job Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ github.job }})
-            - [Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+            - [Workflow Run](${runUrl})
+            - [Commit](${commitUrl})
 
             ### Next Steps
-            1. Check the workflow logs above
+            1. Check the workflow logs
             2. Review backend container logs in artifacts
-            3. Verify Prisma schema generation logs
+            3. Verify Prisma schema generation
             4. Check database connectivity
 
             ---
-            *This issue was automatically created by GitHub Actions*
-            *Workflow: \`${{ github.workflow }}\`*`,
+            *Auto-created by GitHub Actions - Workflow: \`${workflow}\`*`;
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `CI Failure: Integration Test ${testName}`,
+              body: body,
               labels: ['ci-failure', 'integration-test', 'automated']
             });
 
-            console.log(\`Created issue #\${issue.data.number}\`);
+            console.log(`Created issue #${issue.data.number}`);
 
       - name: Stop services
         if: always()
