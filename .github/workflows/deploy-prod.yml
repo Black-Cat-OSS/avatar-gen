@@ -246,91 +246,16 @@ jobs:
           retention-days: 1
 
   # ========================================
-  # Stage 3: Docker Images Build (Parallel)
-  # ========================================
-  build-backend-image:
-    name: Build Backend Image
-    runs-on: ubuntu-latest
-    needs: [test-backend]
-    if: always() && (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          file: ./backend/docker/Dockerfile
-          push: false
-          tags: avatar-gen-backend:latest
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
-
-  build-frontend-image:
-    name: Build Frontend Image
-    runs-on: ubuntu-latest
-    needs: [build-frontend]
-    if: always() && (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          file: ./frontend/docker/Dockerfile
-          push: false
-          tags: avatar-gen-frontend:latest
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
-
-  build-gateway-image:
-    name: Build Gateway Image
-    runs-on: ubuntu-latest
-    needs: [test-backend, build-frontend]
-    if: always() && (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') && (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build gateway image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./gateway
-          file: ./gateway/Dockerfile
-          push: false
-          tags: avatar-gen-gateway:latest
-          cache-from: type=gha,scope=gateway
-          cache-to: type=gha,mode=max,scope=gateway
-
-  # ========================================
-  # Stage 4: Production Deployment
+  # Stage 3: Production Deployment
   # ========================================
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    needs: [test-backend, build-backend-image, build-frontend-image, build-gateway-image]
-    # Деплой только при:
-    # - push в main (после мерджа PR)
-    # - ручной запуск с force_deploy=true
-    # НЕ деплоим при PR в main (только тестируем)
+    needs: [test-backend, build-frontend]
+    # Деплой только при push в main или ручном запуске с force_deploy
+    # Docker образы собираются ТОЛЬКО на production сервере
     if: |
-      always() &&
-      (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') &&
+      success() &&
       (github.event_name == 'push' || github.event.inputs.force_deploy == 'true')
     environment: production
     steps:
