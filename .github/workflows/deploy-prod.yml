@@ -259,17 +259,15 @@ jobs:
       (github.event_name == 'push' || github.event.inputs.force_deploy == 'true')
     environment: production
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "SSH key configured successfully"
 
-      - name: Deploy to server
+      - name: Connect to production server and deploy
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -278,29 +276,38 @@ jobs:
         run: |
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << 'ENDSSH'
             set -e
-            cd ${{ secrets.APP_PATH }}
             
             echo "==================================="
             echo "  Production Deployment Started"
             echo "==================================="
             
-            echo "📥 Pulling latest changes..."
+            # Step 1: Navigate to application directory
+            echo "📂 Step 1: Navigating to application directory..."
+            cd ${{ secrets.APP_PATH }}
+            pwd
+            
+            # Step 2: Pull latest code from repository
+            echo "📥 Step 2: Pulling latest changes from repository..."
             git fetch origin
             git reset --hard origin/main
+            git log -1 --oneline
             
-            echo "🏗️  Building Docker images..."
-            # Используем внешнюю PostgreSQL (без профиля postgresql)
+            # Step 3: Build Docker images
+            echo "🏗️  Step 3: Building Docker images..."
             docker compose -f docker/docker-compose.yml build --no-cache
             
-            echo "🛑 Stopping old containers..."
+            # Step 4: Stop old containers
+            echo "🛑 Step 4: Stopping old containers..."
             docker compose -f docker/docker-compose.yml down
             
-            echo "🚀 Starting new containers..."
-            # Запуск с внешней PostgreSQL (DATABASE_URL должен быть в .env или secrets)
+            # Step 5: Start new containers
+            echo "🚀 Step 5: Starting new containers..."
             docker compose -f docker/docker-compose.yml up -d
             
-            echo "🧹 Cleaning up old images..."
+            # Step 6: Cleanup old images
+            echo "🧹 Step 6: Cleaning up old Docker images..."
             docker image prune -f
+            docker system prune -f --volumes
             
             echo "✅ Deployment completed successfully!"
           ENDSSH
@@ -315,17 +322,25 @@ jobs:
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << 'ENDSSH'
             cd ${{ secrets.APP_PATH }}
             
-            echo "Checking container status..."
+            echo "🔍 Verifying deployment..."
+            
+            echo "1. Checking container status..."
             docker compose -f docker/docker-compose.yml ps
             
-            echo "Checking backend health..."
-            sleep 10
+            echo "2. Waiting for services to start..."
+            sleep 15
+            
+            echo "3. Checking backend health..."
             curl -f http://localhost:3000/api/health || exit 1
             
-            echo "All health checks passed!"
+            echo "4. Checking gateway..."
+            curl -f http://localhost:80/ || exit 1
+            
+            echo "✅ All health checks passed!"
           ENDSSH
 
-      - name: Cleanup SSH
+      - name: Cleanup SSH credentials
         if: always()
         run: |
           rm -f ~/.ssh/id_rsa
+          echo "SSH credentials cleaned up"
