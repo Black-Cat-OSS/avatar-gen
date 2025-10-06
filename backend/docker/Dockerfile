@@ -75,8 +75,9 @@ RUN npm install --omit=dev && \
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
-# Копируем все schema templates (будут использоваться в runtime)
-COPY --from=builder /app/prisma/*.prisma ./prisma/
+# Копируем ТОЛЬКО schema templates (НЕ копируем schema.prisma из builder)
+COPY --from=builder /app/prisma/schema.sqlite.prisma ./prisma/schema.sqlite.prisma
+COPY --from=builder /app/prisma/schema.postgresql.prisma ./prisma/schema.postgresql.prisma
 
 # Create storage directories
 RUN mkdir -p storage/avatars storage/database
