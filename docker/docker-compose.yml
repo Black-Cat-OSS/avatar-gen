@@ -6,7 +6,6 @@ services:
       dockerfile: Dockerfile
     container_name: avatar-gen-gateway
     ports:
-      - "80:80"
       - "12745:12745"
     volumes:
       - ../gateway/configs/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -75,6 +74,8 @@ services:
       - ../backend/settings.yaml:/app/settings.yaml:ro
       - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
       - ../backend/logs:/app/logs
+      # Note: settings.local.yaml and settings.*.local.yaml are NOT mounted
+      # If needed, create them manually and add explicit mount in docker-compose.override.yml
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - CONFIG_PATH=./settings.yaml

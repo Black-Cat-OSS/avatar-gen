@@ -41,13 +41,7 @@
 
 ### Вариант 2: Ручная настройка
 
-1. **Скопируйте пример файла:**
-
-   ```bash
-   cp backend/settings.test.example.yaml backend/settings.test.yaml
-   ```
-
-2. **Отредактируйте настройки:**
+1. **Создайте файл `backend/settings.test.yaml`:**
 
    ```yaml
    app:
@@ -61,7 +55,7 @@
          region: 'us-east-1'
    ```
 
-3. **Запустите тесты:**
+2. **Запустите тесты:**
    ```bash
    cd backend
    NODE_ENV=test pnpm run test
