@@ -344,6 +344,10 @@ jobs:
           touch backend/storage/database/database.sqlite
           chmod -R 777 backend/storage
 
+          # Создаем пустые .local.yaml файлы, чтобы Docker не создал их как директории
+          touch backend/settings.local.yaml
+          touch backend/settings.production.local.yaml
+
           # Создаем минимальный settings.yaml с поддержкой ENV переменных
           cat > backend/settings.yaml << 'EOF'
           app:
@@ -393,6 +397,7 @@ jobs:
             avatar-backend:
               volumes:
                 # Монтируем storage, logs и наш settings.yaml
+                # НЕ монтируем .local.yaml файлы - их нет, и Docker создаст директории
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
