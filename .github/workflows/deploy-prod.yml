@@ -343,7 +343,7 @@ jobs:
             use_postgres_service: false
           - database: postgresql
             test_name: 'PostgreSQL'
-            db_url: 'postgresql://postgres:password@172.17.0.1:5432/avatar_gen_test'
+            db_url: 'postgresql://postgres:password@localhost:5432/avatar_gen_test'
             use_postgres_service: true
 
     services:
@@ -434,16 +434,29 @@ jobs:
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
 
-          # Создаем docker-compose.override.yml для использования нашего settings.yaml
-          cat > docker/docker-compose.override.yml << 'EOF'
+          # Создаем docker-compose.override.yml с условной конфигурацией
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            # Для PostgreSQL используем host network для доступа к GitHub service
+            cat > docker/docker-compose.override.yml << 'EOF'
           services:
             avatar-backend:
               volumes:
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
-              # Для PostgreSQL используем docker bridge network (172.17.0.1)
+              network_mode: "host"
           EOF
+          else
+            # Для SQLite используем обычные сети
+            cat > docker/docker-compose.override.yml << 'EOF'
+          services:
+            avatar-backend:
+              volumes:
+                - ../backend/storage:/app/storage
+                - ../backend/logs:/app/logs
+                - ../backend/settings.yaml:/app/settings.yaml:ro
+          EOF
+          fi
 
           echo "=== Storage directory permissions ==="
           ls -la backend/storage/
@@ -460,11 +473,11 @@ jobs:
           export STORAGE_TYPE="local"
           export NODE_ENV="production"
 
-          # Для PostgreSQL нужен доступ к GitHub service через docker bridge
+          # Для PostgreSQL используем localhost (GitHub service)
           if [ "${{ matrix.database }}" = "postgresql" ]; then
-            export DB_HOST="172.17.0.1"
+            export DB_HOST="localhost"
             export DB_NAME="avatar_gen_test"
-            echo "Using GitHub PostgreSQL service on 172.17.0.1:5432 (docker bridge)"
+            echo "Using GitHub PostgreSQL service on localhost:5432"
           fi
 
           echo "=== Environment Variables ==="
