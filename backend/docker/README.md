@@ -6,9 +6,63 @@
 
 - [Dockerfile](#dockerfile) - Multi-stage сборка приложения
 - [Конфигурации](#конфигурации) - Монтирование конфигурационных файлов
+- [Database Provider Switching](#database-provider-switching) - Динамическое переключение БД
 - [Использование](#использование) - Примеры запуска
 - [Переменные окружения](#переменные-окружения) - Конфигурация через env
 - [Storage Configuration](#storage-configuration) - Настройка хранилища
+
+---
+
+## Database Provider Switching
+
+### 🔄 Автоматическое определение провайдера БД
+
+Backend контейнер **автоматически определяет** тип базы данных при запуске и использует соответствующий Prisma schema:
+
+- `schema.sqlite.prisma` → для SQLite
+- `schema.postgresql.prisma` → для PostgreSQL
+
+**Как это работает:**
+
+1. При запуске контейнера `start.sh` анализирует переменные окружения
+2. Определяет провайдер из `DATABASE_PROVIDER` или `DATABASE_URL`
+3. Копирует соответствующий schema template в `schema.prisma`
+4. Генерирует Prisma Client с правильным provider
+5. Синхронизирует схему БД через `prisma db push`
+
+**Примеры:**
+
+```bash
+# SQLite (определяется автоматически по DATABASE_URL)
+DATABASE_URL=file:./storage/database/database.sqlite
+→ Использует schema.sqlite.prisma
+
+# PostgreSQL (определяется автоматически)
+DATABASE_URL=postgresql://user:pass@host:5432/db
+→ Использует schema.postgresql.prisma
+
+# Явное указание провайдера (приоритетнее)
+DATABASE_PROVIDER=postgresql
+→ Использует schema.postgresql.prisma
+```
+
+**Логи при старте:**
+
+```
+=== Avatar Generator Backend Startup ===
+📦 Database Provider: postgresql
+🔗 Database URL: postgresql://postgres:passwor...
+📄 Using PostgreSQL schema...
+🔧 Generating Prisma Client for postgresql...
+🗄️  Synchronizing database schema...
+🚀 Starting avatar generator application...
+```
+
+### ⚠️ Важно
+
+- Schema templates **копируются в образ** во время сборки
+- Prisma Client **генерируется в runtime** с правильным provider
+- Использование `prisma db push` вместо migrations для максимальной гибкости
 
 ---
 
