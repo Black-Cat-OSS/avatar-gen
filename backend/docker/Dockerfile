@@ -28,14 +28,16 @@ COPY package-lock.json ./
 # Use installation for faster builds
 RUN npm install
 
-# Copy source code and Prisma schema
+# Copy source code and Prisma schema templates
 COPY src ./src
 COPY prisma ./prisma
 COPY tsconfig.json ./
 COPY nest-cli.json ./
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client для SQLite (по умолчанию для сборки)
+# В runtime будет перегенерирован с правильным provider
+RUN cp prisma/schema.sqlite.prisma prisma/schema.prisma && \
+    npx prisma generate
 
 # Build the application with parallel compilation
 # Set max old space size for large builds and enable parallel compilation
@@ -66,13 +68,15 @@ RUN for i in 1 2 3; do \
 COPY package*.json ./
 COPY package-lock.json ./
 
-# Install only production dependencies
-RUN npm install --omit=dev && npm cache clean --force
+# Install only production dependencies + prisma CLI (needed for runtime schema switching)
+RUN npm install --omit=dev && \
+    npm install -g prisma@6.16.3 && \
+    npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
+# Копируем все schema templates (будут использоваться в runtime)
+COPY --from=builder /app/prisma/*.prisma ./prisma/
 
 # Create storage directories
 RUN mkdir -p storage/avatars storage/database
