@@ -327,10 +327,10 @@ jobs:
     # Деплой только при:
     # - push в main (после мерджа PR)
     # - ручной запуск с force_deploy=true
+    # - все предыдущие jobs успешны (test-backend - matrix job!)
     # НЕ деплоим при PR в main (только тестируем)
     if: |
-      always() &&
-      (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') &&
+      !failure() && !cancelled() &&
       (github.event_name == 'push' || github.event.inputs.force_deploy == 'true')
     environment: production
     steps:
