@@ -261,20 +261,8 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          APP_PATH: ${{ secrets.APP_PATH }}
-          # Production secrets for config generation
-          PROD_S3_ENDPOINT: ${{ secrets.PROD_S3_ENDPOINT }}
-          PROD_S3_BUCKET: ${{ secrets.PROD_S3_BUCKET }}
-          PROD_S3_ACCESS_KEY: ${{ secrets.PROD_S3_ACCESS_KEY }}
-          PROD_S3_SECRET_KEY: ${{ secrets.PROD_S3_SECRET_KEY }}
-          PROD_S3_REGION: ${{ secrets.PROD_S3_REGION }}
-          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
-          PROD_DB_PORT: ${{ secrets.PROD_DB_PORT }}
-          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
-          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
-          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
         run: |
-          ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << 'ENDSSH'
+          ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << ENDSSH
             set -e
             
             echo "==================================="
@@ -295,16 +283,19 @@ jobs:
             # Step 2.5: Generate production config from secrets using script
             echo "📝 Step 2.5: Generating production config from secrets..."
             chmod +x backend/scripts/generate-production-config.sh
-            PROD_S3_ENDPOINT=$PROD_S3_ENDPOINT \
-            PROD_S3_BUCKET=$PROD_S3_BUCKET \
-            PROD_S3_ACCESS_KEY=$PROD_S3_ACCESS_KEY \
-            PROD_S3_SECRET_KEY=$PROD_S3_SECRET_KEY \
-            PROD_S3_REGION=$PROD_S3_REGION \
-            PROD_DB_HOST=$PROD_DB_HOST \
-            PROD_DB_PORT=$PROD_DB_PORT \
-            PROD_DB_NAME=$PROD_DB_NAME \
-            PROD_DB_USERNAME=$PROD_DB_USERNAME \
-            PROD_DB_PASSWORD=$PROD_DB_PASSWORD \
+            
+            # Export secrets for script (using GitHub Actions interpolation)
+            export PROD_S3_ENDPOINT="${{ secrets.PROD_S3_ENDPOINT }}"
+            export PROD_S3_BUCKET="${{ secrets.PROD_S3_BUCKET }}"
+            export PROD_S3_ACCESS_KEY="${{ secrets.PROD_S3_ACCESS_KEY }}"
+            export PROD_S3_SECRET_KEY="${{ secrets.PROD_S3_SECRET_KEY }}"
+            export PROD_S3_REGION="${{ secrets.PROD_S3_REGION }}"
+            export PROD_DB_HOST="${{ secrets.PROD_DB_HOST }}"
+            export PROD_DB_PORT="${{ secrets.PROD_DB_PORT }}"
+            export PROD_DB_NAME="${{ secrets.PROD_DB_NAME }}"
+            export PROD_DB_USERNAME="${{ secrets.PROD_DB_USERNAME }}"
+            export PROD_DB_PASSWORD="${{ secrets.PROD_DB_PASSWORD }}"
+            
             ./backend/scripts/generate-production-config.sh
             
             # Step 3: Build Docker images
