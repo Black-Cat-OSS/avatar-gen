@@ -30,17 +30,34 @@ export class PostgresDatabaseService implements IDatabaseConnection {
   constructor(private readonly configService: YamlConfigService) {
     // Вычисляем все параметры до создания PrismaClient
     const config = configService.getConfig();
-    const networkParams = (config as { app: { database: { network: Record<string, unknown> } } })
-      .app.database.network;
+    
+    // Сначала проверяем наличие прямого URL в postgresql_params
+    const postgresqlParams = (config as { app: { database: { postgresql_params?: { url: string } } } })
+      .app.database.postgresql_params;
+    
+    let databaseUrl: string;
+    
+    if (postgresqlParams?.url) {
+      // Используем прямой URL из конфигурации
+      databaseUrl = postgresqlParams.url;
+      console.debug('PostgreSQL datasource configured from postgresql_params.url');
+    } else {
+      // Fallback: строим URL из network параметров
+      const networkParams = (config as { app: { database: { network: Record<string, unknown> } } })
+        .app.database.network;
 
-    // Проверяем наличие обязательных параметров сети для PostgreSQL
-    if (!networkParams) {
-      throw new Error(
-        'Network parameters are required in configuration. Please check settings.yaml file.',
+      // Проверяем наличие обязательных параметров сети для PostgreSQL
+      if (!networkParams) {
+        throw new Error(
+          'Either postgresql_params.url or network parameters are required in configuration. Please check settings.yaml file.',
+        );
+      }
+
+      databaseUrl = this.buildPostgresUrl(networkParams);
+      console.debug(
+        `PostgreSQL datasource configured from network params: ${(networkParams as { host: string }).host}:${(networkParams as { port: number }).port}`,
       );
     }
-
-    const databaseUrl = this.buildPostgresUrl(networkParams);
 
     this._prisma = new PrismaClient({
       datasourceUrl: databaseUrl,
@@ -51,10 +68,6 @@ export class PostgresDatabaseService implements IDatabaseConnection {
 
     this.config = config;
     this.logger = new Logger(PostgresDatabaseService.name);
-    // Не логируем URL целиком (может содержать пароль)
-    console.debug(
-      `PostgreSQL datasource configured for host: ${(networkParams as { host: string }).host}:${(networkParams as { port: number }).port}`,
-    );
   }
 
   get prisma(): PrismaClient {
