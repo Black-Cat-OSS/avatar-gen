@@ -7,7 +7,8 @@
 
 ```
 docker/
-├── docker-compose.yml           # Единая конфигурация со всеми профилями
+├── docker-compose.yml           # Развёртывание и разработка (SQLite/PostgreSQL + Local/S3)
+├── docker-compose.prod.yaml     # Production конфигурация (PostgreSQL + S3)
 └── README.md                    # Эта документация
 
 Dockerfile остаются в своих модулях:
@@ -17,6 +18,9 @@ backend/docker/
 
 frontend/docker/
 └── Dockerfile                   # Dockerfile для frontend (React + Nginx)
+
+gateway/
+└── Dockerfile                   # Dockerfile для Nginx Gateway
 ```
 
 ## 🎯 Профили Docker Compose
