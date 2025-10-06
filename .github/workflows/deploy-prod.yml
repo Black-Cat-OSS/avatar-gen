@@ -295,7 +295,12 @@ jobs:
             # Step 2.5: Generate complete production config from secrets
             # This file will be mounted as settings.production.yaml (the only config file)
             echo "📝 Step 2.5: Generating settings.production.local.yaml from secrets..."
-            cat > backend/settings.production.local.yaml << 'EOF'
+            
+            # Remove if exists (could be a directory from previous Docker mount)
+            rm -rf backend/settings.production.local.yaml
+            
+            # Generate production config directly with variable substitution
+            cat > backend/settings.production.local.yaml <<CONFIG_END
             app:
               storage:
                 type: 's3'
@@ -328,7 +333,7 @@ jobs:
                 level: 'warn'
                 verbose: false
                 pretty: false
-            EOF
+            CONFIG_END
             
             # Replace env variables in config file
             sed -i "s|\$PROD_S3_ENDPOINT|$PROD_S3_ENDPOINT|g" backend/settings.production.local.yaml
