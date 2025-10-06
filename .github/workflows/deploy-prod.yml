@@ -393,6 +393,7 @@ jobs:
             avatar-backend:
               volumes:
                 # Монтируем storage, logs и наш settings.yaml
+                # НЕ монтируем .local.yaml файлы - их нет, и Docker создаст директории
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
