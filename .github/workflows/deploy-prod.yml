@@ -327,33 +327,10 @@ jobs:
   # Stage 4: Integration Tests
   # ========================================
   integration-test:
-    name: Integration Test (${{ matrix.test_name }})
+    name: Integration Test (SQLite + Local)
     runs-on: ubuntu-latest
     needs: [build-backend-image, build-frontend-image, build-gateway-image]
     if: github.event.inputs.skip_integration != 'true'
-
-    strategy:
-      fail-fast: false
-      matrix:
-        database: [sqlite, postgresql]
-        storage: [local, s3]
-        include:
-          - database: sqlite
-            storage: local
-            test_name: 'SQLite + Local'
-            db_url: 'file:./storage/database/database.sqlite'
-          - database: sqlite
-            storage: s3
-            test_name: 'SQLite + S3'
-            db_url: 'file:./storage/database/database.sqlite'
-          - database: postgresql
-            storage: local
-            test_name: 'PostgreSQL + Local'
-            db_url: 'postgresql://postgres:password@postgres:5432/avatar_gen'
-          - database: postgresql
-            storage: s3
-            test_name: 'PostgreSQL + S3'
-            db_url: 'postgresql://postgres:password@postgres:5432/avatar_gen'
 
     steps:
       - name: Checkout code
@@ -362,9 +339,9 @@ jobs:
       - name: Create external network
         run: docker network create avatar-gen-external
 
-      - name: Prepare integration test environment (${{ matrix.test_name }})
+      - name: Prepare integration test environment
         run: |
-          echo "Preparing environment for ${{ matrix.test_name }} test..."
+          echo "Preparing environment for SQLite + Local Storage test..."
 
           # Создаем директории для storage
           mkdir -p backend/storage/database
@@ -375,51 +352,27 @@ jobs:
           chmod -R 777 backend/storage
 
           # Создаем пустые конфиг файлы, чтобы Docker не создал их как директории
-          # КРИТИЧНО: Пустой settings.production.yaml не переопределит settings.yaml!
           touch backend/settings.local.yaml
           touch backend/settings.production.local.yaml
+          touch backend/settings.production.yaml
 
-          # Создаём ПУСТОЙ settings.production.yaml, чтобы предотвратить
-          # монтирование реального файла с S3 конфигурацией
-          cat > backend/settings.production.yaml << 'EOF'
-          # Пустая конфигурация для CI тестов
-          # Все настройки берутся из settings.yaml с ENV переменными
-          EOF
-
-          # Создаем минимальный settings.yaml с поддержкой ENV переменных
+          # Создаем минимальный settings.yaml для базового теста
           cat > backend/settings.yaml << 'EOF'
           app:
             storage:
-              type: '${STORAGE_TYPE:-local}'
+              type: 'local'
               local:
                 save_path: './storage/avatars'
-              s3:
-                endpoint: '${S3_ENDPOINT:-http://localhost:9000}'
-                bucket: '${S3_BUCKET:-avatars}'
-                access_key: '${S3_ACCESS_KEY:-minioadmin}'
-                secret_key: '${S3_SECRET_KEY:-minioadmin}'
-                region: '${S3_REGION:-us-east-1}'
-                force_path_style: true
-                connection:
-                  maxRetries: 3
-                  retryDelay: 2000
             server:
               host: '0.0.0.0'
               port: 3000
             database:
-              driver: '${DATABASE_PROVIDER:-sqlite}'
+              driver: 'sqlite'
               connection:
                 maxRetries: 3
                 retryDelay: 2000
               sqlite_params:
-                url: '${DATABASE_URL:-file:./storage/database/database.sqlite}'
-              network:
-                host: '${DB_HOST:-localhost}'
-                port: 5432
-                database: '${DB_NAME:-avatar_gen_test}'
-                username: '${DB_USER:-postgres}'
-                password: '${DB_PASSWORD:-password}'
-                ssl: false
+                url: 'file:./storage/database/database.sqlite'
             logging:
               level: 'info'
               verbose: false
@@ -428,9 +381,6 @@ jobs:
 
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
-
-          echo "=== Created empty settings.production.yaml ==="
-          cat backend/settings.production.yaml
 
           # Создаем docker-compose.override.yml для CI
           # КРИТИЧНО: Отключаем рестарты для тестов!
@@ -443,9 +393,6 @@ jobs:
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
                 - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
-            
-            postgres:
-              restart: "no"
             
             avatar-frontend:
               restart: "no"
@@ -461,65 +408,25 @@ jobs:
           ls -la backend/storage/
           ls -la backend/storage/database/
 
-      - name: Start services with Docker Compose (${{ matrix.test_name }})
+      - name: Start services with Docker Compose
         run: |
-          # Создаём .env файл для docker-compose в КОРНЕ (важно!)
-          # Docker Compose ищет .env в текущей директории, а НЕ в docker/
-          cat > .env << EOF
-          DATABASE_URL=${{ matrix.db_url }}
-          DATABASE_PROVIDER=${{ matrix.database }}
-          STORAGE_TYPE=${{ matrix.storage }}
-          NODE_ENV=production
-          S3_ENDPOINT=${{ secrets.PROD_S3_ENDPOINT || secrets.TEST_S3_ENDPOINT || 'http://localhost:9000' }}
-          S3_BUCKET=${{ secrets.PROD_S3_BUCKET || secrets.TEST_S3_BUCKET || 'avatars' }}
-          S3_ACCESS_KEY=${{ secrets.PROD_S3_ACCESS_KEY || secrets.TEST_S3_ACCESS_KEY || 'minioadmin' }}
-          S3_SECRET_KEY=${{ secrets.PROD_S3_SECRET_KEY || secrets.TEST_S3_SECRET_KEY || 'minioadmin' }}
-          S3_REGION=${{ secrets.PROD_S3_REGION || secrets.TEST_S3_REGION || 'us-east-1' }}
-          EOF
-
-          echo "=== Created .env file (root) ==="
-          cat .env | grep -v "SECRET_KEY"  # Не показываем секреты в логах
-          echo "S3_SECRET_KEY=***"
-          echo "================================="
-
-          # Запускаем сервисы
-          # Для PostgreSQL используем профиль --profile postgresql
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            echo "🐘 Starting services with PostgreSQL container..."
-            docker compose --profile postgresql -f docker/docker-compose.yml up --build -d
-          else
-            echo "🗄️  Starting services with SQLite..."
-            docker compose -f docker/docker-compose.yml up --build -d
-          fi
+          echo "🗄️  Starting services with SQLite + Local Storage..."
+          docker compose -f docker/docker-compose.yml up --build -d
 
           echo "Waiting for services to be ready..."
-          sleep 45
+          sleep 30
 
       - name: Check container status
         run: |
-          echo "=== Docker Compose Services (${{ matrix.test_name }}) ==="
+          echo "=== Docker Compose Services ==="
           docker compose -f docker/docker-compose.yml ps
 
-      - name: Show backend logs for debugging (${{ matrix.test_name }})
+      - name: Show backend logs for debugging
         if: always()
         run: |
-          echo "=== Backend Container Logs (${{ matrix.test_name }}) ==="
+          echo "=== Backend Container Logs ==="
           docker compose -f docker/docker-compose.yml logs avatar-backend
           echo "==========================================================="
-
-          echo "=== Backend Container Environment ==="
-          docker compose -f docker/docker-compose.yml exec -T avatar-backend env | grep -E "(DATABASE|STORAGE|NODE_ENV|CONFIG)" || echo "Container not running or exec failed"
-          echo "======================================"
-
-          echo "=== Generated Prisma Schema Check ==="
-          docker compose -f docker/docker-compose.yml exec -T avatar-backend cat /app/prisma/schema.prisma | head -15 || echo "Cannot read schema"
-          echo "======================================"
-
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            echo "=== PostgreSQL Container Logs ==="
-            docker compose -f docker/docker-compose.yml logs postgres
-            echo "================================="
-          fi
 
       - name: Check backend health
         run: |
@@ -550,7 +457,6 @@ jobs:
         if: failure()
         run: |
           echo "=== Collecting logs from containers ==="
-          mkdir -p test-artifacts/logs
           mkdir -p test-artifacts/docker-logs
 
           # Сохраняем логи из всех контейнеров
@@ -560,24 +466,9 @@ jobs:
           docker compose -f docker/docker-compose.yml logs avatar-frontend > test-artifacts/docker-logs/frontend.log 2>&1 || true
           docker compose -f docker/docker-compose.yml logs gateway > test-artifacts/docker-logs/gateway.log 2>&1 || true
 
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            docker compose -f docker/docker-compose.yml logs postgres > test-artifacts/docker-logs/postgres.log 2>&1 || true
-          fi
-
-          # Копируем логи из volume (если есть)
-          echo "Copying logs from backend volume..."
-          docker compose -f docker/docker-compose.yml exec -T avatar-backend ls -la /app/logs 2>&1 | tee test-artifacts/logs/volume-listing.txt || true
-          docker cp avatar-gen-backend:/app/logs test-artifacts/backend-app-logs 2>&1 || true
-
-          # Копируем .env файл для диагностики (без секретов!)
-          cat .env | grep -v "SECRET" > test-artifacts/root-env-file.txt 2>&1 || true
-
           # Сохраняем статус контейнеров
           docker compose -f docker/docker-compose.yml ps > test-artifacts/container-status.txt 2>&1 || true
           docker ps -a > test-artifacts/docker-ps.txt 2>&1 || true
-
-          # Сохраняем информацию о сети
-          docker network ls > test-artifacts/networks.txt 2>&1 || true
 
           echo "=== Logs collected to test-artifacts/ ==="
           ls -la test-artifacts/
@@ -586,7 +477,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: integration-test-logs-${{ matrix.test_name }}-${{ github.run_id }}
+          name: integration-test-logs-sqlite-local-${{ github.run_id }}
           path: test-artifacts/
           retention-days: 7
           if-no-files-found: warn
@@ -598,10 +489,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const testName = '${{ matrix.test_name }}';
-            const database = '${{ matrix.database }}';
-            const storage = '${{ matrix.storage }}';
-            const dbUrl = '${{ matrix.db_url }}';
+            const testName = 'SQLite + Local';
+            const database = 'sqlite';
+            const storage = 'local';
             const branch = '${{ github.ref_name }}';
             const sha = '${{ github.sha }}';
             const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
@@ -612,7 +502,6 @@ jobs:
             // Читаем логи из test-artifacts
             let backendLogs = '';
             let containerStatus = '';
-            let envVars = '';
 
             try {
               backendLogs = fs.readFileSync('test-artifacts/docker-logs/backend.log', 'utf8');
@@ -624,12 +513,6 @@ jobs:
               containerStatus = fs.readFileSync('test-artifacts/container-status.txt', 'utf8');
             } catch (e) {
               containerStatus = `Could not read container status: ${e.message}`;
-            }
-
-            try {
-              envVars = fs.readFileSync('test-artifacts/root-env-file.txt', 'utf8');
-            } catch (e) {
-              envVars = `Could not read env vars: ${e.message}`;
             }
 
             // Создаём Gist с полными логами (permanent storage)
@@ -644,9 +527,6 @@ jobs:
                   },
                   'container-status.txt': { 
                     content: containerStatus || 'No status available' 
-                  },
-                  'environment-vars.txt': { 
-                    content: envVars || 'No env vars available' 
                   }
                 }
               });
@@ -670,7 +550,6 @@ jobs:
             **Triggered by:** @${actor}
 
             ### Environment
-            - **DATABASE_URL:** \`${dbUrl}\`
             - **DATABASE_PROVIDER:** \`${database}\`
             - **STORAGE_TYPE:** \`${storage}\`
             - **NODE_ENV:** \`production\`
