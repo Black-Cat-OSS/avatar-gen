@@ -434,20 +434,8 @@ jobs:
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
 
-          # Создаем docker-compose.override.yml с условной конфигурацией
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            # Для PostgreSQL используем host network для доступа к GitHub service
-            cat > docker/docker-compose.override.yml << 'EOF'
-          services:
-            avatar-backend:
-              volumes:
-                - ../backend/storage:/app/storage
-                - ../backend/logs:/app/logs
-                - ../backend/settings.yaml:/app/settings.yaml:ro
-              network_mode: "host"
-          EOF
-          else
-            # Для SQLite используем обычные сети
+          # Для SQLite создаем docker-compose.override.yml
+          if [ "${{ matrix.database }}" = "sqlite" ]; then
             cat > docker/docker-compose.override.yml << 'EOF'
           services:
             avatar-backend:
@@ -462,8 +450,10 @@ jobs:
           ls -la backend/storage/
           ls -la backend/storage/database/
 
-          echo "=== Docker Compose Override ==="
-          cat docker/docker-compose.override.yml
+          if [ "${{ matrix.database }}" = "sqlite" ]; then
+            echo "=== Docker Compose Override ==="
+            cat docker/docker-compose.override.yml
+          fi
 
       - name: Start services with Docker Compose (${{ matrix.test_name }})
         run: |
@@ -488,28 +478,73 @@ jobs:
           echo "DB_HOST=${DB_HOST:-N/A}"
           echo "============================"
 
-          # Запускаем сервисы
-          # Для PostgreSQL НЕ используем профиль - БД уже в GitHub service
-          docker compose -f docker/docker-compose.yml up --build -d
-          echo "Waiting for services to be ready..."
-          sleep 45
+          # Для PostgreSQL запускаем только backend напрямую с host network
+          # Для SQLite используем docker-compose
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            echo "🐘 Starting backend for PostgreSQL with host network..."
+            
+            # Собираем backend image
+            cd docker
+            docker build -f Dockerfile -t avatar-backend:test ..
+            cd ..
+            
+            # Запускаем backend с host network для доступа к localhost:5432
+            docker run -d \
+              --name avatar-backend-test \
+              --network host \
+              -e DATABASE_URL="$DATABASE_URL" \
+              -e DATABASE_PROVIDER="$DATABASE_PROVIDER" \
+              -e STORAGE_TYPE="$STORAGE_TYPE" \
+              -e NODE_ENV="$NODE_ENV" \
+              -v "$(pwd)/backend/storage:/app/storage" \
+              -v "$(pwd)/backend/logs:/app/logs" \
+              -v "$(pwd)/backend/settings.yaml:/app/settings.yaml:ro" \
+              avatar-backend:test
+            
+            echo "Waiting for backend to be ready..."
+            sleep 30
+          else
+            echo "🗄️  Starting services with docker-compose for SQLite..."
+            docker compose -f docker/docker-compose.yml up --build -d
+            echo "Waiting for services to be ready..."
+            sleep 45
+          fi
 
       - name: Check container status
-        run: docker compose -f docker/docker-compose.yml ps
+        run: |
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            echo "=== PostgreSQL standalone container ==="
+            docker ps --filter name=avatar-backend-test
+          else
+            echo "=== SQLite docker-compose services ==="
+            docker compose -f docker/docker-compose.yml ps
+          fi
 
       - name: Show backend logs for debugging (${{ matrix.test_name }})
         if: always()
         run: |
           echo "=== Backend Container Logs (${{ matrix.test_name }}) ==="
-          docker compose -f docker/docker-compose.yml logs avatar-backend
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            docker logs avatar-backend-test
+          else
+            docker compose -f docker/docker-compose.yml logs avatar-backend
+          fi
           echo "==========================================================="
 
           echo "=== Backend Container Environment ==="
-          docker compose -f docker/docker-compose.yml exec -T avatar-backend env | grep -E "(DATABASE|STORAGE|NODE_ENV|CONFIG)" || echo "Container not running or exec failed"
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            docker exec avatar-backend-test env | grep -E "(DATABASE|STORAGE|NODE_ENV|CONFIG)" || echo "Container not running or exec failed"
+          else
+            docker compose -f docker/docker-compose.yml exec -T avatar-backend env | grep -E "(DATABASE|STORAGE|NODE_ENV|CONFIG)" || echo "Container not running or exec failed"
+          fi
           echo "======================================"
 
           echo "=== Generated Prisma Schema Check ==="
-          docker compose -f docker/docker-compose.yml exec -T avatar-backend cat /app/prisma/schema.prisma | head -15 || echo "Cannot read schema"
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            docker exec avatar-backend-test cat /app/prisma/schema.prisma | head -15 || echo "Cannot read schema"
+          else
+            docker compose -f docker/docker-compose.yml exec -T avatar-backend cat /app/prisma/schema.prisma | head -15 || echo "Cannot read schema"
+          fi
           echo "======================================"
 
       - name: Check backend health
@@ -524,15 +559,21 @@ jobs:
             sleep 5
           done
           echo "Backend health check failed after 10 attempts"
-          docker compose -f docker/docker-compose.yml logs avatar-backend
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            docker logs avatar-backend-test
+          else
+            docker compose -f docker/docker-compose.yml logs avatar-backend
+          fi
           exit 1
 
       - name: Check frontend health
+        if: matrix.database == 'sqlite'
         run: |
           echo "Checking frontend health endpoint..."
           curl -f http://localhost:80/health || (docker compose -f docker/docker-compose.yml logs avatar-frontend && exit 1)
 
       - name: Check gateway
+        if: matrix.database == 'sqlite'
         run: |
           echo "Checking gateway..."
           curl -f http://localhost:80/ || (docker compose -f docker/docker-compose.yml logs gateway && exit 1)
