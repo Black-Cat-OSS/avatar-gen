@@ -36,15 +36,14 @@ services:
     expose:
       - '3000'
     volumes:
-      # Configuration: mount generated local config as production config
-      - ../backend/settings.production.local.yaml:/app/settings.production.yaml:ro
+      # Configuration: mount generated config as settings.yaml (the only config file)
+      - ../backend/settings.production.local.yaml:/app/settings.yaml:ro
       # Logs only
       - ../backend/logs:/app/logs
       # NOTE: NO storage mount - all data in S3!
     environment:
       - NODE_ENV=production
-      - CONFIG_PATH=./settings.production.yaml
-      # Config file generated from GitHub Secrets and mounted as settings.production.yaml
+      # CONFIG_PATH defaults to ./settings.yaml (no need to override)
     dns:
       - 8.8.8.8
       - 8.8.4.4
