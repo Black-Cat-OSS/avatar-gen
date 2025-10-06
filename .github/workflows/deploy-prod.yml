@@ -280,6 +280,14 @@ jobs:
             git reset --hard origin/main
             git log -1 --oneline
             
+            # Step 2.3: Create log directories (prevent Docker from creating as root-owned)
+            echo "📁 Step 2.3: Creating log directories..."
+            mkdir -p backend/logs
+            mkdir -p frontend/logs
+            mkdir -p gateway/logs
+            chmod 777 backend/logs frontend/logs gateway/logs
+            echo "✅ Log directories created"
+            
             # Step 2.5: Generate production config from secrets using script
             echo "📝 Step 2.5: Generating production config from secrets..."
             chmod +x backend/scripts/generate-production-config.sh
