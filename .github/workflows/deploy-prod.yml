@@ -336,12 +336,23 @@ jobs:
       fail-fast: false
       matrix:
         database: [sqlite, postgresql]
+        storage: [local, s3]
         include:
           - database: sqlite
-            test_name: 'SQLite'
+            storage: local
+            test_name: 'SQLite + Local'
+            db_url: 'file:./storage/database/database.sqlite'
+          - database: sqlite
+            storage: s3
+            test_name: 'SQLite + S3'
             db_url: 'file:./storage/database/database.sqlite'
           - database: postgresql
-            test_name: 'PostgreSQL'
+            storage: local
+            test_name: 'PostgreSQL + Local'
+            db_url: 'postgresql://postgres:password@postgres:5432/avatar_gen'
+          - database: postgresql
+            storage: s3
+            test_name: 'PostgreSQL + S3'
             db_url: 'postgresql://postgres:password@postgres:5432/avatar_gen'
 
     steps:
@@ -457,12 +468,18 @@ jobs:
           cat > .env << EOF
           DATABASE_URL=${{ matrix.db_url }}
           DATABASE_PROVIDER=${{ matrix.database }}
-          STORAGE_TYPE=local
+          STORAGE_TYPE=${{ matrix.storage }}
           NODE_ENV=production
+          S3_ENDPOINT=${{ secrets.PROD_S3_ENDPOINT || secrets.TEST_S3_ENDPOINT || 'http://localhost:9000' }}
+          S3_BUCKET=${{ secrets.PROD_S3_BUCKET || secrets.TEST_S3_BUCKET || 'avatars' }}
+          S3_ACCESS_KEY=${{ secrets.PROD_S3_ACCESS_KEY || secrets.TEST_S3_ACCESS_KEY || 'minioadmin' }}
+          S3_SECRET_KEY=${{ secrets.PROD_S3_SECRET_KEY || secrets.TEST_S3_SECRET_KEY || 'minioadmin' }}
+          S3_REGION=${{ secrets.PROD_S3_REGION || secrets.TEST_S3_REGION || 'us-east-1' }}
           EOF
 
           echo "=== Created .env file (root) ==="
-          cat .env
+          cat .env | grep -v "SECRET_KEY"  # Не показываем секреты в логах
+          echo "S3_SECRET_KEY=***"
           echo "================================="
 
           # Запускаем сервисы
@@ -552,8 +569,8 @@ jobs:
           docker compose -f docker/docker-compose.yml exec -T avatar-backend ls -la /app/logs 2>&1 | tee test-artifacts/logs/volume-listing.txt || true
           docker cp avatar-gen-backend:/app/logs test-artifacts/backend-app-logs 2>&1 || true
 
-          # Копируем .env файл для диагностики
-          cp .env test-artifacts/root-env-file.txt 2>&1 || true
+          # Копируем .env файл для диагностики (без секретов!)
+          cat .env | grep -v "SECRET" > test-artifacts/root-env-file.txt 2>&1 || true
 
           # Сохраняем статус контейнеров
           docker compose -f docker/docker-compose.yml ps > test-artifacts/container-status.txt 2>&1 || true
@@ -574,14 +591,16 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Create GitHub Issue on failure
+      - name: Create GitHub Issue with logs on failure
         if: failure() && github.event_name == 'push'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require('fs');
             const testName = '${{ matrix.test_name }}';
             const database = '${{ matrix.database }}';
+            const storage = '${{ matrix.storage }}';
             const dbUrl = '${{ matrix.db_url }}';
             const branch = '${{ github.ref_name }}';
             const sha = '${{ github.sha }}';
@@ -590,28 +609,102 @@ jobs:
             const actor = '${{ github.actor }}';
             const workflow = '${{ github.workflow }}';
 
+            // Читаем логи из test-artifacts
+            let backendLogs = '';
+            let containerStatus = '';
+            let envVars = '';
+
+            try {
+              backendLogs = fs.readFileSync('test-artifacts/docker-logs/backend.log', 'utf8');
+            } catch (e) {
+              backendLogs = `Could not read backend logs: ${e.message}`;
+            }
+
+            try {
+              containerStatus = fs.readFileSync('test-artifacts/container-status.txt', 'utf8');
+            } catch (e) {
+              containerStatus = `Could not read container status: ${e.message}`;
+            }
+
+            try {
+              envVars = fs.readFileSync('test-artifacts/root-env-file.txt', 'utf8');
+            } catch (e) {
+              envVars = `Could not read env vars: ${e.message}`;
+            }
+
+            // Создаём Gist с полными логами (permanent storage)
+            let gistUrl = '';
+            try {
+              const gist = await github.rest.gists.create({
+                public: false,
+                description: `Integration Test Logs - ${testName} - ${sha.substring(0, 7)}`,
+                files: {
+                  'backend-full.log': { 
+                    content: backendLogs.substring(0, 1000000) || 'No logs available'  // Gist limit 1MB per file
+                  },
+                  'container-status.txt': { 
+                    content: containerStatus || 'No status available' 
+                  },
+                  'environment-vars.txt': { 
+                    content: envVars || 'No env vars available' 
+                  }
+                }
+              });
+              gistUrl = gist.data.html_url;
+              console.log(`Created Gist: ${gistUrl}`);
+            } catch (e) {
+              console.log(`Could not create gist: ${e.message}`);
+            }
+
+            // Берём последние 100 строк для issue body
+            const logLines = backendLogs.split('\n');
+            const lastLines = logLines.slice(-100).join('\n');
+
             const body = `## Integration Test Failure Report
 
             **Test Variant:** ${testName}
             **Database:** ${database}
+            **Storage:** ${storage}
             **Branch:** \`${branch}\`
-            **Commit:** ${sha}
+            **Commit:** ${sha.substring(0, 7)}
             **Triggered by:** @${actor}
 
             ### Environment
             - **DATABASE_URL:** \`${dbUrl}\`
             - **DATABASE_PROVIDER:** \`${database}\`
+            - **STORAGE_TYPE:** \`${storage}\`
             - **NODE_ENV:** \`production\`
 
             ### Quick Links
-            - [Workflow Run](${runUrl})
-            - [Commit](${commitUrl})
+            - [🔧 Workflow Run](${runUrl})
+            - [📝 Commit](${commitUrl})
+            ${gistUrl ? `- [📋 Full Logs (Gist - permanent)](${gistUrl})` : ''}
+            - [📦 Artifacts (expires in 7 days)](${runUrl}#artifacts)
+
+            ### Container Status
+            <details>
+            <summary>Click to expand</summary>
+
+            \`\`\`
+            ${containerStatus}
+            \`\`\`
+            </details>
+
+            ### Backend Logs (last 100 lines)
+            <details>
+            <summary>Click to expand</summary>
+
+            \`\`\`
+            ${lastLines}
+            \`\`\`
+            </details>
 
             ### Next Steps
-            1. Check the workflow logs
-            2. Review backend container logs in artifacts
+            1. Check [full logs in Gist](${gistUrl || runUrl}) (permanent) or [Artifacts](${runUrl}#artifacts) (7 days)
+            2. Review backend container startup sequence
             3. Verify Prisma schema generation
-            4. Check database connectivity
+            4. Check database connectivity (\`${database}\`)
+            5. Verify storage configuration (\`${storage}\`)
 
             ---
             *Auto-created by GitHub Actions - Workflow: \`${workflow}\`*`;
@@ -621,7 +714,7 @@ jobs:
               repo: context.repo.repo,
               title: `CI Failure: Integration Test ${testName}`,
               body: body,
-              labels: ['ci-failure', 'integration-test', 'automated']
+              labels: ['ci-failure', 'integration-test', 'automated', `db:${database}`, `storage:${storage}`]
             });
 
             console.log(`Created issue #${issue.data.number}`);
