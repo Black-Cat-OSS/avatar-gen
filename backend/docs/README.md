@@ -274,9 +274,9 @@ npm run test:debug      # Debug режим
 npm run test:e2e        # E2E тесты
 
 # Prisma
-npm run env:generate    # Генерация .env из settings.yaml
-npm run prisma:generate # Генерация Prisma client
-npm run prisma:migrate  # Запуск миграций
+npm run prisma:generate # Генерация Prisma client (DATABASE_URL из YAML)
+npm run prisma:migrate  # Запуск миграций (DATABASE_URL из YAML)
+npm run prisma:deploy   # Деплой миграций в production
 npm run prisma:studio   # Prisma Studio (GUI)
 npm run prisma:reset    # Сброс БД (dev only)
 npm run prisma:deploy   # Deploy миграций (prod)
