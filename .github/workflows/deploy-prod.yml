@@ -506,15 +506,47 @@ jobs:
           echo "Checking gateway..."
           curl -f http://localhost:80/ || (docker compose -f docker/docker-compose.yml logs gateway && exit 1)
 
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "=== Collecting logs from containers ==="
+          mkdir -p test-artifacts/logs
+          mkdir -p test-artifacts/docker-logs
+
+          # Сохраняем логи из всех контейнеров
+          echo "Collecting docker compose logs..."
+          docker compose -f docker/docker-compose.yml logs > test-artifacts/docker-logs/all-services.log 2>&1 || true
+          docker compose -f docker/docker-compose.yml logs avatar-backend > test-artifacts/docker-logs/backend.log 2>&1 || true
+          docker compose -f docker/docker-compose.yml logs avatar-frontend > test-artifacts/docker-logs/frontend.log 2>&1 || true
+          docker compose -f docker/docker-compose.yml logs gateway > test-artifacts/docker-logs/gateway.log 2>&1 || true
+
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            docker compose -f docker/docker-compose.yml logs postgres > test-artifacts/docker-logs/postgres.log 2>&1 || true
+          fi
+
+          # Копируем логи из volume (если есть)
+          echo "Copying logs from backend volume..."
+          docker compose -f docker/docker-compose.yml exec -T avatar-backend ls -la /app/logs 2>&1 | tee test-artifacts/logs/volume-listing.txt || true
+          docker cp avatar-gen-backend:/app/logs test-artifacts/backend-app-logs 2>&1 || true
+
+          # Сохраняем статус контейнеров
+          docker compose -f docker/docker-compose.yml ps > test-artifacts/container-status.txt 2>&1 || true
+          docker ps -a > test-artifacts/docker-ps.txt 2>&1 || true
+
+          # Сохраняем информацию о сети
+          docker network ls > test-artifacts/networks.txt 2>&1 || true
+
+          echo "=== Logs collected to test-artifacts/ ==="
+          ls -la test-artifacts/
+
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: integration-test-logs-${{ matrix.test_name }}-${{ github.run_id }}
-          path: |
-            backend/logs/**/*.log
+          path: test-artifacts/
           retention-days: 7
-          if-no-files-found: ignore
+          if-no-files-found: warn
 
       - name: Create GitHub Issue on failure
         if: failure() && github.event_name == 'push'
