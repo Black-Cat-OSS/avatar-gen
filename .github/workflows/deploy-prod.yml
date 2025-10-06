@@ -292,6 +292,12 @@ jobs:
             git reset --hard origin/main
             git log -1 --oneline
             
+            # Step 2.5: Create empty config files (prevent Docker from creating directories!)
+            echo "📝 Step 2.5: Creating empty config files..."
+            touch backend/settings.local.yaml
+            touch backend/settings.production.local.yaml
+            echo "Config files created successfully"
+            
             # Step 3: Build Docker images
             echo "🏗️  Step 3: Building Docker images..."
             docker compose -f docker/docker-compose.yml build --no-cache
