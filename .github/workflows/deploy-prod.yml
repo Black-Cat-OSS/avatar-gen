@@ -292,62 +292,20 @@ jobs:
             git reset --hard origin/main
             git log -1 --oneline
             
-            # Step 2.5: Generate complete production config from secrets
-            # This file will be mounted as settings.production.yaml (the only config file)
-            echo "📝 Step 2.5: Generating settings.production.local.yaml from secrets..."
-            
-            # Remove if exists (could be a directory from previous Docker mount)
-            rm -rf backend/settings.production.local.yaml
-            
-            # Generate production config directly with variable substitution
-            cat > backend/settings.production.local.yaml <<CONFIG_END
-            app:
-              storage:
-                type: 's3'
-                s3:
-                  endpoint: '$PROD_S3_ENDPOINT'
-                  bucket: '$PROD_S3_BUCKET'
-                  access_key: '$PROD_S3_ACCESS_KEY'
-                  secret_key: '$PROD_S3_SECRET_KEY'
-                  region: '$PROD_S3_REGION'
-                  force_path_style: true
-                  connection:
-                    maxRetries: 3
-                    retryDelay: 2000
-              server:
-                host: '0.0.0.0'
-                port: 3000
-              database:
-                driver: 'postgresql'
-                connection:
-                  maxRetries: 3
-                  retryDelay: 2000
-                network:
-                  host: '$PROD_DB_HOST'
-                  port: $PROD_DB_PORT
-                  database: '$PROD_DB_NAME'
-                  username: '$PROD_DB_USERNAME'
-                  password: '$PROD_DB_PASSWORD'
-                  ssl: false
-              logging:
-                level: 'warn'
-                verbose: false
-                pretty: false
-            CONFIG_END
-            
-            # Replace env variables in config file
-            sed -i "s|\$PROD_S3_ENDPOINT|$PROD_S3_ENDPOINT|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_S3_BUCKET|$PROD_S3_BUCKET|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_S3_ACCESS_KEY|$PROD_S3_ACCESS_KEY|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_S3_SECRET_KEY|$PROD_S3_SECRET_KEY|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_S3_REGION|$PROD_S3_REGION|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_DB_HOST|$PROD_DB_HOST|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_DB_PORT|$PROD_DB_PORT|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_DB_NAME|$PROD_DB_NAME|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_DB_USERNAME|$PROD_DB_USERNAME|g" backend/settings.production.local.yaml
-            sed -i "s|\$PROD_DB_PASSWORD|$PROD_DB_PASSWORD|g" backend/settings.production.local.yaml
-            
-            echo "✅ Production config generated"
+            # Step 2.5: Generate production config from secrets using script
+            echo "📝 Step 2.5: Generating production config from secrets..."
+            chmod +x backend/scripts/generate-production-config.sh
+            PROD_S3_ENDPOINT=$PROD_S3_ENDPOINT \
+            PROD_S3_BUCKET=$PROD_S3_BUCKET \
+            PROD_S3_ACCESS_KEY=$PROD_S3_ACCESS_KEY \
+            PROD_S3_SECRET_KEY=$PROD_S3_SECRET_KEY \
+            PROD_S3_REGION=$PROD_S3_REGION \
+            PROD_DB_HOST=$PROD_DB_HOST \
+            PROD_DB_PORT=$PROD_DB_PORT \
+            PROD_DB_NAME=$PROD_DB_NAME \
+            PROD_DB_USERNAME=$PROD_DB_USERNAME \
+            PROD_DB_PASSWORD=$PROD_DB_PASSWORD \
+            ./backend/scripts/generate-production-config.sh
             
             # Step 3: Build Docker images
             echo "🏗️  Step 3: Building Docker images..."
