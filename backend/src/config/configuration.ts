@@ -40,6 +40,11 @@ const configSchema = z
             url: z.string().min(1, 'Database URL is required'),
           })
           .optional(),
+        postgresql_params: z
+          .object({
+            url: z.string().min(1, 'PostgreSQL database URL is required'),
+          })
+          .optional(),
         network: z
           .object({
             host: z.string().default('localhost'),
