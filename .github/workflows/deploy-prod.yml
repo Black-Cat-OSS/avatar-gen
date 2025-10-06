@@ -1,0 +1,352 @@
+name: Production Deploy Pipeline
+
+on:
+  # Push в main - полное тестирование + ДЕПЛОЙ
+  push:
+    branches:
+      - main
+
+  # Ручной запуск для экстренных случаев
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests (use only for hotfixes)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10'
+
+jobs:
+  # ========================================
+  # Stage 1: Unit & E2E Tests
+  # ========================================
+  # Примечание: Линтинг пропущен, т.к. код уже прошел проверку
+  # в CI workflow при PR в develop
+  #
+  # Этот workflow запускается для:
+  # - PR в main: полное тестирование БЕЗ деплоя
+  # - Push в main: полное тестирование + ДЕПЛОЙ
+  test-backend:
+    name: Test Backend (${{ matrix.test_name }})
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_tests != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # Полная матрица тестов для продакшен деплоя
+        database: [sqlite, postgresql]
+        storage: [local, s3]
+        include:
+          - database: sqlite
+            storage: local
+            test_name: 'SQLite + Local'
+          - database: sqlite
+            storage: s3
+            test_name: 'SQLite + S3'
+          - database: postgresql
+            storage: local
+            test_name: 'PostgreSQL + Local'
+          - database: postgresql
+            storage: s3
+            test_name: 'PostgreSQL + S3'
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: avatar_gen_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for PostgreSQL
+        if: matrix.database == 'postgresql'
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          echo "PostgreSQL failed to start"
+          exit 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
+
+      - name: Create test configuration
+        run: |
+          # Создаем базовую конфигурацию
+          cat > settings.test.matrix.yaml << EOF
+          app:
+            storage:
+              type: '${{ matrix.storage }}'
+              local:
+                save_path: './storage/test-avatars'
+              s3:
+                endpoint: '${{ secrets.TEST_S3_ENDPOINT || 'https://test-s3-endpoint.com' }}'
+                bucket: '${{ secrets.TEST_S3_BUCKET || 'avatar-gen-test' }}'
+                access_key: '${{ secrets.TEST_S3_ACCESS_KEY || 'test-access-key' }}'
+                secret_key: '${{ secrets.TEST_S3_SECRET_KEY || 'test-secret-key' }}'
+                region: '${{ secrets.TEST_S3_REGION || 'us-east-1' }}'
+                force_path_style: true
+                connection:
+                  maxRetries: 1
+                  retryDelay: 100
+            database:
+              driver: '${{ matrix.database }}'
+              connection:
+                maxRetries: 1
+                retryDelay: 100
+              sqlite_params:
+                url: 'file:./storage/test-database/database.test.sqlite'
+              network:
+                host: 'localhost'
+                port: 5432
+                database: 'avatar_gen_test'
+                username: 'postgres'
+                password: 'password'
+                ssl: false
+            logging:
+              level: 'error'
+              verbose: false
+              pretty: false
+          EOF
+
+      - name: Run tests
+        run: pnpm run test
+        env:
+          NODE_ENV: test
+          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
+
+      - name: Run e2e tests
+        run: pnpm run test:e2e
+        env:
+          NODE_ENV: test
+          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend-${{ matrix.database }}-${{ matrix.storage }}
+          name: backend-coverage-${{ matrix.database }}-${{ matrix.storage }}
+
+  # ========================================
+  # Stage 2: Build Frontend
+  # ========================================
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_tests != 'true'
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+          retention-days: 1
+
+  # ========================================
+  # Stage 3: Production Deployment
+  # ========================================
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    needs: [test-backend, build-frontend]
+    # Деплой только при push в main или ручном запуске с force_deploy
+    # Docker образы собираются ТОЛЬКО на production сервере
+    if: |
+      success() &&
+      (github.event_name == 'push' || github.event.inputs.force_deploy == 'true')
+    environment: production
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "SSH key configured successfully"
+
+      - name: Connect to production server and deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << ENDSSH
+            set -e
+            
+            echo "==================================="
+            echo "  Production Deployment Started"
+            echo "==================================="
+            
+            # Step 1: Navigate to application directory
+            echo "📂 Step 1: Navigating to application directory..."
+            cd ${{ secrets.APP_PATH }}
+            pwd
+            
+            # Step 2: Pull latest code from repository
+            echo "📥 Step 2: Pulling latest changes from repository..."
+            git fetch origin
+            git reset --hard origin/main
+            git log -1 --oneline
+            
+            # Step 2.5: Generate production config from secrets using script
+            echo "📝 Step 2.5: Generating production config from secrets..."
+            chmod +x backend/scripts/generate-production-config.sh
+            
+            # Export secrets for script (using GitHub Actions interpolation)
+            export PROD_S3_ENDPOINT="${{ secrets.PROD_S3_ENDPOINT }}"
+            export PROD_S3_BUCKET="${{ secrets.PROD_S3_BUCKET }}"
+            export PROD_S3_ACCESS_KEY="${{ secrets.PROD_S3_ACCESS_KEY }}"
+            export PROD_S3_SECRET_KEY="${{ secrets.PROD_S3_SECRET_KEY }}"
+            export PROD_S3_REGION="${{ secrets.PROD_S3_REGION }}"
+            export PROD_DB_HOST="${{ secrets.PROD_DB_HOST }}"
+            export PROD_DB_PORT="${{ secrets.PROD_DB_PORT }}"
+            export PROD_DB_NAME="${{ secrets.PROD_DB_NAME }}"
+            export PROD_DB_USERNAME="${{ secrets.PROD_DB_USERNAME }}"
+            export PROD_DB_PASSWORD="${{ secrets.PROD_DB_PASSWORD }}"
+            
+            ./backend/scripts/generate-production-config.sh
+            
+            # Step 3: Build Docker images
+            echo "🏗️  Step 3: Building Docker images..."
+            docker compose -f docker/docker-compose.prod.yaml build --no-cache
+            
+            # Step 4: Stop old containers
+            echo "🛑 Step 4: Stopping old containers..."
+            docker compose -f docker/docker-compose.prod.yaml down
+            
+            # Step 5: Start new containers
+            echo "🚀 Step 5: Starting new containers..."
+            docker compose -f docker/docker-compose.prod.yaml up -d
+            
+            # Step 6: Cleanup old images
+            echo "🧹 Step 6: Cleaning up old Docker images..."
+            docker image prune -f
+            docker system prune -f --volumes
+            
+            echo "✅ Deployment completed successfully!"
+          ENDSSH
+
+      - name: Verify deployment
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          APP_PATH: ${{ secrets.APP_PATH }}
+        run: |
+          ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << 'ENDSSH'
+            cd ${{ secrets.APP_PATH }}
+            
+            echo "🔍 Verifying deployment..."
+            
+            echo "1. Checking container status..."
+            docker compose -f docker/docker-compose.prod.yaml ps
+            
+            echo "2. Waiting for services to start..."
+            sleep 15
+            
+            echo "3. Checking backend health..."
+            curl -f http://localhost:3000/api/health || exit 1
+            
+            echo "4. Checking gateway..."
+            curl -f http://localhost:80/ || exit 1
+            
+            echo "✅ All health checks passed!"
+          ENDSSH
+
+      - name: Cleanup SSH credentials
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_rsa
+          echo "SSH credentials cleaned up"
