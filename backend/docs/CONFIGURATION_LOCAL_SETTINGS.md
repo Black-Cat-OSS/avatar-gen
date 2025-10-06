@@ -87,14 +87,36 @@ app:
 
 ## Docker интеграция
 
-Docker compose файлы автоматически монтируют локальные конфигурационные файлы:
+### По умолчанию
+
+Docker Compose НЕ монтирует локальные конфигурационные файлы (`*.local.*.yaml`), чтобы избежать создания директорий вместо файлов, если они отсутствуют.
+
+По умолчанию монтируются только основные файлы:
 
 ```yaml
 volumes:
   - ../backend/settings.yaml:/app/settings.yaml:ro
   - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
-  - ../backend/settings.local.yaml:/app/settings.local.yaml:ro
-  - ../backend/settings.production.local.yaml:/app/settings.production.local.yaml:ro
+```
+
+### Монтирование локальных файлов (опционально)
+
+Если вам нужны локальные конфигурационные файлы в Docker, создайте `docker/docker-compose.override.yml`:
+
+```yaml
+services:
+  avatar-backend:
+    volumes:
+      - ../backend/settings.local.yaml:/app/settings.local.yaml:ro
+      - ../backend/settings.production.local.yaml:/app/settings.production.local.yaml:ro
+```
+
+**Важно:** Создайте файлы перед запуском Docker Compose, иначе Docker создаст директории вместо файлов:
+
+```bash
+touch backend/settings.local.yaml
+touch backend/settings.production.local.yaml
+docker compose up
 ```
 
 ## Безопасность

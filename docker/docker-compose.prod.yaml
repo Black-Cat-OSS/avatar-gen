@@ -1,0 +1,97 @@
+services:
+  # Nginx Gateway (Reverse Proxy)
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    container_name: avatar-gen-gateway
+    ports:
+      - '12745:12745'
+    volumes:
+      - ../gateway/configs/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../gateway/configs/static:/usr/share/nginx/html/static:ro
+      - ../gateway/logs:/var/log/nginx
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'nginx', '-t']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+      - external
+
+  # Avatar Backend Service (Production Configuration)
+  # - PostgreSQL database (external or container)
+  # - S3 storage
+  # - NO local storage mount (all data in S3)
+  avatar-backend:
+    build:
+      context: ../backend
+      dockerfile: docker/Dockerfile
+    container_name: avatar-gen-backend
+    expose:
+      - '3000'
+    volumes:
+      # Configuration: mount generated config as settings.yaml (the only config file)
+      - ../backend/settings.production.local.yaml:/app/settings.yaml:ro
+      # Logs only
+      - ../backend/logs:/app/logs
+      # NOTE: NO storage mount - all data in S3!
+    environment:
+      - NODE_ENV=production
+      # CONFIG_PATH defaults to ./settings.yaml (no need to override)
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - internal
+
+  # Frontend Service
+  avatar-frontend:
+    build:
+      context: ../frontend
+      dockerfile: docker/Dockerfile
+    container_name: avatar-gen-frontend
+    expose:
+      - '8080'
+    volumes:
+      - ../frontend/logs:/var/log/nginx
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+
+volumes:
+  certbot_data:
+    driver: local
+  certbot_www:
+    driver: local
+
+networks:
+  # External network for gateway (internet access)
+  external:
+    external: true
+    name: avatar-gen-external
+
+  # Internal network for gateway, backend and frontend
+  internal:
+    driver: bridge
+    internal: false
+    name: avatar-gen-internal

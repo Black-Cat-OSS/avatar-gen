@@ -1,13 +1,7 @@
 name: Production Deploy Pipeline
 
 on:
-  # PR в main (develop → main) - полное тестирование БЕЗ деплоя
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened]
-
-  # Push в main (после мерджа) - полное тестирование + ДЕПЛОЙ
+  # Push в main - полное тестирование + ДЕПЛОЙ
   push:
     branches:
       - main
@@ -17,11 +11,6 @@ on:
     inputs:
       skip_tests:
         description: 'Skip tests (use only for hotfixes)'
-        required: false
-        default: false
-        type: boolean
-      force_deploy:
-        description: 'Force deploy (even on PR)'
         required: false
         default: false
         type: boolean
@@ -273,6 +262,17 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           APP_PATH: ${{ secrets.APP_PATH }}
+          # Production secrets for config generation
+          PROD_S3_ENDPOINT: ${{ secrets.PROD_S3_ENDPOINT }}
+          PROD_S3_BUCKET: ${{ secrets.PROD_S3_BUCKET }}
+          PROD_S3_ACCESS_KEY: ${{ secrets.PROD_S3_ACCESS_KEY }}
+          PROD_S3_SECRET_KEY: ${{ secrets.PROD_S3_SECRET_KEY }}
+          PROD_S3_REGION: ${{ secrets.PROD_S3_REGION }}
+          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          PROD_DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
         run: |
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << 'ENDSSH'
             set -e
@@ -292,23 +292,69 @@ jobs:
             git reset --hard origin/main
             git log -1 --oneline
             
-            # Step 2.5: Create empty config files (prevent Docker from creating directories!)
-            echo "📝 Step 2.5: Creating empty config files..."
-            touch backend/settings.local.yaml
-            touch backend/settings.production.local.yaml
-            echo "Config files created successfully"
+            # Step 2.5: Generate complete production config from secrets
+            # This file will be mounted as settings.production.yaml (the only config file)
+            echo "📝 Step 2.5: Generating settings.production.local.yaml from secrets..."
+            cat > backend/settings.production.local.yaml << 'EOF'
+            app:
+              storage:
+                type: 's3'
+                s3:
+                  endpoint: '$PROD_S3_ENDPOINT'
+                  bucket: '$PROD_S3_BUCKET'
+                  access_key: '$PROD_S3_ACCESS_KEY'
+                  secret_key: '$PROD_S3_SECRET_KEY'
+                  region: '$PROD_S3_REGION'
+                  force_path_style: true
+                  connection:
+                    maxRetries: 3
+                    retryDelay: 2000
+              server:
+                host: '0.0.0.0'
+                port: 3000
+              database:
+                driver: 'postgresql'
+                connection:
+                  maxRetries: 3
+                  retryDelay: 2000
+                network:
+                  host: '$PROD_DB_HOST'
+                  port: $PROD_DB_PORT
+                  database: '$PROD_DB_NAME'
+                  username: '$PROD_DB_USERNAME'
+                  password: '$PROD_DB_PASSWORD'
+                  ssl: false
+              logging:
+                level: 'warn'
+                verbose: false
+                pretty: false
+            EOF
+            
+            # Replace env variables in config file
+            sed -i "s|\$PROD_S3_ENDPOINT|$PROD_S3_ENDPOINT|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_S3_BUCKET|$PROD_S3_BUCKET|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_S3_ACCESS_KEY|$PROD_S3_ACCESS_KEY|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_S3_SECRET_KEY|$PROD_S3_SECRET_KEY|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_S3_REGION|$PROD_S3_REGION|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_DB_HOST|$PROD_DB_HOST|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_DB_PORT|$PROD_DB_PORT|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_DB_NAME|$PROD_DB_NAME|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_DB_USERNAME|$PROD_DB_USERNAME|g" backend/settings.production.local.yaml
+            sed -i "s|\$PROD_DB_PASSWORD|$PROD_DB_PASSWORD|g" backend/settings.production.local.yaml
+            
+            echo "✅ Production config generated"
             
             # Step 3: Build Docker images
             echo "🏗️  Step 3: Building Docker images..."
-            docker compose -f docker/docker-compose.yml build --no-cache
+            docker compose -f docker/docker-compose.prod.yaml build --no-cache
             
             # Step 4: Stop old containers
             echo "🛑 Step 4: Stopping old containers..."
-            docker compose -f docker/docker-compose.yml down
+            docker compose -f docker/docker-compose.prod.yaml down
             
             # Step 5: Start new containers
             echo "🚀 Step 5: Starting new containers..."
-            docker compose -f docker/docker-compose.yml up -d
+            docker compose -f docker/docker-compose.prod.yaml up -d
             
             # Step 6: Cleanup old images
             echo "🧹 Step 6: Cleaning up old Docker images..."
@@ -331,7 +377,7 @@ jobs:
             echo "🔍 Verifying deployment..."
             
             echo "1. Checking container status..."
-            docker compose -f docker/docker-compose.yml ps
+            docker compose -f docker/docker-compose.prod.yaml ps
             
             echo "2. Waiting for services to start..."
             sleep 15
