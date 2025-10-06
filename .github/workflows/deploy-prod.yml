@@ -340,26 +340,9 @@ jobs:
           - database: sqlite
             test_name: 'SQLite'
             db_url: 'file:./storage/database/database.sqlite'
-            use_postgres_service: false
           - database: postgresql
             test_name: 'PostgreSQL'
-            db_url: 'postgresql://postgres:password@localhost:5432/avatar_gen_test'
-            use_postgres_service: true
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: avatar_gen_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+            db_url: 'postgresql://postgres:password@postgres:5432/avatar_gen'
 
     steps:
       - name: Checkout code
@@ -367,13 +350,6 @@ jobs:
 
       - name: Create external network
         run: docker network create avatar-gen-external
-
-      - name: Verify PostgreSQL is ready
-        if: matrix.database == 'postgresql'
-        run: |
-          echo "Checking PostgreSQL connection (GitHub service)..."
-          pg_isready -h localhost -p 5432 -U postgres || exit 1
-          echo "✅ PostgreSQL is ready on localhost:5432"
 
       - name: Prepare integration test environment (${{ matrix.test_name }})
         run: |
@@ -434,21 +410,8 @@ jobs:
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
 
-          # Создаем docker-compose.override.yml с условной конфигурацией
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            # Для PostgreSQL используем host network для доступа к GitHub service
-            cat > docker/docker-compose.override.yml << 'EOF'
-          services:
-            avatar-backend:
-              volumes:
-                - ../backend/storage:/app/storage
-                - ../backend/logs:/app/logs
-                - ../backend/settings.yaml:/app/settings.yaml:ro
-              network_mode: "host"
-          EOF
-          else
-            # Для SQLite используем обычные сети
-            cat > docker/docker-compose.override.yml << 'EOF'
+          # Создаем docker-compose.override.yml для монтирования файлов в CI
+          cat > docker/docker-compose.override.yml << 'EOF'
           services:
             avatar-backend:
               volumes:
@@ -456,14 +419,13 @@ jobs:
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
           EOF
-          fi
+
+          echo "=== Docker Compose Override ==="
+          cat docker/docker-compose.override.yml
 
           echo "=== Storage directory permissions ==="
           ls -la backend/storage/
           ls -la backend/storage/database/
-
-          echo "=== Docker Compose Override ==="
-          cat docker/docker-compose.override.yml
 
       - name: Start services with Docker Compose (${{ matrix.test_name }})
         run: |
@@ -473,29 +435,30 @@ jobs:
           export STORAGE_TYPE="local"
           export NODE_ENV="production"
 
-          # Для PostgreSQL используем localhost (GitHub service)
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            export DB_HOST="localhost"
-            export DB_NAME="avatar_gen_test"
-            echo "Using GitHub PostgreSQL service on localhost:5432"
-          fi
-
           echo "=== Environment Variables ==="
           echo "DATABASE_URL=$DATABASE_URL"
           echo "DATABASE_PROVIDER=$DATABASE_PROVIDER"
           echo "STORAGE_TYPE=$STORAGE_TYPE"
           echo "NODE_ENV=$NODE_ENV"
-          echo "DB_HOST=${DB_HOST:-N/A}"
           echo "============================"
 
           # Запускаем сервисы
-          # Для PostgreSQL НЕ используем профиль - БД уже в GitHub service
-          docker compose -f docker/docker-compose.yml up --build -d
+          # Для PostgreSQL используем профиль --profile postgresql
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            echo "🐘 Starting services with PostgreSQL container..."
+            docker compose --profile postgresql -f docker/docker-compose.yml up --build -d
+          else
+            echo "🗄️  Starting services with SQLite..."
+            docker compose -f docker/docker-compose.yml up --build -d
+          fi
+
           echo "Waiting for services to be ready..."
           sleep 45
 
       - name: Check container status
-        run: docker compose -f docker/docker-compose.yml ps
+        run: |
+          echo "=== Docker Compose Services (${{ matrix.test_name }}) ==="
+          docker compose -f docker/docker-compose.yml ps
 
       - name: Show backend logs for debugging (${{ matrix.test_name }})
         if: always()
@@ -511,6 +474,12 @@ jobs:
           echo "=== Generated Prisma Schema Check ==="
           docker compose -f docker/docker-compose.yml exec -T avatar-backend cat /app/prisma/schema.prisma | head -15 || echo "Cannot read schema"
           echo "======================================"
+
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            echo "=== PostgreSQL Container Logs ==="
+            docker compose -f docker/docker-compose.yml logs postgres
+            echo "================================="
+          fi
 
       - name: Check backend health
         run: |
