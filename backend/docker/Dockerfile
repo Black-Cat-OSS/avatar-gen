@@ -97,8 +97,9 @@ RUN chmod +x /app/start.sh && ls -la /app/start.sh
 EXPOSE 3000
 
 # Set environment variables
+# NOTE: DATABASE_URL передаётся через docker-compose environment
+# Не задаём дефолтное значение здесь, чтобы избежать конфликтов!
 ENV NODE_ENV=production
-ENV DATABASE_URL="file:./storage/database/database.sqlite"
 ENV CONFIG_PATH="./settings.yaml"
 
 # Health check
@@ -108,4 +109,3 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Start the application
 # Use sh explicitly to avoid issues with node's docker-entrypoint
 CMD ["sh", "/app/start.sh"]
-

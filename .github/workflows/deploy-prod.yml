@@ -363,9 +363,17 @@ jobs:
           touch backend/storage/database/database.sqlite
           chmod -R 777 backend/storage
 
-          # Создаем пустые .local.yaml файлы, чтобы Docker не создал их как директории
+          # Создаем пустые конфиг файлы, чтобы Docker не создал их как директории
+          # КРИТИЧНО: Пустой settings.production.yaml не переопределит settings.yaml!
           touch backend/settings.local.yaml
           touch backend/settings.production.local.yaml
+
+          # Создаём ПУСТОЙ settings.production.yaml, чтобы предотвратить
+          # монтирование реального файла с S3 конфигурацией
+          cat > backend/settings.production.yaml << 'EOF'
+          # Пустая конфигурация для CI тестов
+          # Все настройки берутся из settings.yaml с ENV переменными
+          EOF
 
           # Создаем минимальный settings.yaml с поддержкой ENV переменных
           cat > backend/settings.yaml << 'EOF'
@@ -410,6 +418,9 @@ jobs:
           echo "=== Created settings.yaml ==="
           cat backend/settings.yaml
 
+          echo "=== Created empty settings.production.yaml ==="
+          cat backend/settings.production.yaml
+
           # Создаем docker-compose.override.yml для CI
           # КРИТИЧНО: Отключаем рестарты для тестов!
           cat > docker/docker-compose.override.yml << 'EOF'
@@ -420,6 +431,7 @@ jobs:
                 - ../backend/storage:/app/storage
                 - ../backend/logs:/app/logs
                 - ../backend/settings.yaml:/app/settings.yaml:ro
+                - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
             
             postgres:
               restart: "no"
@@ -440,17 +452,17 @@ jobs:
 
       - name: Start services with Docker Compose (${{ matrix.test_name }})
         run: |
-          # Создаём .env файл для docker-compose
-          # КРИТИЧНО: export НЕ передаёт переменные в docker-compose!
-          cat > docker/.env << EOF
+          # Создаём .env файл для docker-compose в КОРНЕ (важно!)
+          # Docker Compose ищет .env в текущей директории, а НЕ в docker/
+          cat > .env << EOF
           DATABASE_URL=${{ matrix.db_url }}
           DATABASE_PROVIDER=${{ matrix.database }}
           STORAGE_TYPE=local
           NODE_ENV=production
           EOF
 
-          echo "=== Created docker/.env file ==="
-          cat docker/.env
+          echo "=== Created .env file (root) ==="
+          cat .env
           echo "================================="
 
           # Запускаем сервисы
@@ -541,7 +553,7 @@ jobs:
           docker cp avatar-gen-backend:/app/logs test-artifacts/backend-app-logs 2>&1 || true
 
           # Копируем .env файл для диагностики
-          cp docker/.env test-artifacts/docker-env-file.txt 2>&1 || true
+          cp .env test-artifacts/root-env-file.txt 2>&1 || true
 
           # Сохраняем статус контейнеров
           docker compose -f docker/docker-compose.yml ps > test-artifacts/container-status.txt 2>&1 || true
