@@ -78,6 +78,7 @@ COPY --from=builder /app/dist ./dist
 # Копируем ТОЛЬКО schema templates (НЕ копируем schema.prisma из builder)
 COPY --from=builder /app/prisma/schema.sqlite.prisma ./prisma/schema.sqlite.prisma
 COPY --from=builder /app/prisma/schema.postgresql.prisma ./prisma/schema.postgresql.prisma
+# НЕ копируем /app/node_modules/.prisma из builder - будет сгенерирован в runtime!
 
 # Create storage directories
 RUN mkdir -p storage/avatars storage/database
