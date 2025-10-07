@@ -19,7 +19,7 @@ Backend service for generating and managing avatars similar to GitHub/GitLab.
 ## Tech Stack
 
 - **Framework**: NestJS with TypeScript
-- **Database**: SQLite or PostgreSQL with Prisma ORM
+- **Database**: SQLite or PostgreSQL with TypeORM
 - **Image Processing**: Sharp
 - **Validation**: Zod + class-validator
 - **Logging**: Pino
@@ -31,302 +31,176 @@ Backend service for generating and managing avatars similar to GitHub/GitLab.
 ### Prerequisites
 
 - Node.js 20+
-- npm or yarn
+- npm or pnpm
 
 ### Installation
 
 1. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
-2. Set up environment:
-```bash
-cp env.example .env
-```
-
-3. Configure database in `settings.yaml`:
-```yaml
-database:
-  driver: "sqlite"  # or "postgresql"
-  connection:
-    maxRetries: 3
-    retryDelay: 2000
-  sqlite_params:
-    url: "file:./prisma/storage/database.sqlite"
-  # network:
-  #   host: "localhost"
-  #   port: 5432
-  #   database: "avatar_gen"
-  #   username: "postgres"
-  #   password: "password"
-  #   ssl: false
-```
-
-4. Generate Prisma client:
-```bash
-npm run prisma:generate
-```
-
-5. Run database migrations:
-```bash
-npm run prisma:migrate
-```
-
-6. Start the application:
-```bash
-npm run start:dev
-```
-
-The API will be available at `http://localhost:3000`
-Swagger documentation at `http://localhost:3000/swagger`
-
-## API Endpoints
-
-### Generate Avatar
-```
-POST /api/generate
-```
-
-Query parameters:
-- `primaryColor` (optional): Primary color for avatar
-- `foreignColor` (optional): Secondary color for avatar
-- `colorScheme` (optional): Predefined color scheme name
-- `seed` (optional): Seed for deterministic generation (max 32 chars)
-
-### Get Avatar
-```
-GET /api/:id
-```
-
-Query parameters:
-- `filter` (optional): grayscale, sepia, negative
-- `size` (optional): 4-9 (where 2^n, e.g., 4 = 16x16px, 6 = 64x64px)
-
-### Delete Avatar
-```
-DELETE /api/:id
-```
-
-### Get Color Schemes
-```
-GET /api/color-schemes
-```
-
-### Health Check
-```
-GET /api/health
-```
-
-## Configuration
-
-The application uses `settings.yaml` for configuration:
-
+2. Configure database in `settings.yaml`:
 ```yaml
 app:
-  save_path: "./storage/avatars"
-  server:
-    host: "localhost"
-    port: 3000
   database:
     driver: "sqlite"  # or "postgresql"
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./prisma/storage/database.sqlite"
-    # postgresql_params:
-    #   host: "localhost"
+      url: "file:./storage/database/avatar_gen.db"
+    # OR for PostgreSQL:
+    # network:
+    #   host: localhost
     #   port: 5432
-    #   database: "avatar_gen"
-    #   username: "postgres"
-    #   password: "password"
+    #   username: postgres
+    #   password: password
+    #   database: avatar_gen
     #   ssl: false
 ```
 
-### Database Configuration
-
-The application supports both SQLite and PostgreSQL databases with automatic connection retry logic.
-
-📚 **[Полная документация по конфигурации БД](./docs/DATABASE_CONFIGURATION.md)**
-
-#### Быстрое переключение между БД
-
-База данных выбирается через переменную окружения `NODE_ENV`:
-
+3. Start the application:
 ```bash
-# SQLite (по умолчанию)
-node scripts/generate-env.js
+# Development
+pnpm run start:dev
 
-# PostgreSQL (production)
-NODE_ENV=production node scripts/generate-env.js
+# Production
+pnpm run build
+pnpm run start:prod
 ```
+
+## Database Configuration
+
+### TypeORM Setup
+
+The application uses TypeORM for database operations, supporting both SQLite and PostgreSQL:
+
+- **Automatic schema synchronization** in development mode
+- **Migration support** for production deployments
+- **Multiple driver support** with easy switching
+
+### Configuration Examples
 
 #### SQLite (Default)
-- File-based database
-- No additional setup required
-- Perfect for development and small deployments
-- Используется в: `default`, `development`, `test`
+```yaml
+app:
+  database:
+    driver: sqlite
+    sqlite_params:
+      url: "file:./storage/database/avatar_gen.db"
+```
 
 #### PostgreSQL
-- Full-featured relational database
-- Better performance for production environments
-- Requires PostgreSQL server to be running
-- Используется в: `production`
+```yaml
+app:
+  database:
+    driver: postgresql
+    network:
+      host: postgres
+      port: 5432
+      username: postgres
+      password: password
+      database: avatar_gen
+      ssl: false
+```
 
-#### Connection Retry Logic
-- **maxRetries**: Number of connection attempts (default: 3)
-- **retryDelay**: Delay between attempts in milliseconds (default: 2000)
-- Automatic reconnection on connection loss
+## API Documentation
 
-**📖 Подробная документация:** [DATABASE_CONFIGURATION.md](./docs/DATABASE_CONFIGURATION.md)
+Once the application is running, visit:
+- **Swagger UI**: http://localhost:3000/api
+- **Health Check**: http://localhost:3000/health
 
-## Docker
+## Docker Support
 
-📁 **Docker конфигурация находится в:** [`docker/`](./docker/)
-
-- **[docker/Dockerfile](./docker/Dockerfile)** - Multi-stage Dockerfile для оптимизированной сборки
-- **[docker/README.md](./docker/README.md)** - Детальная документация по Docker
-
-### Быстрый старт с Docker Compose
-
-Из корня проекта:
-
+### Development
 ```bash
-# Запустить весь проект (frontend + backend + postgres)
 docker-compose up -d
-
-# Только backend с SQLite (без PostgreSQL)
-docker-compose up avatar-backend --no-deps
-
-# Backend с PostgreSQL
-docker-compose up postgres avatar-backend
 ```
 
-📚 **[Полная документация Docker Compose](../DOCKER_COMPOSE_README.md)**
-
-### Локальная сборка
-
+### Production
 ```bash
-# Из корня проекта
-docker build -f backend/docker/Dockerfile -t avatar-backend:latest ./backend
-
-# Или из директории backend
-cd backend
-docker build -f docker/Dockerfile -t avatar-backend:latest .
-```
-
-### Запуск контейнера
-
-```bash
-# С SQLite (по умолчанию)
-docker run -p 3000:3000 \
-  -v $(pwd)/storage:/app/storage \
-  avatar-backend:latest
-
-# С PostgreSQL
-docker run -p 3000:3000 \
-  -e DATABASE_URL=postgresql://user:password@postgres:5432/avatar_gen \
-  avatar-backend:latest
-```
-
-📖 **Подробности:** [docker/README.md](./docker/README.md)
-
-## Development
-
-### Available Scripts
-
-- `npm run start` - Start the application
-- `npm run start:dev` - Start in development mode with hot reload
-- `npm run build` - Build the application
-- `npm run test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:cov` - Run tests with coverage
-<<<<<<< HEAD
-- `npm run prisma:generate` - Generate Prisma client
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:studio` - Open Prisma Studio
-- `npm run prisma:reset` - Reset database (development only)
-- `npm run prisma:deploy` - Deploy migrations to production
-=======
-- `npm run prisma:generate` - Generate Prisma client (reads DATABASE_URL from YAML)
-- `npm run prisma:migrate` - Run database migrations (reads DATABASE_URL from YAML)
-- `npm run prisma:deploy` - Deploy migrations to production
-- `npm run prisma:studio` - Open Prisma Studio (database GUI)
-- `npm run prisma:reset` - Reset database (development only)
->>>>>>> 9579945 (feat(ci): Optimize deploy pipeline)
-
-### Project Structure
-
-```
-backend/
-├── docs/                   # 📚 Документация
-│   ├── INDEX.md           # Навигация по документации
-│   └── modules/           # Документация модулей
-├── docker/                # 🐳 Docker конфигурация
-│   ├── Dockerfile         # Multi-stage Dockerfile
-│   └── README.md          # Docker документация
-├── src/
-│   ├── config/            # Configuration modules
-│   ├── modules/
-│   │   ├── avatar/        # Avatar generation and management
-│   │   ├── database/      # Database service
-│   │   ├── logger/        # Logging service
-│   │   └── storage/       # File storage service
-│   ├── common/
-│   │   ├── dto/           # Data Transfer Objects
-│   │   ├── interfaces/    # TypeScript interfaces
-│   │   └── enums/         # Enums
-│   └── main.ts            # Application entry point
-├── prisma/                # Prisma schema and migrations
-├── storage/               # File storage
-├── scripts/               # Helper scripts
-└── settings.yaml          # Application configuration
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## Testing
 
-Run the test suite:
-
 ```bash
-npm test
+# Unit tests
+pnpm test
+
+# E2E tests
+pnpm test:e2e
+
+# Test coverage
+pnpm test:cov
 ```
 
-Run tests with coverage:
+## Database Migrations
 
+### Create Migration
 ```bash
-npm run test:cov
+pnpm run typeorm:generate -- src/migrations/InitialMigration
 ```
 
-## Architecture
+### Run Migrations
+```bash
+pnpm run typeorm:run
+```
 
-The application follows SOLID principles and uses:
+### Revert Migration
+```bash
+pnpm run typeorm:revert
+```
 
-- **Modular architecture** with separate modules for different concerns
-- **Dependency injection** for loose coupling
-- **Repository pattern** for data access
-- **Service layer** for business logic
-- **DTO pattern** for data validation
-- **Error handling** with proper HTTP status codes
+## Project Structure
 
-📚 **Подробнее об архитектуре:**
-- [Database Module Architecture](./docs/modules/database/ARCHITECTURE.md)
-- [Полная документация](./docs/INDEX.md)
+```
+src/
+├── modules/
+│   ├── avatar/          # Avatar generation and management
+│   ├── database/        # Database configuration and entities
+│   ├── storage/         # File storage services
+│   ├── health/          # Health check endpoints
+│   └── logger/          # Logging configuration
+├── config/              # Application configuration
+└── common/              # Shared utilities and decorators
+```
 
-## Documentation
+## Environment Variables
 
-Вся документация backend находится в директории [`docs/`](./docs/):
+The application uses YAML configuration files instead of environment variables:
 
-- **[docs/INDEX.md](./docs/INDEX.md)** - Навигация по всей документации
-- **[docs/README.md](./docs/README.md)** - Основное руководство (копия этого файла)
-- **[docs/modules/database/](./docs/modules/database/)** - Документация Database Module
-  - [README](./docs/modules/database/README.md) - Руководство по использованию
-  - [Architecture](./docs/modules/database/ARCHITECTURE.md) - Архитектура модуля
-  - [Migration Guide](./docs/modules/database/MIGRATION_GUIDE.md) - Руководство по миграции
-  - [Changelog](./docs/modules/database/CHANGELOG_MODULE.md) - История изменений
-  - [Hotfix v3.0.1](./docs/modules/database/HOTFIX_v3.0.1.md) - Исправление проблемы
+- `settings.yaml` - Base configuration
+- `settings.development.yaml` - Development overrides
+- `settings.production.yaml` - Production overrides
+- `settings.test.yaml` - Test configuration
+
+## Migration from Prisma
+
+This project has been migrated from Prisma to TypeORM for better multi-database support:
+
+### Changes Made
+- ✅ Replaced Prisma with TypeORM
+- ✅ Removed .env file dependencies
+- ✅ Simplified database configuration
+- ✅ Added automatic schema synchronization
+- ✅ Maintained API compatibility
+
+### Benefits
+- **Multi-database support**: Easy switching between PostgreSQL and SQLite
+- **Simplified configuration**: No .env files required
+- **Better NestJS integration**: Native TypeORM support
+- **Automatic migrations**: Schema synchronization in development
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## License
 
-ISC
-
+MIT License - see [LICENSE](../../LICENSE) for details.

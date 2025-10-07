@@ -1,21 +1,16 @@
 import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '../../config/config.module';
 import { YamlConfigService } from '../../config/yaml-config.service';
-import { SqliteDatabaseService } from './providers/sqlite-database.service';
-import { PostgresDatabaseService } from './providers/postgres-database.service';
+import { Avatar } from './entities/avatar.entity';
 import { DatabaseService } from './database.service';
-import { DatabaseDriver } from './constants/database.constants';
 
 /**
- * Глобальный модуль для работы с базами данных
+ * Глобальный модуль для работы с базой данных через TypeORM
  *
- * Архитектура модуля:
- * - DatabaseService - основной фасад, управляет выбором и делегированием
- * - SqliteDatabaseService - реализация для SQLite (создается только при необходимости)
- * - PostgresDatabaseService - реализация для PostgreSQL (создается только при необходимости)
- *
- * ⚠️ Важно: Создается и инициализируется ТОЛЬКО выбранный провайдер на основе конфигурации.
- * Неиспользуемые провайдеры не создаются, что экономит ресурсы.
+ * Настраивает TypeORM для работы с различными драйверами баз данных
+ * (PostgreSQL, SQLite) на основе YAML конфигурации. Автоматически
+ * синхронизирует схему базы данных в режиме разработки.
  *
  * @example
  * ```typescript
@@ -31,66 +26,66 @@ import { DatabaseDriver } from './constants/database.constants';
  *   constructor(private readonly db: DatabaseService) {}
  *
  *   async getData() {
- *     return await this.db.myModel.findMany();
+ *     return await this.db.avatar.find();
  *   }
  * }
  * ```
  */
 @Global()
 @Module({
-  imports: [ConfigModule],
-  providers: [
-    {
-      provide: 'DATABASE_PROVIDER_FACTORY',
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
       useFactory: (configService: YamlConfigService) => {
         const config = configService.getConfig();
-        const driver = config.app.database.driver as DatabaseDriver;
+        const dbConfig = config.app.database;
+        
+        // Базовые настройки TypeORM
+        const typeormConfig: any = {
+          entities: [Avatar],
+          synchronize: process.env.NODE_ENV !== 'production', // Автосинхронизация только в dev
+          logging: process.env.NODE_ENV === 'development',
+          logger: 'advanced-console',
+        };
 
-        switch (driver) {
-          case DatabaseDriver.SQLITE:
-            return new SqliteDatabaseService(configService);
-
-          case DatabaseDriver.POSTGRESQL:
-            return new PostgresDatabaseService(configService);
-
-          default:
-            throw new Error(
-              `Unsupported database driver: ${driver}. Supported: ${Object.values(DatabaseDriver).join(', ')}`,
-            );
+        // Настройки в зависимости от драйвера
+        if (dbConfig.driver === 'postgresql') {
+          const network = dbConfig.network;
+          typeormConfig.type = 'postgres';
+          typeormConfig.host = network.host;
+          typeormConfig.port = network.port;
+          typeormConfig.username = network.username;
+          typeormConfig.password = network.password;
+          typeormConfig.database = network.database;
+          typeormConfig.ssl = network.ssl ? { rejectUnauthorized: false } : false;
+        } else if (dbConfig.driver === 'sqlite') {
+          typeormConfig.type = 'sqlite';
+          typeormConfig.database = dbConfig.sqlite_params.url;
+        } else {
+          throw new Error(`Unsupported database driver: ${dbConfig.driver}`);
         }
+
+        return typeormConfig;
       },
       inject: [YamlConfigService],
-    },
-    {
-      provide: DatabaseService,
-      useFactory: (provider, configService: YamlConfigService) => {
-        return new DatabaseService(configService, provider);
-      },
-      inject: ['DATABASE_PROVIDER_FACTORY', YamlConfigService],
-    },
+    }),
+    TypeOrmModule.forFeature([Avatar]),
   ],
-  exports: [DatabaseService],
+  providers: [DatabaseService],
+  exports: [DatabaseService, TypeOrmModule],
 })
 export class DatabaseModule implements OnModuleInit {
   private readonly logger = new Logger(DatabaseModule.name);
 
-  constructor(
-    private readonly databaseService: DatabaseService,
-    private readonly configService: YamlConfigService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async onModuleInit(): Promise<void> {
     try {
-      const driver = this.databaseService.getDriver();
-      const driverName = driver === DatabaseDriver.SQLITE ? 'SQLite' : 'PostgreSQL';
-
-      this.logger.log(`🗄️  DatabaseModule initialized - ${driverName} provider active`);
+      const dbInfo = this.databaseService.getDatabaseInfo();
+      this.logger.log(`🗄️  DatabaseModule initialized - ${dbInfo.driver} provider active`);
     } catch (error) {
-      this.logger.error(
-        `DatabaseModule initialization failed: ${error.message}`,
-        error.stack,
-        'DatabaseModule',
-      );
+      this.logger.error(`DatabaseModule initialization failed: ${error.message}`);
       throw error;
     }
   }
