@@ -8,7 +8,24 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **PostgreSQL DATABASE_URL Issue Resolution**
+  - Fixed Prisma schema provider mismatch (changed from sqlite to postgresql)
+  - Resolved "Environment variable not found: DATABASE_URL" error
+  - Implemented automatic .env file generation in container startup
+  - Added automatic DATABASE_URL generation from YAML configuration
+  - Updated .gitignore files to exclude .env files from source code
+
 ### Added
+
+- **Automatic Configuration Generation**
+  - Added automatic .env file generation during container startup
+  - Implemented automatic Prisma schema selection (SQLite/PostgreSQL)
+  - Added automatic Prisma Client generation with correct provider
+  - Created comprehensive deployment guide
+    (`docs/deployment/DEPLOYMENT_GUIDE.md`)
+  - Enhanced deployment documentation with automatic configuration info
 
 - **PostgreSQL Direct URL Configuration Support**
   - Added `postgresql_params.url` configuration option for direct database URL
