@@ -48,6 +48,10 @@ app:
       force_path_style: true
   database:
     driver: 'postgresql'
+    # Рекомендуется использовать прямой URL для production
+    postgresql_params:
+      url: 'postgresql://username:password@host:port/database'
+    # Дополнительные параметры (опционально)
     network:
       host: 'your-production-db-host'
       port: 5432
@@ -55,6 +59,10 @@ app:
       username: 'your-production-db-user'
       password: 'your-production-db-password'
       ssl: true
+  logging:
+    level: 'warn'
+    verbose: false
+    pretty: false
 ```
 
 ## Настройка для разработки
@@ -154,11 +162,16 @@ app:
       bucket: 'your-bucket'
       access_key: 'REAL_ACCESS_KEY'
       secret_key: 'REAL_SECRET_KEY'
+      region: 'us-east-1'
+      force_path_style: true
   database:
     driver: 'postgresql'
-    network:
-      host: 'prod-db-host'
-      password: 'REAL_DB_PASSWORD'
+    postgresql_params:
+      url: 'postgresql://user:REAL_DB_PASSWORD@prod-db-host:5432/database'
+  logging:
+    level: 'warn'
+    verbose: false
+    pretty: false
 ```
 
 ## Отладка

@@ -63,6 +63,9 @@ app:
       username: '$PROD_DB_USERNAME'
       password: '$PROD_DB_PASSWORD'
       ssl: false
+    # PostgreSQL connection string for Prisma
+    postgresql_params:
+      url: 'postgresql://$PROD_DB_USERNAME:$PROD_DB_PASSWORD@$PROD_DB_HOST:$PROD_DB_PORT/$PROD_DB_NAME'
   logging:
     level: 'warn'
     verbose: false

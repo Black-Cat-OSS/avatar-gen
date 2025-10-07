@@ -3,22 +3,29 @@ set -e
 
 echo "=== Avatar Generator Backend Startup ==="
 
-# Определяем DATABASE_PROVIDER из переменной окружения или из DATABASE_URL
-if [ -z "$DATABASE_PROVIDER" ]; then
-  # Если DATABASE_PROVIDER не задан, определяем по DATABASE_URL
-  case "$DATABASE_URL" in
-    postgresql://*|postgres://*)
-      DATABASE_PROVIDER="postgresql"
-      ;;
-    file:*)
-      DATABASE_PROVIDER="sqlite"
-      ;;
-    *)
-      echo "⚠️  Warning: Cannot determine database provider from DATABASE_URL: $DATABASE_URL"
-      echo "Defaulting to sqlite"
-      DATABASE_PROVIDER="sqlite"
-      ;;
-  esac
+# Определяем DATABASE_PROVIDER из конфигурации
+CONFIG_FILE="./settings.yaml"
+if [ -f "$CONFIG_FILE" ]; then
+  # Читаем driver из YAML конфигурации
+  DATABASE_PROVIDER=$(grep -A 20 "database:" "$CONFIG_FILE" | grep "driver:" | awk '{print $2}' | tr -d "'\"")
+  echo "📋 Database provider from config: $DATABASE_PROVIDER"
+else
+  # Fallback: определяем по переменной окружения
+  if [ -z "$DATABASE_PROVIDER" ]; then
+    case "$DATABASE_URL" in
+      postgresql://*|postgres://*)
+        DATABASE_PROVIDER="postgresql"
+        ;;
+      file:*)
+        DATABASE_PROVIDER="sqlite"
+        ;;
+      *)
+        echo "⚠️  Warning: Cannot determine database provider from DATABASE_URL: $DATABASE_URL"
+        echo "Defaulting to sqlite"
+        DATABASE_PROVIDER="sqlite"
+        ;;
+    esac
+  fi
 fi
 
 echo "📦 Database Provider: $DATABASE_PROVIDER"

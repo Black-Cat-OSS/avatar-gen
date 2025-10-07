@@ -10,9 +10,31 @@
 
 ### Added
 
+- **PostgreSQL Direct URL Configuration Support**
+  - Added `postgresql_params.url` configuration option for direct database URL
+  - Updated `PostgresDatabaseService` to prioritize URL from config over network
+    parameters
+  - Enhanced `start.sh` script to read database provider from YAML configuration
+  - Updated `generate-production-config.sh` to include PostgreSQL connection
+    string
+  - Added comprehensive logging documentation (`backend/docs/LOGGING.md`)
+  - Updated database module documentation with new configuration options
+  - Updated local settings documentation with production examples
+
 ### Changed
 
+- **Enhanced Database Configuration**
+  - PostgreSQL service now supports both direct URL and network parameter
+    configuration
+  - Configuration schema updated to include `postgresql_params.url` field
+  - Improved error handling and fallback mechanisms for database connections
+
 ### Fixed
+
+- **Production Database Connection Issues**
+  - Fixed backend defaulting to SQLite in production environment
+  - Resolved environment variable passing issues in SSH deployment sessions
+  - Improved configuration loading order and precedence
 
 ## [0.0.3] - 2025-10-04
 

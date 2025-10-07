@@ -214,6 +214,31 @@ app:
 
 ### PostgreSQL
 
+PostgreSQL поддерживает два способа конфигурации:
+
+#### Способ 1: Прямой URL (рекомендуется для production)
+
+```yaml
+app:
+  database:
+    driver: "postgresql"
+    connection:
+      maxRetries: 3
+      retryDelay: 2000
+    postgresql_params:
+      url: "postgresql://username:password@host:port/database"
+    # Дополнительные параметры (опционально)
+    network:
+      host: "localhost"
+      port: 5432
+      database: "avatar_gen"
+      username: "postgres"
+      password: "password"
+      ssl: false
+```
+
+#### Способ 2: Отдельные параметры
+
 ```yaml
 app:
   database:
@@ -229,6 +254,8 @@ app:
       password: "password"
       ssl: false
 ```
+
+**Приоритет:** Если указан `postgresql_params.url`, он используется вместо построения URL из `network` параметров.
 
 ## API Reference
 
