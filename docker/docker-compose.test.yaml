@@ -14,13 +14,13 @@ services:
       MINIO_ROOT_PASSWORD: test-secret-key
       MINIO_DEFAULT_BUCKETS: avatar-gen-test
     ports:
-      - "9000:9000"  # MinIO API
-      - "9001:9001"  # MinIO Console
+      - '9000:9000' # MinIO API
+      - '9001:9001' # MinIO Console
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
       interval: 10s
       timeout: 5s
       retries: 3
@@ -42,7 +42,7 @@ services:
       POSTGRES_PASSWORD: test_password
       POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     ports:
-      - "5433:5432"  # Другой порт для тестов
+      - '5433:5432' # Другой порт для тестов
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
@@ -54,7 +54,7 @@ services:
     networks:
       - test-internal
     # Автоматическое удаление при остановке
-    restart: "no"
+    restart: 'no'
 
   # Backend для Unit тестов (SQLite + Local Storage)
   avatar-backend-unit:
@@ -71,7 +71,7 @@ services:
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
-    command: ["npm", "run", "test:unit"]
+    command: ['npm', 'run', 'test:unit']
     networks:
       - test-internal
 
@@ -104,7 +104,7 @@ services:
       - TEST_DB_NAME=avatar_gen_test
       - TEST_DB_USER=test_user
       - TEST_DB_PASSWORD=test_password
-    command: ["npm", "run", "test:integration"]
+    command: ['npm', 'run', 'test:integration']
     networks:
       - test-internal
 
@@ -122,7 +122,7 @@ services:
       minio:
         condition: service_healthy
     expose:
-      - "3000"
+      - '3000'
     volumes:
       - ../backend/configs/settings.test.yaml:/app/settings.yaml:ro
       - ../backend/logs:/app/logs
@@ -153,7 +153,7 @@ services:
     depends_on:
       - avatar-backend-e2e
     expose:
-      - "8080"
+      - '8080'
     volumes:
       - ../frontend/logs:/var/log/nginx
     environment:
@@ -174,7 +174,7 @@ services:
       - avatar-frontend-e2e
       - avatar-backend-e2e
     ports:
-      - "12746:12745"  # Другой порт для тестов
+      - '12746:12745' # Другой порт для тестов
     volumes:
       - ../gateway/configs/nginx.conf:/etc/nginx/nginx.conf:ro
       - ../gateway/configs/static:/usr/share/nginx/html/static:ro
@@ -196,7 +196,7 @@ services:
       - test_storage:/app/storage
     environment:
       - NODE_ENV=test
-    command: ["npm", "run", "test:matrix"]
+    command: ['npm', 'run', 'test:matrix']
     networks:
       - test-internal
 
