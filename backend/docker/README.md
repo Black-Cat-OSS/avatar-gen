@@ -101,6 +101,7 @@ backend/
 ```
 
 Если их нет:
+
 ```bash
 # Создайте из примера
 cp backend/settings.yaml backend/settings.production.yaml
@@ -186,28 +187,28 @@ docker run -p 3000:3000 \
 
 ### Обязательные
 
-| Переменная | Описание | Пример |
-|-----------|----------|--------|
-| `NODE_ENV` | Окружение | `production` |
+| Переменная    | Описание       | Пример            |
+| ------------- | -------------- | ----------------- |
+| `NODE_ENV`    | Окружение      | `production`      |
 | `CONFIG_PATH` | Путь к конфигу | `./settings.yaml` |
 
 ### Для PostgreSQL
 
-| Переменная | Описание | Пример |
-|-----------|----------|--------|
+| Переменная     | Описание          | Пример                                |
+| -------------- | ----------------- | ------------------------------------- |
 | `DATABASE_URL` | Connection string | `postgresql://user:pass@host:5432/db` |
 
 ### Для S3 Storage
 
-| Переменная | Обязательная | Описание | Пример |
-|-----------|--------------|----------|--------|
-| `STORAGE_TYPE` | ✅ Да | Тип хранилища | `s3` |
-| `S3_ENDPOINT` | ✅ Да | URL endpoint | `https://s3.example.com` |
-| `S3_BUCKET` | ✅ Да | Имя бакета | `my-bucket` |
-| `S3_ACCESS_KEY` | ✅ Да | Access key | `AKIAIOSFODNN7EXAMPLE` |
-| `S3_SECRET_KEY` | ✅ Да | Secret key | `wJalrXUtnFEMI/K7MDENG/...` |
-| `S3_REGION` | ❌ Нет | Регион | `us-east-1` (по умолчанию) |
-| `S3_FORCE_PATH_STYLE` | ❌ Нет | Path-style URLs | `true` (по умолчанию) |
+| Переменная            | Обязательная | Описание        | Пример                      |
+| --------------------- | ------------ | --------------- | --------------------------- |
+| `STORAGE_TYPE`        | ✅ Да        | Тип хранилища   | `s3`                        |
+| `S3_ENDPOINT`         | ✅ Да        | URL endpoint    | `https://s3.example.com`    |
+| `S3_BUCKET`           | ✅ Да        | Имя бакета      | `my-bucket`                 |
+| `S3_ACCESS_KEY`       | ✅ Да        | Access key      | `AKIAIOSFODNN7EXAMPLE`      |
+| `S3_SECRET_KEY`       | ✅ Да        | Secret key      | `wJalrXUtnFEMI/K7MDENG/...` |
+| `S3_REGION`           | ❌ Нет       | Регион          | `us-east-1` (по умолчанию)  |
+| `S3_FORCE_PATH_STYLE` | ❌ Нет       | Path-style URLs | `true` (по умолчанию)       |
 
 ---
 
@@ -225,9 +226,10 @@ app:
 ```
 
 **Docker volumes:**
+
 ```yaml
 volumes:
-  - ./storage:/app/storage  # Монтируем локальную директорию
+  - ./storage:/app/storage # Монтируем локальную директорию
 ```
 
 ### S3 Storage
@@ -244,6 +246,7 @@ app:
 ```
 
 **Docker volumes:**
+
 ```yaml
 volumes:
   # storage директория НЕ монтируется - используется S3
@@ -251,6 +254,7 @@ volumes:
 ```
 
 **Environment:**
+
 ```yaml
 environment:
   - STORAGE_TYPE=s3
@@ -272,6 +276,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ```
 
 **Параметры:**
+
 - `interval: 30s` - проверка каждые 30 секунд
 - `timeout: 3s` - таймаут для проверки
 - `start-period: 5s` - время на запуск приложения
@@ -284,6 +289,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ### Контейнер не запускается с S3
 
 **Проверьте:**
+
 1. Все S3 переменные окружения установлены
 2. S3 endpoint доступен из контейнера
 3. Credentials корректны
@@ -300,6 +306,7 @@ docker exec avatar-gen-backend env | grep S3
 ### Permission denied на storage директории
 
 **Для local storage:**
+
 ```bash
 # Установите правильные права
 chmod -R 755 backend/storage

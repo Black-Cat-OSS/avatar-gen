@@ -65,18 +65,15 @@ start_period: 30s
 **Environment:**
 
 - `NODE_ENV=production`
-- `DATABASE_PROVIDER=sqlite` (или `postgresql`)
-- `DATABASE_URL` - URL подключения к БД (генерируется автоматически)
 - `CONFIG_PATH=./settings.yaml`
 
 **Автоматическая генерация конфигурации:**
 
 При запуске контейнера автоматически:
 
-1. Генерируется `.env` файл из YAML конфигурации
-2. Выбирается правильная схема Prisma (SQLite/PostgreSQL)
-3. Генерируется Prisma Client с нужным провайдером
-4. Выполняется синхронизация схемы базы данных
+1. Загружается YAML конфигурация
+2. Инициализируется TypeORM подключение к базе данных
+3. Выполняется автоматическая синхронизация схемы базы данных
 
 **Health Check:**
 
@@ -347,7 +344,7 @@ docker-compose exec postgres pg_isready -U postgres
 3. Проверьте переменные окружения:
 
 ```bash
-docker-compose config | grep DATABASE_URL
+docker-compose config | grep -A 5 -B 5 "environment:"
 ```
 
 ### Проблема: Порты заняты

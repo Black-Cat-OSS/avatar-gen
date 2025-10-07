@@ -50,6 +50,9 @@
   - Removed need for .env files
   - Simplified start.sh script
   - Eliminated complex Prisma client generation
+  - Removed .env file generation from Docker pipeline
+  - Cleaned up .gitignore from .env file references
+  - Simplified Docker Compose environment configurations
 
 ### Changed
 

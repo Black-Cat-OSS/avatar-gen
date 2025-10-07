@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -57,8 +57,7 @@ export default {
         },
         destructive: {
           DEFAULT: 'oklch(var(--destructive))',
-          foreground:
-            'oklch(var(--destructive-foreground))',
+          foreground: 'oklch(var(--destructive-foreground))',
         },
         muted: {
           DEFAULT: 'oklch(var(--muted))',
@@ -84,4 +83,4 @@ export default {
       },
     },
   },
-} satisfies Config
+} satisfies Config;

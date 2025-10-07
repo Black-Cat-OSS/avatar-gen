@@ -18,12 +18,12 @@ import { S3Service } from './s3.service';
       provide: S3Service,
       useFactory: (configService: YamlConfigService) => {
         const storageConfig = configService.getStorageConfig();
-        
+
         // Если S3 не настроен, возвращаем null (graceful degradation)
         if (storageConfig.type !== 's3' || !storageConfig.s3) {
           return null;
         }
-        
+
         return new S3Service({
           app: {
             storage: {

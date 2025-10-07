@@ -1,1 +1,1 @@
-export { AvatarGeneratorForm } from './AvatarGeneratorForm'
+export { AvatarGeneratorForm } from './AvatarGeneratorForm';

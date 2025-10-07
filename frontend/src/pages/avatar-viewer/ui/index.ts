@@ -1,1 +1,1 @@
-export * from './AvatarViewerPage'
+export * from './AvatarViewerPage';

@@ -1,6 +1,8 @@
 # Web2Bizz React SDK
 
-Современная библиотека компонентов и инструментов для быстрой разработки веб-приложений на React. Построена с использованием архитектуры Feature-Sliced Design (FSD), React 19, TypeScript и Tailwind CSS.
+Современная библиотека компонентов и инструментов для быстрой разработки
+веб-приложений на React. Построена с использованием архитектуры Feature-Sliced
+Design (FSD), React 19, TypeScript и Tailwind CSS.
 
 ## 🎯 Назначение React SDK
 
@@ -49,7 +51,8 @@ React SDK предназначен для:
 
 ## 🏗️ Архитектура проекта
 
-Проект построен на методологии **Feature-Sliced Design (FSD)** для создания масштабируемой и поддерживаемой архитектуры фронтенда:
+Проект построен на методологии **Feature-Sliced Design (FSD)** для создания
+масштабируемой и поддерживаемой архитектуры фронтенда:
 
 <div align="center">
   <img src="public/dev-stack/React.svg" alt="FSD Architecture" width="40" height="40" />
@@ -246,7 +249,8 @@ pnpm build
 
 ### 🐳 Docker развертывание
 
-Проект поддерживает контейнеризацию с помощью Docker и nginx для production развертывания.
+Проект поддерживает контейнеризацию с помощью Docker и nginx для production
+развертывания.
 
 #### Быстрый старт с Docker
 
@@ -295,7 +299,8 @@ docker run -d \
 - **SPA поддержка** - правильная обработка React Router
 - **Кастомные страницы ошибок** - 403.html, 404.html и 50x.html
 
-Подробная документация по Docker доступна в [docs/docker-deployment.md](docs/docker-deployment.md).
+Подробная документация по Docker доступна в
+[docs/docker-deployment.md](docs/docker-deployment.md).
 
 ### Интеграция в другие проекты
 
@@ -353,7 +358,8 @@ pnpm build-storybook
 
 ### Доступные истории компонентов
 
-- **UI Components** - Button, InputField, Callout, ThemeToggle, FlagIcon, LanguageSwitcher
+- **UI Components** - Button, InputField, Callout, ThemeToggle, FlagIcon,
+  LanguageSwitcher
 - **Widgets** - Header (Default, Minimalism, Search), Footer, MobileMenu
 - **Features** - LoginForm, LanguageButton, CounterIncrement
 - **Layouts** - Default, Center, Wide макеты
@@ -408,16 +414,13 @@ Use the built-in validation functions in `src/shared/lib/forms.ts`:
 Use the API client in `src/shared/api/`:
 
 ```typescript
-import { apiClient } from '@/shared/api'
+import { apiClient } from '@/shared/api';
 
 // GET request
-const response = await apiClient.get<User>('/users/1')
+const response = await apiClient.get<User>('/users/1');
 
 // POST request
-const response = await apiClient.post<User>(
-  '/users',
-  userData,
-)
+const response = await apiClient.post<User>('/users', userData);
 ```
 
 ## 🔧 Configuration
@@ -433,16 +436,19 @@ Environment variables:
 Проект интегрирован с backend API для работы с аватарами:
 
 1. Создайте файл `.env.development` в директории `frontend/`:
+
 ```env
 VITE_API_BASE_URL=http://localhost
 ```
 
 Для продакшена используйте `.env.production`:
+
 ```env
 VITE_API_BASE_URL=
 ```
 
-2. Убедитесь, что gateway и backend запущены (через `./scripts/dev.sh` или `./scripts/start.sh`)
+2. Убедитесь, что gateway и backend запущены (через `./scripts/dev.sh` или
+   `./scripts/start.sh`)
 
 3. Доступные API эндпоинты (через gateway):
    - `GET /api/list` - получение списка аватаров
@@ -452,15 +458,18 @@ VITE_API_BASE_URL=
 
 4. На главной странице отображается галерея аватаров из backend
 
-Подробная документация: [docs/frontend-backend-integration.md](../docs/frontend-backend-integration.md)
+Подробная документация:
+[docs/frontend-backend-integration.md](../docs/frontend-backend-integration.md)
 
 ## 📄 Лицензия
 
-Этот проект лицензирован под Apache License 2.0. См. файл [LICENSE](LICENSE) для подробностей.
+Этот проект лицензирован под Apache License 2.0. См. файл [LICENSE](LICENSE) для
+подробностей.
 
 ## 📚 Документация
 
-- [Руководство по написанию сообщений коммитов](docs/COMMIT_MESSAGES.md) - Правила и примеры для создания качественных сообщений коммитов
+- [Руководство по написанию сообщений коммитов](docs/COMMIT_MESSAGES.md) -
+  Правила и примеры для создания качественных сообщений коммитов
 
 ## 🤝 Вклад в проект
 

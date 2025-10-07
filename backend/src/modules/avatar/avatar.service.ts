@@ -1,4 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { StorageService } from '../storage/storage.service';
 import { GeneratorService } from './modules';
 import {
@@ -6,14 +8,15 @@ import {
   GetAvatarDto,
   ListAvatarsDto,
 } from '../../common/dto/generate-avatar.dto';
-import { DatabaseService } from '../database';
+import { Avatar } from './avatar.entity';
 
 @Injectable()
 export class AvatarService {
   private readonly logger = new Logger(AvatarService.name);
 
   constructor(
-    private readonly databaseService: DatabaseService,
+    @InjectRepository(Avatar)
+    private readonly avatarRepository: Repository<Avatar>,
     private readonly avatarGenerator: GeneratorService,
     private readonly storageService: StorageService,
   ) {}
@@ -39,7 +42,7 @@ export class AvatarService {
       const filePath = await this.storageService.saveAvatar(avatarObject);
 
       // Save metadata to database using TypeORM
-      const avatar = this.databaseService.avatar.create({
+      const avatar = this.avatarRepository.create({
         id: avatarObject.meta_data_name,
         name: avatarObject.meta_data_name,
         filePath,
@@ -49,7 +52,7 @@ export class AvatarService {
         seed: dto.seed,
       });
 
-      const savedAvatar = await this.databaseService.avatar.save(avatar);
+      const savedAvatar = await this.avatarRepository.save(avatar);
 
       this.logger.log(`Avatar generated successfully with ID: ${savedAvatar.id}`);
 
@@ -74,7 +77,7 @@ export class AvatarService {
       }
 
       // Get avatar from database using TypeORM
-      const avatar = await this.databaseService.avatar.findOne({
+      const avatar = await this.avatarRepository.findOne({
         where: { id },
       });
 
@@ -117,7 +120,7 @@ export class AvatarService {
 
     try {
       // Check if avatar exists in database using TypeORM
-      const avatar = await this.databaseService.avatar.findOne({
+      const avatar = await this.avatarRepository.findOne({
         where: { id },
       });
 
@@ -129,7 +132,7 @@ export class AvatarService {
       await this.storageService.deleteAvatar(id);
 
       // Delete from database using TypeORM
-      await this.databaseService.avatar.remove(avatar);
+      await this.avatarRepository.remove(avatar);
 
       this.logger.log(`Avatar deleted successfully: ${id}`);
 
@@ -155,7 +158,7 @@ export class AvatarService {
       const offset = dto.offset || 0;
 
       // Use TypeORM query builder for pagination
-      const [avatars, total] = await this.databaseService.avatar.findAndCount({
+      const [avatars, total] = await this.avatarRepository.findAndCount({
         take: pick,
         skip: offset,
         order: {
@@ -191,7 +194,8 @@ export class AvatarService {
   }
 
   async healthCheck() {
-    const dbHealth = await this.databaseService.healthCheck();
+    // Простая проверка подключения к репозиторию
+    const dbHealth = await this.avatarRepository.count();
     return {
       database: dbHealth,
       status: dbHealth ? 'healthy' : 'unhealthy',

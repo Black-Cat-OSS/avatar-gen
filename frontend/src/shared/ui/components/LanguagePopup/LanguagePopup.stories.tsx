@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { LanguagePopup } from './LanguagePopup'
-import { I18nextProvider } from 'react-i18next'
-import { PopupProvider } from '../../../lib/contexts'
-import i18n from '../../../lib/i18n'
+import type { Meta, StoryObj } from '@storybook/react';
+import { LanguagePopup } from './LanguagePopup';
+import { I18nextProvider } from 'react-i18next';
+import { PopupProvider } from '../../../lib/contexts';
+import i18n from '../../../lib/i18n';
 
 const meta: Meta<typeof LanguagePopup> = {
   title: 'UI/LanguagePopup',
@@ -12,7 +12,7 @@ const meta: Meta<typeof LanguagePopup> = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    Story => (
       <I18nextProvider i18n={i18n}>
         <PopupProvider>
           <div
@@ -27,10 +27,10 @@ const meta: Meta<typeof LanguagePopup> = {
       </I18nextProvider>
     ),
   ],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   parameters: {
@@ -38,7 +38,7 @@ export const Default: Story = {
       defaultViewport: 'mobile',
     },
   },
-}
+};
 
 export const Tablet: Story = {
   parameters: {
@@ -46,4 +46,4 @@ export const Tablet: Story = {
       defaultViewport: 'tablet',
     },
   },
-}
+};

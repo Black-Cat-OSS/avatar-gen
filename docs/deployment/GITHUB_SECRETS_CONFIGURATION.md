@@ -137,16 +137,29 @@ app:
 Затем используйте workflow `test-with-local-config.yml` с параметром
 `use_local_config: true`.
 
-### Вариант 3: Динамическая генерация
+### Вариант 3: Ручная настройка
 
-Используйте скрипт `scripts/generate-test-config.sh`:
+Создайте файл `backend/settings.test.yaml` с нужными настройками:
+
+```yaml
+app:
+  storage:
+    type: 's3'
+    s3:
+      endpoint: 'https://your-s3.com'
+      bucket: 'your-bucket'
+      access_key: '${TEST_S3_ACCESS_KEY}'
+      secret_key: '${TEST_S3_SECRET_KEY}'
+  database:
+    driver: 'sqlite'
+    sqlite_params:
+      url: 'file:./storage/test-database/database.test.sqlite'
+```
+
+Запуск тестов:
 
 ```bash
-# Генерация конфигурации
-./scripts/generate-test-config.sh sqlite s3 https://your-s3.com your-bucket
-
-# Запуск тестов
-NODE_ENV=test TEST_MATRIX_CONFIG=./backend/settings.test.matrix.yaml pnpm run test
+NODE_ENV=test pnpm run test
 ```
 
 ## 🧪 Тестирование настроек
@@ -156,8 +169,7 @@ NODE_ENV=test TEST_MATRIX_CONFIG=./backend/settings.test.matrix.yaml pnpm run te
 1. **Сгенерируйте конфигурацию:**
 
    ```bash
-   cd backend
-   ./scripts/generate-test-config.sh sqlite s3
+   # Создайте файл backend/settings.test.yaml с нужными настройками
    ```
 
 2. **Установите переменные окружения:**

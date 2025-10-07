@@ -68,11 +68,13 @@ app:
 ## Настройка для разработки
 
 1. Скопируйте пример файла:
+
    ```bash
    cp backend/settings.local.yaml.example backend/settings.local.yaml
    ```
 
 2. Отредактируйте файл под ваши нужды:
+
    ```bash
    nano backend/settings.local.yaml
    ```
@@ -82,6 +84,7 @@ app:
 ## Настройка для production
 
 1. На сервере создайте файл:
+
    ```bash
    nano backend/settings.production.local.yaml
    ```

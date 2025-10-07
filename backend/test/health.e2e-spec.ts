@@ -24,7 +24,7 @@ describe('HealthController (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body).toHaveProperty('status', 'ok');
           expect(res.body).toHaveProperty('timestamp');
           expect(res.body).toHaveProperty('uptime');
@@ -37,7 +37,7 @@ describe('HealthController (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const timestamp = new Date(res.body.timestamp);
           expect(timestamp.toISOString()).toBe(res.body.timestamp);
         });
@@ -49,7 +49,7 @@ describe('HealthController (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health/detailed')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body).toHaveProperty('status', 'ok');
           expect(res.body).toHaveProperty('timestamp');
           expect(res.body).toHaveProperty('uptime');
@@ -62,7 +62,7 @@ describe('HealthController (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health/detailed')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body.memory).toHaveProperty('rss');
           expect(res.body.memory).toHaveProperty('heapTotal');
           expect(res.body.memory).toHaveProperty('heapUsed');
@@ -74,10 +74,9 @@ describe('HealthController (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health/detailed')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body.version).toMatch(/^v\d+\.\d+\.\d+$/);
         });
     });
   });
 });
-

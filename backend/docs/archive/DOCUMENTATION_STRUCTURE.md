@@ -59,34 +59,40 @@ src/modules/
 ### 3. Типы документов
 
 #### INDEX.md
+
 - Главная навигация по всей документации
 - Краткие описания разделов
 - Ссылки на все документы
 
 #### README.md
+
 - Основное руководство модуля/проекта
 - Quick Start
 - API Reference
 - Примеры использования
 
 #### ARCHITECTURE.md
+
 - Архитектурные решения
 - Паттерны проектирования
 - Технические детали
 - Обоснование решений
 
 #### MIGRATION_GUIDE.md
+
 - Инструкции по миграции между версиями
 - Breaking changes
 - Примеры "до/после"
 - Checklist для миграции
 
 #### CHANGELOG.md
+
 - История изменений
 - Формат: [Keep a Changelog](https://keepachangelog.com/)
 - Версионирование: [Semantic Versioning](https://semver.org/)
 
-#### HOTFIX_*.md
+#### HOTFIX\_\*.md
+
 - Описание критической проблемы
 - Причины возникновения
 - Подробное решение
@@ -123,13 +129,16 @@ docs/guides/          # Руководства (если нужно)
 
 ```markdown
 <!-- Из docs/INDEX.md -->
+
 [Database README](./modules/database/README.md)
 
 <!-- Из docs/modules/database/README.md -->
+
 [Architecture](./ARCHITECTURE.md)
 [Main Index](../../INDEX.md)
 
 <!-- Из backend/README.md -->
+
 [Full Documentation](./docs/INDEX.md)
 [Database Module](./docs/modules/database/README.md)
 ```
@@ -168,6 +177,7 @@ backend/docs/modules/new-module/
 
 ```markdown
 #### New Module
+
 - **[New Module README](./modules/new-module/README.md)** - Описание модуля
 - **[Architecture](./modules/new-module/ARCHITECTURE.md)** - Архитектура
 ```
@@ -217,7 +227,7 @@ backend/docs/modules/new-module/
 - **ARCHITECTURE.md** - При изменении архитектуры, паттернов
 - **MIGRATION_GUIDE.md** - При breaking changes
 - **CHANGELOG.md** - После каждого релиза
-- **HOTFIX_*.md** - При критических исправлениях
+- **HOTFIX\_\*.md** - При критических исправлениях
 
 ### Checklist при изменениях
 
@@ -287,10 +297,13 @@ const users = await this.db.user.findMany();
 
 ```markdown
 ✅ ХОРОШО:
+
 ## API Reference
 
 ### getUserById(id: string)
+
 **Параметры:**
+
 - `id` - Уникальный идентификатор
 
 **Возвращает:** User или null
@@ -322,6 +335,7 @@ git commit -m "docs: update database docs"
 **Причина:** Разделение кода и документации
 
 **Изменения:**
+
 - Создана `backend/docs/`
 - Перемещены все `.md` файлы из `backend/src/modules/database/`
 - Создан `docs/INDEX.md` для навигации
@@ -329,6 +343,7 @@ git commit -m "docs: update database docs"
 - Создана зеркальная структура `docs/modules/`
 
 **Результат:**
+
 ```
 До:  backend/src/modules/database/*.md (5 файлов)
 После: backend/docs/modules/database/*.md (5 файлов)
@@ -341,4 +356,3 @@ git commit -m "docs: update database docs"
 **Последнее обновление:** 2025-10-01  
 **Автор:** Development Team  
 **Версия:** 1.0.0
-

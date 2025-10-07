@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { I18nextProvider } from 'react-i18next'
-import { ThemeProvider } from '@/shared/lib/hooks/theme-provider'
-import { PopupProvider } from '@/shared/lib/contexts'
-import i18n from '@/shared/lib/i18n'
-import { HeaderSearch } from '.'
+import type { Meta, StoryObj } from '@storybook/react';
+import { I18nextProvider } from 'react-i18next';
+import { ThemeProvider } from '@/shared/lib/hooks/theme-provider';
+import { PopupProvider } from '@/shared/lib/contexts';
+import i18n from '@/shared/lib/i18n';
+import { HeaderSearch } from '.';
 
 // Mock search handler
 const mockOnSearch = (query: string) => {
-  console.log('Search triggered with query:', query)
-}
+  console.log('Search triggered with query:', query);
+};
 
 const meta: Meta<typeof HeaderSearch> = {
   title: 'Widgets/Header/Search',
@@ -24,7 +24,7 @@ const meta: Meta<typeof HeaderSearch> = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    Story => (
       <I18nextProvider i18n={i18n}>
         <ThemeProvider>
           <PopupProvider>
@@ -49,29 +49,22 @@ const meta: Meta<typeof HeaderSearch> = {
     },
     containerWidth: {
       control: 'select',
-      options: [
-        'max-w-4xl',
-        'max-w-5xl',
-        'max-w-6xl',
-        'max-w-7xl',
-        'max-w-full',
-      ],
+      options: ['max-w-4xl', 'max-w-5xl', 'max-w-6xl', 'max-w-7xl', 'max-w-full'],
       description: 'Maximum width of the header container',
       defaultValue: 'max-w-7xl',
     },
     onSearch: {
-      description:
-        'Callback function called when search is triggered',
+      description: 'Callback function called when search is triggered',
     },
     className: {
       control: 'text',
       description: 'Additional CSS classes',
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -79,7 +72,7 @@ export const Default: Story = {
     searchPlaceholder: 'Search products, articles...',
     onSearch: mockOnSearch,
   },
-}
+};
 
 export const CustomPlaceholder: Story = {
   args: {
@@ -87,7 +80,7 @@ export const CustomPlaceholder: Story = {
     searchPlaceholder: 'Search for products...',
     onSearch: mockOnSearch,
   },
-}
+};
 
 export const BlogSearch: Story = {
   args: {
@@ -95,7 +88,7 @@ export const BlogSearch: Story = {
     searchPlaceholder: 'Search articles, topics...',
     onSearch: mockOnSearch,
   },
-}
+};
 
 export const WithCustomStyling: Story = {
   args: {
@@ -104,7 +97,7 @@ export const WithCustomStyling: Story = {
     className: 'bg-green-500/10 border-green-200',
     onSearch: mockOnSearch,
   },
-}
+};
 
 export const Desktop: Story = {
   args: {
@@ -117,7 +110,7 @@ export const Desktop: Story = {
       defaultViewport: 'desktop',
     },
   },
-}
+};
 
 export const Tablet: Story = {
   args: {
@@ -130,7 +123,7 @@ export const Tablet: Story = {
       defaultViewport: 'tablet',
     },
   },
-}
+};
 
 export const Mobile: Story = {
   args: {
@@ -144,19 +137,18 @@ export const Mobile: Story = {
     },
     docs: {
       description: {
-        story:
-          'On mobile, the search bar is hidden and replaced with a search icon button.',
+        story: 'On mobile, the search bar is hidden and replaced with a search icon button.',
       },
     },
   },
-}
+};
 
 export const SearchInteraction: Story = {
   args: {
     brandText: 'Interactive Search',
     searchPlaceholder: 'Try searching something...',
     onSearch: (query: string) => {
-      alert(`You searched for: "${query}"`)
+      alert(`You searched for: "${query}"`);
     },
   },
   parameters: {
@@ -167,7 +159,7 @@ export const SearchInteraction: Story = {
       },
     },
   },
-}
+};
 
 export const NarrowContainer: Story = {
   args: {
@@ -179,12 +171,11 @@ export const NarrowContainer: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Search header with narrower container width for focused search experiences.',
+        story: 'Search header with narrower container width for focused search experiences.',
       },
     },
   },
-}
+};
 
 export const WideContainer: Story = {
   args: {
@@ -196,46 +187,43 @@ export const WideContainer: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Search header with full width container for maximum search bar space.',
+        story: 'Search header with full width container for maximum search bar space.',
       },
     },
   },
-}
+};
 
 export const ContainerWidthComparison: Story = {
   render: () => (
-    <div className='space-y-8'>
+    <div className="space-y-8">
       <div>
-        <h3 className='mb-4 text-sm font-medium text-muted-foreground'>
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">
           max-w-5xl - Compact Search
         </h3>
         <HeaderSearch
-          brandText='Compact'
-          searchPlaceholder='Search...'
-          containerWidth='max-w-5xl'
+          brandText="Compact"
+          searchPlaceholder="Search..."
+          containerWidth="max-w-5xl"
           onSearch={mockOnSearch}
         />
       </div>
-      <div className='mt-20'>
-        <h3 className='mb-4 text-sm font-medium text-muted-foreground'>
+      <div className="mt-20">
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">
           max-w-7xl - Standard Search
         </h3>
         <HeaderSearch
-          brandText='Standard'
-          searchPlaceholder='Search products, articles...'
-          containerWidth='max-w-7xl'
+          brandText="Standard"
+          searchPlaceholder="Search products, articles..."
+          containerWidth="max-w-7xl"
           onSearch={mockOnSearch}
         />
       </div>
-      <div className='mt-20'>
-        <h3 className='mb-4 text-sm font-medium text-muted-foreground'>
-          max-w-full - Wide Search
-        </h3>
+      <div className="mt-20">
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">max-w-full - Wide Search</h3>
         <HeaderSearch
-          brandText='Wide'
-          searchPlaceholder='Search across the entire platform...'
-          containerWidth='max-w-full'
+          brandText="Wide"
+          searchPlaceholder="Search across the entire platform..."
+          containerWidth="max-w-full"
           onSearch={mockOnSearch}
         />
       </div>
@@ -249,4 +237,4 @@ export const ContainerWidthComparison: Story = {
       },
     },
   },
-}
+};

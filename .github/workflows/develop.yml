@@ -101,46 +101,10 @@ jobs:
       - name: Run linter
         run: pnpm run lint
 
-  test-backend:
-    name: Test Backend (${{ matrix.test_name }})
+  test-backend-unit:
+    name: Unit Tests (SQLite + Local)
     runs-on: ubuntu-latest
     needs: [lint-backend]
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: avatar_gen_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    strategy:
-      fail-fast: false
-      matrix:
-        # Полная матрица тестов для PR в develop
-        # (SQLite, PostgreSQL) × (Local, S3)
-        database: [sqlite, postgresql]
-        storage: [local, s3]
-        include:
-          - database: sqlite
-            storage: local
-            test_name: 'SQLite + Local'
-          - database: sqlite
-            storage: s3
-            test_name: 'SQLite + S3'
-          - database: postgresql
-            storage: local
-            test_name: 'PostgreSQL + Local'
-          - database: postgresql
-            storage: s3
-            test_name: 'PostgreSQL + S3'
     defaults:
       run:
         working-directory: backend
@@ -148,20 +112,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Wait for PostgreSQL
-        if: matrix.database == 'postgresql'
-        run: |
-          for i in {1..30}; do
-            if pg_isready -h localhost -p 5432 -U postgres; then
-              echo "PostgreSQL is ready"
-              exit 0
-            fi
-            echo "Waiting for PostgreSQL... ($i/30)"
-            sleep 2
-          done
-          echo "PostgreSQL failed to start"
-          exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -193,64 +143,64 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
 
-      - name: Create test configuration
-        run: |
-          # Создаем базовую конфигурацию
-          cat > settings.test.matrix.yaml << EOF
-          app:
-            storage:
-              type: '${{ matrix.storage }}'
-              local:
-                save_path: './storage/test-avatars'
-              s3:
-                endpoint: '${{ secrets.TEST_S3_ENDPOINT || 'https://test-s3-endpoint.com' }}'
-                bucket: '${{ secrets.TEST_S3_BUCKET || 'avatar-gen-test' }}'
-                access_key: '${{ secrets.TEST_S3_ACCESS_KEY || 'test-access-key' }}'
-                secret_key: '${{ secrets.TEST_S3_SECRET_KEY || 'test-secret-key' }}'
-                region: '${{ secrets.TEST_S3_REGION || 'us-east-1' }}'
-                force_path_style: true
-                connection:
-                  maxRetries: 1
-                  retryDelay: 100
-            database:
-              driver: '${{ matrix.database }}'
-              connection:
-                maxRetries: 1
-                retryDelay: 100
-              sqlite_params:
-                url: 'file:./storage/test-database/database.test.sqlite'
-              network:
-                host: 'localhost'
-                port: 5432
-                database: 'avatar_gen_test'
-                username: 'postgres'
-                password: 'password'
-                ssl: false
-            logging:
-              level: 'error'
-              verbose: false
-              pretty: false
-          EOF
-
       - name: Run unit tests
-        run: pnpm run test
+        run: pnpm run test:unit
         env:
           NODE_ENV: test
-          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
-
-      - name: Run e2e tests
-        run: pnpm run test:e2e
-        env:
-          NODE_ENV: test
-          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
+          TEST_STORAGE_TYPE: local
+          TEST_DB_DRIVER: sqlite
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         if: always()
         with:
           files: ./backend/coverage/lcov.info
-          flags: backend-${{ matrix.database }}-${{ matrix.storage }}
-          name: backend-coverage-${{ matrix.database }}-${{ matrix.storage }}
+          flags: backend-unit
+          name: backend-coverage-unit
+
+  test-backend-integration:
+    name: Integration Tests (PostgreSQL + MinIO)
+    runs-on: ubuntu-latest
+    needs: [lint-backend]
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run integration tests with Docker Compose
+        run: |
+          # Устанавливаем переменные окружения для MinIO
+          export TEST_STORAGE_TYPE=s3
+          export TEST_S3_ENDPOINT=http://localhost:9000
+          export TEST_S3_ACCESS_KEY=test-access-key
+          export TEST_S3_SECRET_KEY=test-secret-key
+          export TEST_S3_BUCKET=avatar-gen-test
+          export TEST_S3_REGION=us-east-1
+          
+          # Устанавливаем переменные для PostgreSQL
+          export TEST_DB_DRIVER=postgresql
+          export TEST_DB_HOST=localhost
+          export TEST_DB_PORT=5433
+          export TEST_DB_NAME=avatar_gen_test
+          export TEST_DB_USER=test_user
+          export TEST_DB_PASSWORD=test_password
+          
+          # Запускаем integration тесты
+          docker-compose -f docker/docker-compose.test.yaml --profile integration-tests up --build --abort-on-container-exit avatar-backend-integration
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend-integration
+          name: backend-coverage-integration
 
   build-frontend:
     name: Build Frontend
@@ -301,10 +251,46 @@ jobs:
           path: frontend/dist
           retention-days: 7
 
+  test-e2e:
+    name: E2E Tests (Full Stack)
+    runs-on: ubuntu-latest
+    needs: [test-backend-unit, test-backend-integration, build-frontend]
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run E2E tests with Docker Compose
+        run: |
+          # Устанавливаем переменные окружения для MinIO
+          export TEST_STORAGE_TYPE=s3
+          export TEST_S3_ENDPOINT=http://localhost:9000
+          export TEST_S3_ACCESS_KEY=test-access-key
+          export TEST_S3_SECRET_KEY=test-secret-key
+          export TEST_S3_BUCKET=avatar-gen-test
+          export TEST_S3_REGION=us-east-1
+          
+          # Устанавливаем переменные для PostgreSQL
+          export TEST_DB_DRIVER=postgresql
+          export TEST_DB_HOST=localhost
+          export TEST_DB_PORT=5433
+          export TEST_DB_NAME=avatar_gen_test
+          export TEST_DB_USER=test_user
+          export TEST_DB_PASSWORD=test_password
+          
+          # Запускаем E2E тесты
+          docker-compose -f docker/docker-compose.test.yaml --profile e2e-tests up --build --abort-on-container-exit gateway-e2e
+
   docker-build-test:
     name: Docker Build Test
     runs-on: ubuntu-latest
-    needs: [test-backend, build-frontend]
+    needs: [test-e2e]
 
     steps:
       - name: Checkout code

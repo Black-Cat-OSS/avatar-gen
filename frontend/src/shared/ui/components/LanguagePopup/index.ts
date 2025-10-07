@@ -1,1 +1,1 @@
-export { LanguagePopup } from './LanguagePopup'
+export { LanguagePopup } from './LanguagePopup';

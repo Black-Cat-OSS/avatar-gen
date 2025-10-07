@@ -1,1 +1,1 @@
-export { CounterIncrement } from './ui/CounterIncrement'
+export { CounterIncrement } from './ui/CounterIncrement';

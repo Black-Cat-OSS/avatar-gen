@@ -33,8 +33,8 @@ jobs:
   # Этот workflow запускается для:
   # - PR в main: полное тестирование БЕЗ деплоя
   # - Push в main: полное тестирование + ДЕПЛОЙ
-  test-backend:
-    name: Test Backend (${{ matrix.test_name }})
+  test-matrix:
+    name: Matrix Tests (${{ matrix.test_name }})
     runs-on: ubuntu-latest
     if: github.event.inputs.skip_tests != 'true'
     strategy:
@@ -58,121 +58,39 @@ jobs:
             test_name: 'PostgreSQL + S3'
     defaults:
       run:
-        working-directory: backend
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: avatar_gen_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+        working-directory: .
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Wait for PostgreSQL
-        if: matrix.database == 'postgresql'
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run matrix tests with Docker Compose
         run: |
-          for i in {1..30}; do
-            if pg_isready -h localhost -p 5432 -U postgres; then
-              echo "PostgreSQL is ready"
-              exit 0
-            fi
-            echo "Waiting for PostgreSQL... ($i/30)"
-            sleep 2
-          done
-          echo "PostgreSQL failed to start"
-          exit 1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm exec prisma generate
-
-      - name: Create test configuration
-        run: |
-          # Создаем базовую конфигурацию
-          cat > settings.test.matrix.yaml << EOF
-          app:
-            storage:
-              type: '${{ matrix.storage }}'
-              local:
-                save_path: './storage/test-avatars'
-              s3:
-                endpoint: '${{ secrets.TEST_S3_ENDPOINT || 'https://test-s3-endpoint.com' }}'
-                bucket: '${{ secrets.TEST_S3_BUCKET || 'avatar-gen-test' }}'
-                access_key: '${{ secrets.TEST_S3_ACCESS_KEY || 'test-access-key' }}'
-                secret_key: '${{ secrets.TEST_S3_SECRET_KEY || 'test-secret-key' }}'
-                region: '${{ secrets.TEST_S3_REGION || 'us-east-1' }}'
-                force_path_style: true
-                connection:
-                  maxRetries: 1
-                  retryDelay: 100
-            database:
-              driver: '${{ matrix.database }}'
-              connection:
-                maxRetries: 1
-                retryDelay: 100
-              sqlite_params:
-                url: 'file:./storage/test-database/database.test.sqlite'
-              network:
-                host: 'localhost'
-                port: 5432
-                database: 'avatar_gen_test'
-                username: 'postgres'
-                password: 'password'
-                ssl: false
-            logging:
-              level: 'error'
-              verbose: false
-              pretty: false
-          EOF
-
-      - name: Run tests
-        run: pnpm run test
-        env:
-          NODE_ENV: test
-          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
-
-      - name: Run e2e tests
-        run: pnpm run test:e2e
-        env:
-          NODE_ENV: test
-          TEST_MATRIX_CONFIG: ./settings.test.matrix.yaml
+          # Устанавливаем переменные окружения
+          export TEST_STORAGE_TYPE=${{ matrix.storage }}
+          export TEST_DB_DRIVER=${{ matrix.database }}
+          
+          if [ "${{ matrix.storage }}" = "s3" ]; then
+            export TEST_S3_ENDPOINT=http://localhost:9000
+            export TEST_S3_ACCESS_KEY=test-access-key
+            export TEST_S3_SECRET_KEY=test-secret-key
+            export TEST_S3_BUCKET=avatar-gen-test
+            export TEST_S3_REGION=us-east-1
+          fi
+          
+          if [ "${{ matrix.database }}" = "postgresql" ]; then
+            export TEST_DB_HOST=localhost
+            export TEST_DB_PORT=5433
+            export TEST_DB_NAME=avatar_gen_test
+            export TEST_DB_USER=test_user
+            export TEST_DB_PASSWORD=test_password
+          fi
+          
+          # Запускаем матричные тесты
+          docker-compose -f docker/docker-compose.test.yaml --profile matrix-tests up --build --abort-on-container-exit test-runner
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -240,7 +158,7 @@ jobs:
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    needs: [test-backend, build-frontend]
+    needs: [test-matrix, build-frontend]
     # Деплой только при push в main или ручном запуске с force_deploy
     # Docker образы собираются ТОЛЬКО на production сервере
     if: |
@@ -261,6 +179,7 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          APP_PATH: ${{ secrets.APP_PATH }}
         run: |
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << ENDSSH
             set -e
@@ -271,7 +190,7 @@ jobs:
             
             # Step 1: Navigate to application directory
             echo "📂 Step 1: Navigating to application directory..."
-            cd ${{ secrets.APP_PATH }}
+            cd $APP_PATH
             pwd
             
             # Step 2: Pull latest code from repository
@@ -334,7 +253,7 @@ jobs:
           APP_PATH: ${{ secrets.APP_PATH }}
         run: |
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST << 'ENDSSH'
-            cd ${{ secrets.APP_PATH }}
+            cd $APP_PATH
             
             echo "🔍 Verifying deployment..."
             

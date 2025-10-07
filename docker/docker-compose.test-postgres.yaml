@@ -1,0 +1,35 @@
+name: avatar-gen-test-postgres
+
+services:
+  # Временный PostgreSQL контейнер для тестов
+  postgres-temp:
+    image: postgres:17-alpine
+    container_name: avatar-gen-postgres-temp
+    environment:
+      POSTGRES_DB: avatar_gen_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_temp_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d avatar_gen_test']
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - test-postgres
+    # Автоматическое удаление контейнера при остановке
+    restart: "no"
+
+volumes:
+  postgres_temp_data:
+    driver: local
+
+networks:
+  test-postgres:
+    driver: bridge
+    name: avatar-gen-test-postgres

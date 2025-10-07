@@ -67,8 +67,8 @@ This will build a static version of Storybook for deployment.
 Example:
 
 ```typescript
-import type { Meta, StoryObj } from '@storybook/react'
-import { MyComponent } from './MyComponent'
+import type { Meta, StoryObj } from '@storybook/react';
+import { MyComponent } from './MyComponent';
 
 const meta: Meta<typeof MyComponent> = {
   title: 'UI/MyComponent',
@@ -77,16 +77,16 @@ const meta: Meta<typeof MyComponent> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
     // component props
   },
-}
+};
 ```
 
 ### Adding Decorators

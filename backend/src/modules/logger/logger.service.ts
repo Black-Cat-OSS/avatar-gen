@@ -10,9 +10,9 @@ export class LoggerService implements NestLoggerService {
     @Inject(YamlConfigService)
     private readonly configService: YamlConfigService,
   ) {
-    console.log('[LoggerService] Constructor called - getting logging config...');
+    // LoggerService constructor called - getting logging config
     const loggingConfig = this.configService.getLoggingConfig();
-    console.log('[LoggerService] Logging config retrieved:', JSON.stringify(loggingConfig));
+    // Logging config retrieved
 
     const logLevel = loggingConfig.level;
     const isVerbose = loggingConfig.verbose;
@@ -75,7 +75,9 @@ export class LoggerService implements NestLoggerService {
       this.logger.debug('Verbose logging enabled');
     }
 
-    this.logger.info(`Logger initialized: level=${effectiveLevel}, pretty=${isPretty}, logFile=${!isPretty ? './logs/app.log' : 'none'}`);
+    this.logger.info(
+      `Logger initialized: level=${effectiveLevel}, pretty=${isPretty}, logFile=${!isPretty ? './logs/app.log' : 'none'}`,
+    );
   }
 
   log(message: string, context?: string) {

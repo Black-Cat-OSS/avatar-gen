@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Avatar } from './entities/avatar.entity';
+import { Avatar } from '../avatar/avatar.entity';
 import { YamlConfigService } from '../../config/yaml-config.service';
 
 /**
@@ -88,7 +88,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   getDatabaseInfo(): { driver: string; isConnected: boolean; databaseName?: string } {
     const config = this.configService.getConfig();
     const driver = config.app.database.driver;
-    
+
     return {
       driver,
       isConnected: this.dataSource.isInitialized,

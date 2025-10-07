@@ -1,8 +1,8 @@
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
-import { qrcode } from 'vite-plugin-qrcode'
-import { defineConfig } from 'vite'
-import { welcomeMessage } from './plugins'
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { qrcode } from 'vite-plugin-qrcode';
+import { defineConfig } from 'vite';
+import { welcomeMessage } from './plugins';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,8 +10,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     qrcode({
-      filter: (url) => {
-        return url.startsWith('http://192.168')
+      filter: url => {
+        return url.startsWith('http://192.168');
       },
     }),
     welcomeMessage({
@@ -31,8 +31,7 @@ export default defineConfig({
   css: {
     modules: {
       localsConvention: 'camelCaseOnly',
-      generateScopedName:
-        '[name]__[local]___[hash:base64:5]',
+      generateScopedName: '[name]__[local]___[hash:base64:5]',
     },
     preprocessorOptions: {
       scss: {
@@ -43,4 +42,4 @@ export default defineConfig({
       },
     },
   },
-})
+});
