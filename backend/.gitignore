@@ -1,0 +1,28 @@
+# Environment files (generated automatically)
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+logs/
+*.log
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Database files
+storage/database/
+*.sqlite
+*.db
+
+# Coverage reports
+coverage/
+
+# OS generated files
+.DS_Store
+Thumbs.db

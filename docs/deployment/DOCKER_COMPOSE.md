@@ -66,8 +66,17 @@ start_period: 30s
 
 - `NODE_ENV=production`
 - `DATABASE_PROVIDER=sqlite` (или `postgresql`)
-- `DATABASE_URL` - URL подключения к БД
+- `DATABASE_URL` - URL подключения к БД (генерируется автоматически)
 - `CONFIG_PATH=./settings.yaml`
+
+**Автоматическая генерация конфигурации:**
+
+При запуске контейнера автоматически:
+
+1. Генерируется `.env` файл из YAML конфигурации
+2. Выбирается правильная схема Prisma (SQLite/PostgreSQL)
+3. Генерируется Prisma Client с нужным провайдером
+4. Выполняется синхронизация схемы базы данных
 
 **Health Check:**
 
