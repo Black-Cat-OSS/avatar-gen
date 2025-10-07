@@ -27,9 +27,8 @@ services:
       - external
 
   # Avatar Backend Service (Production Configuration)
-  # - PostgreSQL database (external or container)
-  # - S3 storage
-  # - NO local storage mount (all data in S3)
+  # - Database and storage configured via YAML files
+  # - All configuration in settings.production.local.yaml
   avatar-backend:
     build:
       context: ../backend

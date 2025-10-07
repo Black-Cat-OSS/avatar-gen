@@ -1,19 +1,14 @@
-import { Link } from '@tanstack/react-router'
-import { cn } from '@/shared/lib/utils'
+import { Link } from '@tanstack/react-router';
+import { cn } from '@/shared/lib/utils';
 
 interface NavigationLinkProps {
-  to: string
-  children: React.ReactNode
-  className?: string
-  onClick?: () => void
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
 }
 
-export const NavigationLink = ({
-  to,
-  children,
-  className,
-  onClick,
-}: NavigationLinkProps) => {
+export const NavigationLink = ({ to, children, className, onClick }: NavigationLinkProps) => {
   return (
     <Link
       to={to}
@@ -25,5 +20,5 @@ export const NavigationLink = ({
     >
       {children}
     </Link>
-  )
-}
+  );
+};

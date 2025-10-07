@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { I18nextProvider } from 'react-i18next'
-import { ThemeProvider } from '@/shared/lib/hooks/theme-provider'
-import { PopupProvider } from '@/shared/lib/contexts'
-import i18n from '@/shared/lib/i18n'
-import { HeaderDefault } from '.'
+import type { Meta, StoryObj } from '@storybook/react';
+import { I18nextProvider } from 'react-i18next';
+import { ThemeProvider } from '@/shared/lib/hooks/theme-provider';
+import { PopupProvider } from '@/shared/lib/contexts';
+import i18n from '@/shared/lib/i18n';
+import { HeaderDefault } from '.';
 
 const meta: Meta<typeof HeaderDefault> = {
   title: 'Widgets/Header/Default',
@@ -19,7 +19,7 @@ const meta: Meta<typeof HeaderDefault> = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    Story => (
       <I18nextProvider i18n={i18n}>
         <ThemeProvider>
           <PopupProvider>
@@ -54,13 +54,7 @@ const meta: Meta<typeof HeaderDefault> = {
     },
     containerWidth: {
       control: 'select',
-      options: [
-        'max-w-4xl',
-        'max-w-5xl',
-        'max-w-6xl',
-        'max-w-7xl',
-        'max-w-full',
-      ],
+      options: ['max-w-4xl', 'max-w-5xl', 'max-w-6xl', 'max-w-7xl', 'max-w-full'],
       description: 'Maximum width of the header container',
       defaultValue: 'max-w-7xl',
     },
@@ -69,10 +63,10 @@ const meta: Meta<typeof HeaderDefault> = {
       description: 'Additional CSS classes',
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -81,7 +75,7 @@ export const Default: Story = {
     aboutText: 'About',
     signInText: 'Login',
   },
-}
+};
 
 export const CustomBrand: Story = {
   args: {
@@ -90,15 +84,14 @@ export const CustomBrand: Story = {
     aboutText: 'Info',
     signInText: 'Sign In',
   },
-}
+};
 
 export const WithCustomStyling: Story = {
   args: {
     brandText: 'Styled Brand',
-    className:
-      'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-200',
+    className: 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-200',
   },
-}
+};
 
 export const NarrowContainer: Story = {
   args: {
@@ -108,12 +101,11 @@ export const NarrowContainer: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Header with narrower container width (max-w-4xl) for more focused layouts.',
+        story: 'Header with narrower container width (max-w-4xl) for more focused layouts.',
       },
     },
   },
-}
+};
 
 export const WideContainer: Story = {
   args: {
@@ -123,42 +115,26 @@ export const WideContainer: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Header with full width container for maximum space utilization.',
+        story: 'Header with full width container for maximum space utilization.',
       },
     },
   },
-}
+};
 
 export const ContainerWidthComparison: Story = {
   render: () => (
-    <div className='space-y-8'>
+    <div className="space-y-8">
       <div>
-        <h3 className='mb-4 text-sm font-medium text-muted-foreground'>
-          max-w-4xl
-        </h3>
-        <HeaderDefault
-          brandText='Narrow'
-          containerWidth='max-w-4xl'
-        />
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">max-w-4xl</h3>
+        <HeaderDefault brandText="Narrow" containerWidth="max-w-4xl" />
       </div>
-      <div className='mt-20'>
-        <h3 className='mb-4 text-sm font-medium text-muted-foreground'>
-          max-w-6xl
-        </h3>
-        <HeaderDefault
-          brandText='Medium'
-          containerWidth='max-w-6xl'
-        />
+      <div className="mt-20">
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">max-w-6xl</h3>
+        <HeaderDefault brandText="Medium" containerWidth="max-w-6xl" />
       </div>
-      <div className='mt-20'>
-        <h3 className='mb-4 text-sm font-medium text-muted-foreground'>
-          max-w-full
-        </h3>
-        <HeaderDefault
-          brandText='Full Width'
-          containerWidth='max-w-full'
-        />
+      <div className="mt-20">
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">max-w-full</h3>
+        <HeaderDefault brandText="Full Width" containerWidth="max-w-full" />
       </div>
     </div>
   ),
@@ -170,7 +146,7 @@ export const ContainerWidthComparison: Story = {
       },
     },
   },
-}
+};
 
 export const Desktop: Story = {
   args: {
@@ -181,7 +157,7 @@ export const Desktop: Story = {
       defaultViewport: 'desktop',
     },
   },
-}
+};
 
 export const Tablet: Story = {
   args: {
@@ -192,7 +168,7 @@ export const Tablet: Story = {
       defaultViewport: 'tablet',
     },
   },
-}
+};
 
 export const Mobile: Story = {
   args: {
@@ -203,7 +179,7 @@ export const Mobile: Story = {
       defaultViewport: 'mobile',
     },
   },
-}
+};
 
 export const MobileMenuDemo: Story = {
   args: {
@@ -217,13 +193,12 @@ export const MobileMenuDemo: Story = {
   play: async ({ canvasElement }) => {
     // Demo mobile menu interaction
     setTimeout(() => {
-      const button =
-        canvasElement.querySelector<HTMLButtonElement>(
-          'button[aria-label="Toggle mobile menu"]',
-        )
+      const button = canvasElement.querySelector<HTMLButtonElement>(
+        'button[aria-label="Toggle mobile menu"]',
+      );
       if (button) {
-        button.click()
+        button.click();
       }
-    }, 500)
+    }, 500);
   },
-}
+};

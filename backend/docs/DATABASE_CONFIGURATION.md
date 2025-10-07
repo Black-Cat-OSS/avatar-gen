@@ -11,6 +11,7 @@
 ## 🎯 Обзор
 
 Avatar Generator поддерживает две базы данных:
+
 - **SQLite** - для разработки и тестирования
 - **PostgreSQL** - для production окружения
 
@@ -44,12 +45,12 @@ backend/
 ```yaml
 app:
   database:
-    driver: "sqlite"
+    driver: 'sqlite'
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./storage/database/database.sqlite"
+      url: 'file:./storage/database/database.sqlite'
 ```
 
 ### Конфигурация для разработки (settings.development.yaml)
@@ -58,7 +59,7 @@ app:
 app:
   database:
     sqlite_params:
-      url: "file:./backend/storage/database/database.dev.sqlite"
+      url: 'file:./backend/storage/database/database.dev.sqlite'
 ```
 
 ### Конфигурация для тестов (settings.test.yaml)
@@ -66,9 +67,9 @@ app:
 ```yaml
 app:
   database:
-    driver: "sqlite"
+    driver: 'sqlite'
     sqlite_params:
-      url: "file::memory:"  # In-memory БД для тестов
+      url: 'file::memory:' # In-memory БД для тестов
 ```
 
 ---
@@ -80,13 +81,13 @@ app:
 ```yaml
 app:
   database:
-    driver: "postgresql"  # Переопределяем driver
+    driver: 'postgresql' # Переопределяем driver
     network:
-      host: "postgres"  # имя сервиса в docker-compose
+      host: 'postgres' # имя сервиса в docker-compose
       port: 5432
-      database: "avatar_gen"
-      username: "postgres"
-      password: "password"
+      database: 'avatar_gen'
+      username: 'postgres'
+      password: 'password'
       ssl: false
 ```
 
@@ -97,13 +98,13 @@ app:
 ```yaml
 app:
   database:
-    driver: "postgresql"  # Переопределяем driver на PostgreSQL
+    driver: 'postgresql' # Переопределяем driver на PostgreSQL
     postgresql_params:
-      host: "localhost"
+      host: 'localhost'
       port: 5432
-      database: "avatar_gen_dev"
-      username: "postgres"
-      password: "your_password"
+      database: 'avatar_gen_dev'
+      username: 'postgres'
+      password: 'your_password'
       ssl: false
 ```
 
@@ -154,11 +155,13 @@ $env:NODE_ENV="production"; npm run prisma:deploy
 ## 📊 Как это работает
 
 ### Приложение
+
 ```
 settings.yaml → YamlConfigService → DatabaseService → PrismaClient
 ```
 
 ### Prisma CLI
+
 ```
 settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
 ```
@@ -172,6 +175,7 @@ settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
 ### Переключение с SQLite на PostgreSQL
 
 1. **Установите NODE_ENV**:
+
    ```bash
    export NODE_ENV=production  # Linux/Mac
    # или
@@ -179,12 +183,14 @@ settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
    ```
 
 2. **Сгенерируйте конфигурацию**:
+
    ```bash
    cd backend
    node scripts/generate-env.js
    ```
 
 3. **Запустите миграции**:
+
    ```bash
    npm run prisma:migrate
    ```
@@ -197,11 +203,13 @@ settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
 ### Переключение с PostgreSQL на SQLite
 
 1. **Установите NODE_ENV**:
+
    ```bash
    export NODE_ENV=development  # или не устанавливайте
    ```
 
 2. **Сгенерируйте конфигурацию**:
+
    ```bash
    node scripts/generate-env.js
    ```
@@ -267,6 +275,7 @@ npm run start:dev
 **Причина:** Не установлена переменная `NODE_ENV=production`
 
 **Решение:**
+
 ```bash
 # 1. Проверьте, что settings.production.yaml существует
 cat backend/settings.production.yaml
@@ -290,6 +299,7 @@ PostgreSQL поддерживается через runtime конфигурац�
 **Причина:** Не запущен контейнер postgres
 
 **Решение:**
+
 ```bash
 # Проверьте статус
 docker-compose ps
@@ -323,4 +333,3 @@ docker-compose logs postgres
 
 **Обновлено:** 2025-10-03  
 **Issue:** [#2 - не работает postgresql (конфигурации)](https://github.com/Black-Cat-OSS/avatar-gen/issues/2)
-

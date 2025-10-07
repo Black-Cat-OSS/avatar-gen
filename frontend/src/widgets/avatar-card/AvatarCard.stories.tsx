@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { AvatarCard } from './ui/AvatarCard'
+import type { Meta, StoryObj } from '@storybook/react';
+import { AvatarCard } from './ui/AvatarCard';
 
 const meta: Meta<typeof AvatarCard> = {
   title: 'Widgets/AvatarCard',
@@ -27,10 +27,10 @@ const meta: Meta<typeof AvatarCard> = {
       description: 'Additional CSS classes',
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 const sampleAvatar = {
   id: 'avatar-12345-abcd-6789-efgh',
@@ -41,21 +41,21 @@ const sampleAvatar = {
   foreignColor: '#ef4444',
   colorScheme: 'default',
   seed: 'bright-cat-123',
-}
+};
 
 export const Default: Story = {
   args: {
     avatar: sampleAvatar,
     showDetails: true,
   },
-}
+};
 
 export const WithoutDetails: Story = {
   args: {
     avatar: sampleAvatar,
     showDetails: false,
   },
-}
+};
 
 export const CustomStyling: Story = {
   args: {
@@ -63,7 +63,7 @@ export const CustomStyling: Story = {
     showDetails: true,
     className: 'border-2 border-primary',
   },
-}
+};
 
 export const WithCustomSize: Story = {
   args: {
@@ -71,7 +71,7 @@ export const WithCustomSize: Story = {
     showDetails: true,
     imageSize: 256,
   },
-}
+};
 
 export const WithFilter: Story = {
   args: {
@@ -80,7 +80,7 @@ export const WithFilter: Story = {
     imageSize: 128,
     imageFilter: 'grayscale',
   },
-}
+};
 
 export const DifferentAvatar: Story = {
   args: {
@@ -96,4 +96,4 @@ export const DifferentAvatar: Story = {
     },
     showDetails: true,
   },
-}
+};

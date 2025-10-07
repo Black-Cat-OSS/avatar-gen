@@ -14,10 +14,27 @@
 
 ```
 src/modules/database/
-├── entities/           # TypeORM сущности
-│   └── avatar.entity.ts
+├── drivers/            # Драйверы баз данных
+│   ├── postgresql/     # PostgreSQL драйвер
+│   │   ├── postgresql-driver.service.ts
+│   │   ├── postgresql-driver.service.spec.ts
+│   │   └── index.ts
+│   ├── sqlite/         # SQLite драйвер
+│   │   ├── sqlite-driver.service.ts
+│   │   ├── sqlite-driver.service.spec.ts
+│   │   └── index.ts
+│   └── index.ts
+├── interfaces/         # Интерфейсы
+│   ├── driver.ts       # Интерфейс драйверов
+│   ├── configs.ts      # Конфигурации TypeORM
+│   └── index.ts
+├── utils/              # Утилиты
+│   ├── config-factory.ts    # Фабрика конфигураций
+│   ├── driver-factory.ts    # Фабрика драйверов
+│   └── index.ts
 ├── database.service.ts # Основной сервис для работы с БД
-└── database.module.ts  # Модуль конфигурации TypeORM
+├── database.module.ts  # Модуль конфигурации TypeORM
+└── index.ts
 ```
 
 ## Использование
@@ -26,19 +43,44 @@ src/modules/database/
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Avatar } from '../avatar/avatar.entity';
 
 @Injectable()
 export class AvatarService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    @InjectRepository(Avatar)
+    private readonly avatarRepository: Repository<Avatar>,
+  ) {}
 
   async findAll(): Promise<Avatar[]> {
-    return await this.db.avatar.find();
+    return await this.avatarRepository.find();
   }
 
   async create(data: Partial<Avatar>): Promise<Avatar> {
-    const avatar = this.db.avatar.create(data);
-    return await this.db.avatar.save(avatar);
+    const avatar = this.avatarRepository.create(data);
+    return await this.avatarRepository.save(avatar);
+  }
+}
+```
+
+### Использование DatabaseService
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { DatabaseService } from '../database/database.service';
+
+@Injectable()
+export class SomeService {
+  constructor(private readonly db: DatabaseService) {}
+
+  async healthCheck() {
+    return await this.db.healthCheck();
+  }
+
+  async getDatabaseInfo() {
+    return this.db.getDatabaseInfo();
   }
 }
 ```
@@ -81,7 +123,7 @@ app:
   database:
     driver: sqlite
     sqlite_params:
-      url: "file:./storage/database/avatar_gen.db"
+      url: 'file:./storage/database/avatar_gen.db'
 ```
 
 ## Миграции
@@ -112,6 +154,42 @@ npm run typeorm:revert
 4. **Встроенные миграции**: Управление изменениями схемы
 5. **NestJS интеграция**: Нативная поддержка NestJS
 
+## Драйверы баз данных
+
+Модуль поддерживает систему драйверов для различных типов баз данных. Каждый драйвер реализует интерфейс `IDataBaseDriver` и отвечает за создание конфигурации TypeORM для конкретного типа базы данных.
+
+**Документация:** [Database Drivers](./DRIVERS.md)
+
+### Доступные драйверы
+
+- **SQLite** - для разработки и тестирования
+- **PostgreSQL** - для production окружения
+
+### Фабрика драйверов
+
+`DatabaseDriverFactory` автоматически выбирает нужный драйвер на основе конфигурации:
+
+```typescript
+// Автоматический выбор драйвера
+const driver = driverFactory.createDriver(configService);
+const config = driver.buildConfigs(configService);
+```
+
+### Структура драйверов
+
+Каждый драйвер находится в отдельной папке и содержит:
+- **Сервис драйвера** - основная логика конфигурации
+- **Тесты** - полное покрытие тестами
+- **Index.ts** - экспорты модуля
+
+**Пример структуры PostgreSQL драйвера:**
+```
+drivers/postgresql/
+├── postgresql-driver.service.ts      # Основной сервис
+├── postgresql-driver.service.spec.ts # Тесты
+└── index.ts                          # Экспорты
+```
+
 ## Миграция с Prisma
 
 ### Что изменилось
@@ -120,9 +198,11 @@ npm run typeorm:revert
 - Удалены Prisma схемы и миграции
 - Упрощен `start.sh` скрипт
 - Добавлены TypeORM сущности и конфигурация
+- Добавлена система драйверов баз данных
 
 ### Совместимость
 
 - Все API остались совместимыми
 - Репозитории работают аналогично Prisma
 - Конфигурация через YAML сохранена
+- Добавлена гибкая система выбора драйверов

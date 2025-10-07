@@ -17,27 +17,18 @@ RUN for i in 1 2 3; do \
           apk update; sleep 5; }; \
     done
 
-# Set environment variable to skip husky installation
-ENV HUSKY_SKIP_INSTALL=1
 
 # Copy package files first for better caching
 COPY package*.json ./
 COPY package-lock.json ./
 
 # Install ALL dependencies (including devDependencies for build)
-# Use installation for faster builds
 RUN npm install
 
-# Copy source code and Prisma schema templates
+# Copy source code
 COPY src ./src
-COPY prisma ./prisma
 COPY tsconfig.json ./
 COPY nest-cli.json ./
-
-# Generate Prisma client для SQLite (по умолчанию для сборки)
-# В runtime будет перегенерирован с правильным provider
-RUN cp prisma/schema.sqlite.prisma prisma/schema.prisma && \
-    npx prisma generate
 
 # Build the application with parallel compilation
 # Set max old space size for large builds and enable parallel compilation
@@ -68,27 +59,18 @@ RUN for i in 1 2 3; do \
 COPY package*.json ./
 COPY package-lock.json ./
 
-# Install only production dependencies + prisma CLI (needed for runtime schema switching)
+# Install only production dependencies
 RUN npm install --omit=dev && \
-    npm install -g prisma@6.16.3 && \
     npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
-# Копируем ТОЛЬКО schema templates (НЕ копируем schema.prisma из builder)
-COPY --from=builder /app/prisma/schema.sqlite.prisma ./prisma/schema.sqlite.prisma
-COPY --from=builder /app/prisma/schema.postgresql.prisma ./prisma/schema.postgresql.prisma
-# НЕ копируем /app/node_modules/.prisma из builder - будет сгенерирован в runtime!
 
 # Create storage directories
 RUN mkdir -p storage/avatars storage/database
 
-# Copy startup script only (конфигурации монтируются через volumes)
+# Copy startup script
 COPY start.sh ./start.sh
-
-# Don't copy configuration files - they should be mounted as volumes
-# Don't copy existing database - create fresh one in container
-# This avoids permission and cross-platform issues
 
 # Make startup script executable
 RUN chmod +x /app/start.sh && ls -la /app/start.sh
@@ -97,8 +79,6 @@ RUN chmod +x /app/start.sh && ls -la /app/start.sh
 EXPOSE 3000
 
 # Set environment variables
-# NOTE: DATABASE_URL передаётся через docker-compose environment
-# Не задаём дефолтное значение здесь, чтобы избежать конфликтов!
 ENV NODE_ENV=production
 ENV CONFIG_PATH="./settings.yaml"
 

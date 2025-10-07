@@ -27,16 +27,7 @@ backend/settings.production.local.yaml
 # All local settings files (pattern: *.local.*.yaml)
 *.local.*.yaml
 
-# Environment files (generated automatically)
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-
-# Frontend .env files
-# Include base .env, .env.development, .env.production
-# Ignore only .env.local files
+# Frontend .env files (only local files are ignored)
 frontend/.env.local
 frontend/.env.development.local
 frontend/.env.production.local

@@ -11,6 +11,7 @@
 ## 🎯 Обзор
 
 Avatar Generator поддерживает два типа хранилищ:
+
 - **Local** - локальная файловая система (для разработки и небольших deployment)
 - **S3** - S3-совместимое облачное хранилище (для production и масштабируемых систем)
 
@@ -39,15 +40,15 @@ app:
   storage:
     type: 'local'
     local:
-      save_path: './storage/avatars'  # Путь к директории хранилища
+      save_path: './storage/avatars' # Путь к директории хранилища
 ```
 
 ### Параметры
 
-| Параметр | Тип | Обязательный | По умолчанию | Описание |
-|----------|-----|--------------|--------------|-----------|
-| `type` | `'local'` | ✅ Да | - | Тип хранилища |
-| `local.save_path` | `string` | ✅ Да (если type='local') | - | Путь к директории хранилища |
+| Параметр          | Тип       | Обязательный              | По умолчанию | Описание                    |
+| ----------------- | --------- | ------------------------- | ------------ | --------------------------- |
+| `type`            | `'local'` | ✅ Да                     | -            | Тип хранилища               |
+| `local.save_path` | `string`  | ✅ Да (если type='local') | -            | Путь к директории хранилища |
 
 ### Валидация
 
@@ -58,6 +59,7 @@ app:
 ### Пример для разных окружений
 
 **Development:**
+
 ```yaml
 app:
   storage:
@@ -67,6 +69,7 @@ app:
 ```
 
 **Production:**
+
 ```yaml
 app:
   storage:
@@ -99,17 +102,17 @@ app:
 
 ### Параметры
 
-| Параметр | Тип | Обязательный | По умолчанию | Описание |
-|----------|-----|--------------|--------------|-----------|
-| `type` | `'s3'` | ✅ Да | - | Тип хранилища |
-| `s3.endpoint` | `string` (URL) | ✅ Да (если type='s3') | - | URL endpoint S3 сервиса |
-| `s3.bucket` | `string` | ✅ Да (если type='s3') | - | Имя бакета |
-| `s3.access_key` | `string` | ✅ Да (если type='s3') | - | Access Key ID |
-| `s3.secret_key` | `string` | ✅ Да (если type='s3') | - | Secret Access Key |
-| `s3.region` | `string` | ❌ Нет | `'us-east-1'` | Регион S3 |
-| `s3.force_path_style` | `boolean` | ❌ Нет | `true` | Path-style URLs вместо virtual-hosted |
-| `s3.connection.maxRetries` | `number` | ❌ Нет | `3` | Количество попыток подключения (1-10) |
-| `s3.connection.retryDelay` | `number` | ❌ Нет | `2000` | Задержка между попытками в мс (100-10000) |
+| Параметр                   | Тип            | Обязательный           | По умолчанию  | Описание                                  |
+| -------------------------- | -------------- | ---------------------- | ------------- | ----------------------------------------- |
+| `type`                     | `'s3'`         | ✅ Да                  | -             | Тип хранилища                             |
+| `s3.endpoint`              | `string` (URL) | ✅ Да (если type='s3') | -             | URL endpoint S3 сервиса                   |
+| `s3.bucket`                | `string`       | ✅ Да (если type='s3') | -             | Имя бакета                                |
+| `s3.access_key`            | `string`       | ✅ Да (если type='s3') | -             | Access Key ID                             |
+| `s3.secret_key`            | `string`       | ✅ Да (если type='s3') | -             | Secret Access Key                         |
+| `s3.region`                | `string`       | ❌ Нет                 | `'us-east-1'` | Регион S3                                 |
+| `s3.force_path_style`      | `boolean`      | ❌ Нет                 | `true`        | Path-style URLs вместо virtual-hosted     |
+| `s3.connection.maxRetries` | `number`       | ❌ Нет                 | `3`           | Количество попыток подключения (1-10)     |
+| `s3.connection.retryDelay` | `number`       | ❌ Нет                 | `2000`        | Задержка между попытками в мс (100-10000) |
 
 ### Валидация
 
@@ -133,7 +136,7 @@ app:
       access_key: 'YOUR_KEY'
       secret_key: 'YOUR_SECRET'
       region: 'us-east-1'
-      force_path_style: true  # ⚠️ Обязательно для Beget
+      force_path_style: true # ⚠️ Обязательно для Beget
 ```
 
 #### AWS S3
@@ -147,8 +150,8 @@ app:
       bucket: 'my-bucket'
       access_key: 'AWS_ACCESS_KEY_ID'
       secret_key: 'AWS_SECRET_ACCESS_KEY'
-      region: 'us-east-1'      # Укажите ваш регион
-      force_path_style: false  # Virtual-hosted style для AWS
+      region: 'us-east-1' # Укажите ваш регион
+      force_path_style: false # Virtual-hosted style для AWS
 ```
 
 #### MinIO
@@ -163,7 +166,7 @@ app:
       access_key: 'minioadmin'
       secret_key: 'minioadmin'
       region: 'us-east-1'
-      force_path_style: true  # ⚠️ Обязательно для MinIO
+      force_path_style: true # ⚠️ Обязательно для MinIO
 ```
 
 ---
@@ -173,6 +176,7 @@ app:
 ### Рекомендации для Production
 
 1. **Никогда не храните credentials в git:**
+
    ```bash
    # Добавьте в .gitignore
    settings.production.yaml
@@ -180,6 +184,7 @@ app:
    ```
 
 2. **Используйте переменные окружения:**
+
    ```yaml
    # settings.production.yaml
    app:
@@ -204,16 +209,8 @@ app:
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::my-bucket/*",
-        "arn:aws:s3:::my-bucket"
-      ]
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::my-bucket/*", "arn:aws:s3:::my-bucket"]
     }
   ]
 }
@@ -226,16 +223,18 @@ app:
 ### Из Local в S3
 
 1. **Обновите конфигурацию:**
+
    ```yaml
    app:
      storage:
-       type: 's3'  # Было: 'local'
+       type: 's3' # Было: 'local'
        s3:
          endpoint: 'https://s3.example.com'
          # ... остальные параметры
    ```
 
 2. **Мигрируйте существующие данные** (опционально):
+
    ```bash
    # Загрузите аватары из локальной директории в S3
    # Используйте AWS CLI или MinIO client
@@ -247,11 +246,13 @@ app:
 ### Из S3 в Local
 
 1. **Скачайте данные из S3:**
+
    ```bash
    aws s3 sync s3://my-bucket/avatars/ ./storage/avatars/
    ```
 
 2. **Обновите конфигурацию:**
+
    ```yaml
    app:
      storage:
@@ -267,45 +268,50 @@ app:
 ## ⚙️ Схема валидации (Zod)
 
 ```typescript
-const configSchema = z.object({
-  app: z.object({
-    storage: z.object({
-      type: z.enum(['local', 's3']),
-      local: z.object({
-        save_path: z.string().min(1),
-      }).optional(),
-      s3: z.object({
-        endpoint: z.string().url(),
-        bucket: z.string().min(1),
-        access_key: z.string().min(1),
-        secret_key: z.string().min(1),
-        region: z.string().default('us-east-1'),
-        force_path_style: z.boolean().default(true),
-        connection: z.object({
-          maxRetries: z.number().min(1).max(10).default(3),
-          retryDelay: z.number().min(100).max(10000).default(2000),
-        }),
-      }).optional(),
+const configSchema = z
+  .object({
+    app: z.object({
+      storage: z.object({
+        type: z.enum(['local', 's3']),
+        local: z
+          .object({
+            save_path: z.string().min(1),
+          })
+          .optional(),
+        s3: z
+          .object({
+            endpoint: z.string().url(),
+            bucket: z.string().min(1),
+            access_key: z.string().min(1),
+            secret_key: z.string().min(1),
+            region: z.string().default('us-east-1'),
+            force_path_style: z.boolean().default(true),
+            connection: z.object({
+              maxRetries: z.number().min(1).max(10).default(3),
+              retryDelay: z.number().min(100).max(10000).default(2000),
+            }),
+          })
+          .optional(),
+      }),
     }),
-  }),
-})
-.superRefine((data, ctx) => {
-  // Проверка что конфигурация соответствует выбранному типу
-  if (data.app.storage.type === 'local' && !data.app.storage.local) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Storage configuration for type "local" is required',
-      path: ['app', 'storage', 'local'],
-    });
-  }
-  if (data.app.storage.type === 's3' && !data.app.storage.s3) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Storage configuration for type "s3" is required',
-      path: ['app', 'storage', 's3'],
-    });
-  }
-});
+  })
+  .superRefine((data, ctx) => {
+    // Проверка что конфигурация соответствует выбранному типу
+    if (data.app.storage.type === 'local' && !data.app.storage.local) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Storage configuration for type "local" is required',
+        path: ['app', 'storage', 'local'],
+      });
+    }
+    if (data.app.storage.type === 's3' && !data.app.storage.s3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Storage configuration for type "s3" is required',
+        path: ['app', 'storage', 's3'],
+      });
+    }
+  });
 ```
 
 ---
@@ -317,6 +323,7 @@ const configSchema = z.object({
 **Проблема:** Указан `storage.type`, но соответствующая секция конфигурации отсутствует
 
 **Решение:**
+
 ```yaml
 # Если type: 'local', добавьте:
 storage:
@@ -335,6 +342,7 @@ storage:
 ### S3 connection failed after N attempts
 
 **Причины:**
+
 - Неправильный endpoint
 - Неверные credentials
 - Бакет не существует
@@ -347,6 +355,7 @@ storage:
 **Причина:** Не указан `save_path` при `type: 'local'`
 
 **Решение:**
+
 ```yaml
 storage:
   type: 'local'
@@ -358,15 +367,15 @@ storage:
 
 ## 📊 Сравнение типов хранилищ
 
-| Характеристика | Local | S3 |
-|----------------|-------|-----|
-| **Производительность** | ⚡ Очень быстро | 🌐 Зависит от сети |
-| **Масштабируемость** | ❌ Ограничена диском | ✅ Неограничена |
-| **Стоимость** | 💰 Бесплатно (диск сервера) | 💰 Оплата по использованию |
-| **Распределенные системы** | ❌ Не поддерживается | ✅ Да |
-| **Backup** | ⚠️ Требует настройки | ✅ Автоматический (у провайдера) |
-| **Доступность** | ⚠️ Зависит от сервера | ✅ 99.9%+ SLA |
-| **Сложность настройки** | ✅ Простая | ⚠️ Средняя |
+| Характеристика             | Local                       | S3                               |
+| -------------------------- | --------------------------- | -------------------------------- |
+| **Производительность**     | ⚡ Очень быстро             | 🌐 Зависит от сети               |
+| **Масштабируемость**       | ❌ Ограничена диском        | ✅ Неограничена                  |
+| **Стоимость**              | 💰 Бесплатно (диск сервера) | 💰 Оплата по использованию       |
+| **Распределенные системы** | ❌ Не поддерживается        | ✅ Да                            |
+| **Backup**                 | ⚠️ Требует настройки        | ✅ Автоматический (у провайдера) |
+| **Доступность**            | ⚠️ Зависит от сервера       | ✅ 99.9%+ SLA                    |
+| **Сложность настройки**    | ✅ Простая                  | ⚠️ Средняя                       |
 
 ### Рекомендации
 
@@ -387,4 +396,3 @@ storage:
 ---
 
 **Обновлено:** 2025-10-04
-

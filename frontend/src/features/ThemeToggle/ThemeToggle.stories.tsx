@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { ThemeToggle } from './ThemeToggle'
-import { ThemeProvider } from '@/shared/lib/hooks/theme-provider'
+import type { Meta, StoryObj } from '@storybook/react';
+import { ThemeToggle } from './ThemeToggle';
+import { ThemeProvider } from '@/shared/lib/hooks/theme-provider';
 
 const meta: Meta<typeof ThemeToggle> = {
   title: 'Features/ThemeToggle',
@@ -10,35 +10,35 @@ const meta: Meta<typeof ThemeToggle> = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    Story => (
       <ThemeProvider>
         <Story />
       </ThemeProvider>
     ),
   ],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {}
+export const Default: Story = {};
 
 export const LightTheme: Story = {
   decorators: [
-    (Story) => (
-      <ThemeProvider defaultTheme='light'>
+    Story => (
+      <ThemeProvider defaultTheme="light">
         <Story />
       </ThemeProvider>
     ),
   ],
-}
+};
 
 export const DarkTheme: Story = {
   decorators: [
-    (Story) => (
-      <ThemeProvider defaultTheme='dark'>
+    Story => (
+      <ThemeProvider defaultTheme="dark">
         <Story />
       </ThemeProvider>
     ),
   ],
-}
+};

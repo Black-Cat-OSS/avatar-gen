@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { AvatarService } from './avatar.service';
-import { DatabaseService } from '../database';
+import { Avatar } from './avatar.entity';
 import { GeneratorService } from './modules';
 import { StorageService } from '../storage/storage.service';
 import {
@@ -13,19 +15,19 @@ import { FilterType } from '../../common/enums/filter.enum';
 
 describe('AvatarService', () => {
   let service: AvatarService;
-  let databaseService: DatabaseService;
+  let avatarRepository: Repository<Avatar>;
   let generatorService: GeneratorService;
   let storageService: StorageService;
 
-  const mockDatabaseService = {
-    avatar: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      findMany: jest.fn(),
-      count: jest.fn(),
-      delete: jest.fn(),
-    },
-    healthCheck: jest.fn(),
+  const mockAvatarRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+    findOne: jest.fn(),
+    find: jest.fn(),
+    findAndCount: jest.fn(),
+    count: jest.fn(),
+    delete: jest.fn(),
+    remove: jest.fn(),
   };
 
   const mockGeneratorService = {
@@ -46,8 +48,8 @@ describe('AvatarService', () => {
       providers: [
         AvatarService,
         {
-          provide: DatabaseService,
-          useValue: mockDatabaseService,
+          provide: getRepositoryToken(Avatar),
+          useValue: mockAvatarRepository,
         },
         {
           provide: GeneratorService,
@@ -61,7 +63,7 @@ describe('AvatarService', () => {
     }).compile();
 
     service = module.get<AvatarService>(AvatarService);
-    databaseService = module.get<DatabaseService>(DatabaseService);
+    avatarRepository = module.get<Repository<Avatar>>(getRepositoryToken(Avatar));
     generatorService = module.get<GeneratorService>(GeneratorService);
     storageService = module.get<StorageService>(StorageService);
 
@@ -101,7 +103,8 @@ describe('AvatarService', () => {
 
       mockGeneratorService.generateAvatar.mockResolvedValue(mockAvatarObject);
       mockStorageService.saveAvatar.mockResolvedValue(mockFilePath);
-      mockDatabaseService.avatar.create.mockResolvedValue(mockAvatar);
+      mockAvatarRepository.create.mockReturnValue(mockAvatar);
+      mockAvatarRepository.save.mockResolvedValue(mockAvatar);
 
       const result = await service.generateAvatar(dto);
 
@@ -118,7 +121,16 @@ describe('AvatarService', () => {
         dto.seed,
       );
       expect(mockStorageService.saveAvatar).toHaveBeenCalledWith(mockAvatarObject);
-      expect(mockDatabaseService.avatar.create).toHaveBeenCalled();
+      expect(mockAvatarRepository.create).toHaveBeenCalledWith({
+        id: mockAvatarObject.meta_data_name,
+        name: mockAvatarObject.meta_data_name,
+        filePath: mockFilePath,
+        primaryColor: dto.primaryColor,
+        foreignColor: dto.foreignColor,
+        colorScheme: dto.colorScheme,
+        seed: dto.seed,
+      });
+      expect(mockAvatarRepository.save).toHaveBeenCalledWith(mockAvatar);
     });
 
     it('should throw BadRequestException for seed longer than 32 characters', async () => {
@@ -159,7 +171,7 @@ describe('AvatarService', () => {
         image_6n: Buffer.from('image-data'),
       };
 
-      mockDatabaseService.avatar.findUnique.mockResolvedValue(mockAvatar);
+      mockAvatarRepository.findOne.mockResolvedValue(mockAvatar);
       mockStorageService.loadAvatar.mockResolvedValue(mockAvatarObject);
 
       const result = await service.getAvatar(avatarId, dto);
@@ -172,7 +184,7 @@ describe('AvatarService', () => {
         version: mockAvatar.version,
       });
 
-      expect(mockDatabaseService.avatar.findUnique).toHaveBeenCalledWith({
+      expect(mockAvatarRepository.findOne).toHaveBeenCalledWith({
         where: { id: avatarId },
       });
       expect(mockStorageService.loadAvatar).toHaveBeenCalledWith(avatarId);
@@ -182,7 +194,7 @@ describe('AvatarService', () => {
       const avatarId = 'non-existent-uuid';
       const dto: GetAvatarDto = {};
 
-      mockDatabaseService.avatar.findUnique.mockResolvedValue(null);
+      mockAvatarRepository.findOne.mockResolvedValue(null);
 
       await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(NotFoundException);
       await expect(service.getAvatar(avatarId, dto)).rejects.toThrow(
@@ -219,7 +231,7 @@ describe('AvatarService', () => {
 
       const filteredImage = Buffer.from('filtered-image-data');
 
-      mockDatabaseService.avatar.findUnique.mockResolvedValue(mockAvatar);
+      mockAvatarRepository.findOne.mockResolvedValue(mockAvatar);
       mockStorageService.loadAvatar.mockResolvedValue(mockAvatarObject);
       mockGeneratorService.applyFilter.mockResolvedValue(filteredImage);
 
@@ -246,7 +258,7 @@ describe('AvatarService', () => {
         image_7n: Buffer.from('large-image-data'),
       };
 
-      mockDatabaseService.avatar.findUnique.mockResolvedValue(mockAvatar);
+      mockAvatarRepository.findOne.mockResolvedValue(mockAvatar);
       mockStorageService.loadAvatar.mockResolvedValue(mockAvatarObject);
 
       await service.getAvatar(avatarId, dto);
@@ -267,8 +279,7 @@ describe('AvatarService', () => {
         { id: '2', name: 'avatar2', createdAt: new Date(), version: '0.0.1' },
       ];
 
-      mockDatabaseService.avatar.findMany.mockResolvedValue(mockAvatars);
-      mockDatabaseService.avatar.count.mockResolvedValue(2);
+      mockAvatarRepository.findAndCount.mockResolvedValue([mockAvatars, 2]);
 
       const result = await service.listAvatars(dto);
 
@@ -282,31 +293,48 @@ describe('AvatarService', () => {
         },
       });
 
-      expect(mockDatabaseService.avatar.findMany).toHaveBeenCalledWith({
+      expect(mockAvatarRepository.findAndCount).toHaveBeenCalledWith({
         take: 10,
         skip: 0,
-        orderBy: {
-          createdAt: 'asc',
+        order: {
+          createdAt: 'ASC',
         },
-        select: expect.any(Object),
+        select: [
+          'id',
+          'name',
+          'createdAt',
+          'version',
+          'primaryColor',
+          'foreignColor',
+          'colorScheme',
+          'seed',
+        ],
       });
     });
 
     it('should use default pagination values', async () => {
       const dto: ListAvatarsDto = {};
 
-      mockDatabaseService.avatar.findMany.mockResolvedValue([]);
-      mockDatabaseService.avatar.count.mockResolvedValue(0);
+      mockAvatarRepository.findAndCount.mockResolvedValue([[], 0]);
 
       await service.listAvatars(dto);
 
-      expect(mockDatabaseService.avatar.findMany).toHaveBeenCalledWith({
+      expect(mockAvatarRepository.findAndCount).toHaveBeenCalledWith({
         take: 10, // default pick
         skip: 0, // default offset
-        orderBy: {
-          createdAt: 'asc',
+        order: {
+          createdAt: 'ASC',
         },
-        select: expect.any(Object),
+        select: [
+          'id',
+          'name',
+          'createdAt',
+          'version',
+          'primaryColor',
+          'foreignColor',
+          'colorScheme',
+          'seed',
+        ],
       });
     });
 
@@ -316,8 +344,7 @@ describe('AvatarService', () => {
         offset: 10,
       };
 
-      mockDatabaseService.avatar.findMany.mockResolvedValue([]);
-      mockDatabaseService.avatar.count.mockResolvedValue(30);
+      mockAvatarRepository.findAndCount.mockResolvedValue([[], 30]);
 
       const result = await service.listAvatars(dto);
 
@@ -328,13 +355,22 @@ describe('AvatarService', () => {
         hasMore: false, // 10 + 20 = 30, equals total
       });
 
-      expect(mockDatabaseService.avatar.findMany).toHaveBeenCalledWith({
+      expect(mockAvatarRepository.findAndCount).toHaveBeenCalledWith({
         take: 20,
         skip: 10,
-        orderBy: {
-          createdAt: 'asc',
+        order: {
+          createdAt: 'ASC',
         },
-        select: expect.any(Object),
+        select: [
+          'id',
+          'name',
+          'createdAt',
+          'version',
+          'primaryColor',
+          'foreignColor',
+          'colorScheme',
+          'seed',
+        ],
       });
     });
 
@@ -344,8 +380,7 @@ describe('AvatarService', () => {
         offset: 0,
       };
 
-      mockDatabaseService.avatar.findMany.mockResolvedValue([]);
-      mockDatabaseService.avatar.count.mockResolvedValue(100);
+      mockAvatarRepository.findAndCount.mockResolvedValue([[], 100]);
 
       const result = await service.listAvatars(dto);
 
@@ -363,9 +398,9 @@ describe('AvatarService', () => {
         filePath: '/path/to/avatar.png',
       };
 
-      mockDatabaseService.avatar.findUnique.mockResolvedValue(mockAvatar);
+      mockAvatarRepository.findOne.mockResolvedValue(mockAvatar);
       mockStorageService.deleteAvatar.mockResolvedValue(undefined);
-      mockDatabaseService.avatar.delete.mockResolvedValue(mockAvatar);
+      mockAvatarRepository.remove.mockResolvedValue(mockAvatar);
 
       const result = await service.deleteAvatar(avatarId);
 
@@ -373,19 +408,17 @@ describe('AvatarService', () => {
         message: 'Avatar deleted successfully',
       });
 
-      expect(mockDatabaseService.avatar.findUnique).toHaveBeenCalledWith({
+      expect(mockAvatarRepository.findOne).toHaveBeenCalledWith({
         where: { id: avatarId },
       });
       expect(mockStorageService.deleteAvatar).toHaveBeenCalledWith(avatarId);
-      expect(mockDatabaseService.avatar.delete).toHaveBeenCalledWith({
-        where: { id: avatarId },
-      });
+      expect(mockAvatarRepository.remove).toHaveBeenCalledWith(mockAvatar);
     });
 
     it('should throw NotFoundException when avatar not found', async () => {
       const avatarId = 'non-existent-uuid';
 
-      mockDatabaseService.avatar.findUnique.mockResolvedValue(null);
+      mockAvatarRepository.findOne.mockResolvedValue(null);
 
       await expect(service.deleteAvatar(avatarId)).rejects.toThrow(NotFoundException);
       await expect(service.deleteAvatar(avatarId)).rejects.toThrow(
@@ -396,24 +429,24 @@ describe('AvatarService', () => {
 
   describe('healthCheck', () => {
     it('should return healthy status when database is connected', async () => {
-      mockDatabaseService.healthCheck.mockResolvedValue('connected');
+      mockAvatarRepository.count.mockResolvedValue(5);
 
       const result = await service.healthCheck();
 
       expect(result).toEqual({
-        database: 'connected',
+        database: 5,
         status: 'healthy',
       });
-      expect(mockDatabaseService.healthCheck).toHaveBeenCalled();
+      expect(mockAvatarRepository.count).toHaveBeenCalled();
     });
 
     it('should return unhealthy status when database is not connected', async () => {
-      mockDatabaseService.healthCheck.mockResolvedValue(null);
+      mockAvatarRepository.count.mockResolvedValue(0);
 
       const result = await service.healthCheck();
 
       expect(result).toEqual({
-        database: null,
+        database: 0,
         status: 'unhealthy',
       });
     });

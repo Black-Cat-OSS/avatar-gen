@@ -2,8 +2,10 @@ import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '../../config/config.module';
 import { YamlConfigService } from '../../config/yaml-config.service';
-import { Avatar } from './entities/avatar.entity';
+import { Avatar } from '../avatar/avatar.entity';
 import { DatabaseService } from './database.service';
+import { DatabaseDriverFactory } from './utils/driver-factory';
+import { SqliteDriverService, PostgreSQLDriverService } from './drivers';
 
 /**
  * Глобальный модуль для работы с базой данных через TypeORM
@@ -37,43 +39,24 @@ import { DatabaseService } from './database.service';
     ConfigModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: YamlConfigService) => {
-        const config = configService.getConfig();
-        const dbConfig = config.app.database;
-        
-        // Базовые настройки TypeORM
-        const typeormConfig: any = {
-          entities: [Avatar],
-          synchronize: process.env.NODE_ENV !== 'production', // Автосинхронизация только в dev
-          logging: process.env.NODE_ENV === 'development',
-          logger: 'advanced-console',
-        };
+      useFactory: (configService: YamlConfigService, driverFactory: DatabaseDriverFactory) => {
+        // Создаем драйвер на основе конфигурации
+        const driver = driverFactory.createDriver(configService);
 
-        // Настройки в зависимости от драйвера
-        if (dbConfig.driver === 'postgresql') {
-          const network = dbConfig.network;
-          typeormConfig.type = 'postgres';
-          typeormConfig.host = network.host;
-          typeormConfig.port = network.port;
-          typeormConfig.username = network.username;
-          typeormConfig.password = network.password;
-          typeormConfig.database = network.database;
-          typeormConfig.ssl = network.ssl ? { rejectUnauthorized: false } : false;
-        } else if (dbConfig.driver === 'sqlite') {
-          typeormConfig.type = 'sqlite';
-          typeormConfig.database = dbConfig.sqlite_params.url;
-        } else {
-          throw new Error(`Unsupported database driver: ${dbConfig.driver}`);
-        }
+        // Строим конфигурацию через драйвер
+        const typeormConfig = driver.buildConfigs(configService);
+
+        // Добавляем сущности
+        typeormConfig.entities = [Avatar];
 
         return typeormConfig;
       },
-      inject: [YamlConfigService],
+      inject: [YamlConfigService, DatabaseDriverFactory],
     }),
     TypeOrmModule.forFeature([Avatar]),
   ],
-  providers: [DatabaseService],
-  exports: [DatabaseService, TypeOrmModule],
+  providers: [DatabaseService, DatabaseDriverFactory, SqliteDriverService, PostgreSQLDriverService],
+  exports: [DatabaseService, TypeOrmModule, DatabaseDriverFactory],
 })
 export class DatabaseModule implements OnModuleInit {
   private readonly logger = new Logger(DatabaseModule.name);

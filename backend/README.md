@@ -36,20 +36,22 @@ Backend service for generating and managing avatars similar to GitHub/GitLab.
 ### Installation
 
 1. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 2. Configure database in `settings.yaml`:
+
 ```yaml
 app:
   database:
-    driver: "sqlite"  # or "postgresql"
+    driver: 'sqlite' # or "postgresql"
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./storage/database/avatar_gen.db"
+      url: 'file:./storage/database/avatar_gen.db'
     # OR for PostgreSQL:
     # network:
     #   host: localhost
@@ -61,6 +63,7 @@ app:
 ```
 
 3. Start the application:
+
 ```bash
 # Development
 pnpm run start:dev
@@ -83,15 +86,17 @@ The application uses TypeORM for database operations, supporting both SQLite and
 ### Configuration Examples
 
 #### SQLite (Default)
+
 ```yaml
 app:
   database:
     driver: sqlite
     sqlite_params:
-      url: "file:./storage/database/avatar_gen.db"
+      url: 'file:./storage/database/avatar_gen.db'
 ```
 
 #### PostgreSQL
+
 ```yaml
 app:
   database:
@@ -108,17 +113,20 @@ app:
 ## API Documentation
 
 Once the application is running, visit:
+
 - **Swagger UI**: http://localhost:3000/api
 - **Health Check**: http://localhost:3000/health
 
 ## Docker Support
 
 ### Development
+
 ```bash
 docker-compose up -d
 ```
 
 ### Production
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
@@ -139,16 +147,19 @@ pnpm test:cov
 ## Database Migrations
 
 ### Create Migration
+
 ```bash
 pnpm run typeorm:generate -- src/migrations/InitialMigration
 ```
 
 ### Run Migrations
+
 ```bash
 pnpm run typeorm:run
 ```
 
 ### Revert Migration
+
 ```bash
 pnpm run typeorm:revert
 ```
@@ -181,6 +192,7 @@ The application uses YAML configuration files instead of environment variables:
 This project has been migrated from Prisma to TypeORM for better multi-database support:
 
 ### Changes Made
+
 - ✅ Replaced Prisma with TypeORM
 - ✅ Removed .env file dependencies
 - ✅ Simplified database configuration
@@ -188,6 +200,7 @@ This project has been migrated from Prisma to TypeORM for better multi-database 
 - ✅ Maintained API compatibility
 
 ### Benefits
+
 - **Multi-database support**: Easy switching between PostgreSQL and SQLite
 - **Simplified configuration**: No .env files required
 - **Better NestJS integration**: Native TypeORM support

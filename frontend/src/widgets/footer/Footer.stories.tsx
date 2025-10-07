@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { Footer } from './ui/Footer'
+import type { Meta, StoryObj } from '@storybook/react';
+import { Footer } from './ui/Footer';
 
 const meta: Meta<typeof Footer> = {
   title: 'Widgets/Footer',
@@ -8,18 +8,18 @@ const meta: Meta<typeof Footer> = {
     layout: 'fullscreen',
   },
   tags: ['autodocs'],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {}
+export const Default: Story = {};
 
 export const WithCustomClass: Story = {
   args: {
     className: 'bg-primary text-primary-foreground',
   },
-}
+};
 
 export const Desktop: Story = {
   parameters: {
@@ -27,7 +27,7 @@ export const Desktop: Story = {
       defaultViewport: 'desktop',
     },
   },
-}
+};
 
 export const Tablet: Story = {
   parameters: {
@@ -35,7 +35,7 @@ export const Tablet: Story = {
       defaultViewport: 'tablet',
     },
   },
-}
+};
 
 export const Mobile: Story = {
   parameters: {
@@ -43,4 +43,4 @@ export const Mobile: Story = {
       defaultViewport: 'mobile',
     },
   },
-}
+};

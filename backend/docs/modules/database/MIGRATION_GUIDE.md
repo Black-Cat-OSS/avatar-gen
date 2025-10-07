@@ -79,7 +79,7 @@ const updated = await this.db.avatar.update({ where: { id }, data });
 const deleted = await this.db.avatar.delete({ where: { id } });
 
 // Транзакции
-await this.db.$transaction(async (tx) => {
+await this.db.$transaction(async tx => {
   await tx.avatar.create({ data: data1 });
   await tx.avatar.create({ data: data2 });
 });
@@ -121,6 +121,7 @@ export class DatabaseService {
 ```
 
 **Обязанности:**
+
 - Выбор правильного провайдера на основе `settings.yaml`
 - Делегирование всех операций активному подключению
 - Управление жизненным циклом (init/destroy)
@@ -132,9 +133,9 @@ export class DatabaseService {
 
 ```typescript
 @Injectable()
-export class SqliteDatabaseService 
-  extends PrismaClient 
-  implements IDatabaseConnection, OnModuleInit, OnModuleDestroy 
+export class SqliteDatabaseService
+  extends PrismaClient
+  implements IDatabaseConnection, OnModuleInit, OnModuleDestroy
 {
   async onModuleInit() {
     await this.connectWithRetry();
@@ -144,12 +145,13 @@ export class SqliteDatabaseService
     await this.$queryRaw`SELECT 1`;
     return true;
   }
-  
+
   // ... другие методы
 }
 ```
 
 **Обязанности:**
+
 - Реализация интерфейса `IDatabaseConnection`
 - Логика подключения с повторными попытками
 - Специфичные для БД операции
@@ -189,6 +191,7 @@ export class DatabaseService extends PrismaClient {
 ```
 
 **Проблемы:**
+
 - ❌ Нарушение Single Responsibility Principle
 - ❌ Сложность добавления новых БД
 - ❌ Смешивание логики разных БД
@@ -214,6 +217,7 @@ constructor(
 ```
 
 **Проблемы:**
+
 - ❌ Сложность использования (нужен @Inject)
 - ❌ Verbose код
 - ❌ Сложность для новичков в NestJS
@@ -237,6 +241,7 @@ constructor(private readonly db: DatabaseService) {}
 ```
 
 **Преимущества:**
+
 - ✅ Простота использования
 - ✅ Чистый код
 - ✅ Легкая расширяемость
@@ -355,15 +360,15 @@ export class AvatarService {
 
       const avatar = await this.db.avatar.create({ data: dto });
       this.logger.log(`Avatar created: ${avatar.id}`);
-      
+
       return avatar;
     } catch (error) {
       this.logger.error(`Failed to create avatar`, error);
-      
+
       if (error.code === 'P2002') {
         throw new ConflictException('Avatar already exists');
       }
-      
+
       throw new InternalServerErrorException('Failed to create avatar');
     }
   }
@@ -450,7 +455,7 @@ describe('AvatarService (integration)', () => {
 
   it('should create and retrieve avatar', async () => {
     const dto = { name: 'Test', primaryColor: '#fff' };
-    
+
     const created = await service.create(dto);
     expect(created.id).toBeDefined();
 
@@ -483,7 +488,7 @@ async getData() {
       throw new ServiceUnavailableException('Database unavailable');
     }
   }
-  
+
   return await this.db.avatar.findMany();
 }
 ```
@@ -492,7 +497,7 @@ async getData() {
 
 ```typescript
 // ✅ Правильно - атомарная операция
-await this.db.$transaction(async (tx) => {
+await this.db.$transaction(async tx => {
   await tx.avatar.create({ data: avatar1 });
   await tx.avatar.create({ data: avatar2 });
 });

@@ -1,1 +1,1 @@
-export { AvatarGeneratorPage } from './ui/AvatarGeneratorPage'
+export { AvatarGeneratorPage } from './ui/AvatarGeneratorPage';

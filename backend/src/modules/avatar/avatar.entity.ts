@@ -2,10 +2,10 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 
 
 /**
  * Сущность Avatar для TypeORM
- * 
+ *
  * Соответствует Prisma модели Avatar с теми же полями и ограничениями.
  * Использует TypeORM декораторы для определения структуры таблицы.
- * 
+ *
  * @class Avatar
  */
 @Entity('avatars')

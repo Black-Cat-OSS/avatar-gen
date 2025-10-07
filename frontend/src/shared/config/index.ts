@@ -2,8 +2,7 @@
 export const APP_CONFIG = {
   name: 'ava-gen Frontend',
   version: '1.0.0',
-  description:
-    'Modern web application built with FSD architecture',
+  description: 'Modern web application built with FSD architecture',
   theme: {
     primaryColor: '#2563eb', // Blue theme as per user preference
     colors: {
@@ -19,13 +18,11 @@ export const APP_CONFIG = {
     responsive: true,
     validation: true,
   },
-} as const
+} as const;
 
 // Environment configuration
 export const ENV_CONFIG = {
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
-  apiUrl:
-    import.meta.env.VITE_API_BASE_URL ||
-    '/api',
-} as const
+  apiUrl: import.meta.env.VITE_API_BASE_URL || '/api',
+} as const;

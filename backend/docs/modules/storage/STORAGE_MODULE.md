@@ -57,6 +57,7 @@ const STORAGE_SERVICES_REGISTRY: Record<string, Type<IStorageStrategy>> = {
 ```
 
 **Преимущества:**
+
 - ✅ Легко добавлять новые типы хранилищ
 - ✅ Type safety через `IStorageModule` и `IStorageStrategy`
 - ✅ Автоматическая валидация с подсказками
@@ -71,21 +72,24 @@ const STORAGE_SERVICES_REGISTRY: Record<string, Type<IStorageStrategy>> = {
 **Методы регистрации:**
 
 #### `StorageModule.register()`
+
 Стандартная регистрация модуля. **Условно импортирует только нужный модуль** (Local ИЛИ S3) на основе конфигурации.
 
 ```typescript
 @Module({
-  imports: [StorageModule.register()],  // Импортирует LocalStorageModule ИЛИ S3StorageModule
+  imports: [StorageModule.register()], // Импортирует LocalStorageModule ИЛИ S3StorageModule
 })
 export class AvatarModule {}
 ```
 
 **Поведение:**
+
 - `type: 'local'` → импортирует только `LocalStorageModule`
 - `type: 's3'` → импортирует только `S3StorageModule`
 - Неизвестный тип → выбрасывает ошибку с доступными вариантами
 
 #### `StorageModule.forRoot()`
+
 Глобальная регистрация модуля. `StorageService` становится доступным во всем приложении.
 
 ```typescript
@@ -100,6 +104,7 @@ export class AppModule {}
 Главный сервис для работы с хранилищем. Использует паттерн **Strategy** для делегирования операций конкретной реализации.
 
 **Основные методы:**
+
 - `saveAvatar(avatarObject)` - Сохранение аватара
 - `loadAvatar(id)` - Загрузка аватара
 - `deleteAvatar(id)` - Удаление аватара
@@ -140,7 +145,7 @@ export class AppModule {}
 ```yaml
 app:
   storage:
-    type: 'local'  # 'local' или 's3' - взаимоисключающие
+    type: 'local' # 'local' или 's3' - взаимоисключающие
 ```
 
 ### Локальное хранилище
@@ -177,7 +182,6 @@ app:
 
 1. **Проверка типа хранилища:**
    - `storage.type` должен быть 'local' или 's3'
-   
 2. **Проверка соответствия конфигурации:**
    - Если `type: 'local'`, то `storage.local` должен быть определен
    - Если `type: 's3'`, то `storage.s3` должен быть определен
@@ -197,10 +201,10 @@ export class AvatarService {
 
   async createAvatar(seed: string): Promise<string> {
     const avatarObject = await this.generateAvatar(seed);
-    
+
     // Сохраняется в local или s3 в зависимости от конфигурации
     const path = await this.storageService.saveAvatar(avatarObject);
-    
+
     return path;
   }
 
@@ -229,7 +233,7 @@ console.log(`Using ${storageType} storage`); // 'local' или 's3'
 Модуль использует паттерн Strategy для поддержки различных типов хранилищ:
 
 - **Interface:** `IStorageStrategy` - определяет контракт
-- **Concrete Strategies:** 
+- **Concrete Strategies:**
   - `LocalStorageService` - реализация для локального хранилища
   - `S3StorageService` - реализация для S3 хранилища
 - **Context:** `StorageService` - использует выбранную стратегию
@@ -237,6 +241,7 @@ console.log(`Using ${storageType} storage`); // 'local' или 's3'
 ### Dependency Injection
 
 Правильная стратегия инъектируется через:
+
 - Токен `STORAGE_STRATEGY` (предпочтительно)
 - `@Optional()` dependencies (fallback)
 
@@ -257,13 +262,13 @@ export class StorageModule {
   static register(): DynamicModule {
     const configService = new YamlConfigService();
     const storageType = configService.getStorageConfig().type;
-    
+
     // Lookup в реестре - получаем нужный модуль
     const storageModuleImport = STORAGE_MODULES_REGISTRY[storageType];
     if (!storageModuleImport) {
       throw new Error(`Unknown storage type: "${storageType}"`);
     }
-    
+
     return {
       module: StorageModule,
       imports: [ConfigModule, storageModuleImport], // Только нужный модуль!
@@ -279,15 +284,17 @@ export class StorageModule {
 ### Переключение с local на s3
 
 1. Обновите конфигурацию в `settings.yaml`:
+
    ```yaml
    app:
      storage:
-       type: 's3'  # было 'local'
+       type: 's3' # было 'local'
        s3:
          # ... s3 параметры
    ```
 
 2. Перенесите существующие аватары:
+
    ```bash
    # Скрипт для миграции (создайте отдельно)
    node scripts/migrate-storage.js
@@ -349,10 +356,18 @@ export class FtpStorageModule implements IStorageModule {
 // src/modules/storage/modules/ftp/ftp-storage.service.ts
 @Injectable()
 export class FtpStorageService implements IStorageStrategy {
-  async saveAvatar(avatarObject: AvatarObject): Promise<string> { /* ... */ }
-  async loadAvatar(id: string): Promise<AvatarObject> { /* ... */ }
-  async deleteAvatar(id: string): Promise<void> { /* ... */ }
-  async exists(id: string): Promise<boolean> { /* ... */ }
+  async saveAvatar(avatarObject: AvatarObject): Promise<string> {
+    /* ... */
+  }
+  async loadAvatar(id: string): Promise<AvatarObject> {
+    /* ... */
+  }
+  async deleteAvatar(id: string): Promise<void> {
+    /* ... */
+  }
+  async exists(id: string): Promise<boolean> {
+    /* ... */
+  }
 }
 ```
 
@@ -363,13 +378,13 @@ export class FtpStorageService implements IStorageStrategy {
 const STORAGE_MODULES_REGISTRY: Record<string, Type<IStorageModule>> = {
   local: LocalStorageModule,
   s3: S3StorageModule,
-  ftp: FtpStorageModule,  // ← Добавить сюда
+  ftp: FtpStorageModule, // ← Добавить сюда
 };
 
 const STORAGE_SERVICES_REGISTRY: Record<string, Type<IStorageStrategy>> = {
   local: LocalStorageService,
   s3: S3StorageService,
-  ftp: FtpStorageService,  // ← И сюда
+  ftp: FtpStorageService, // ← И сюда
 };
 ```
 
@@ -378,9 +393,9 @@ const STORAGE_SERVICES_REGISTRY: Record<string, Type<IStorageStrategy>> = {
 ```typescript
 // backend/src/config/configuration.ts
 storage: z.object({
-  type: z.enum(['local', 's3', 'ftp']),  // ← Добавить 'ftp'
+  type: z.enum(['local', 's3', 'ftp']), // ← Добавить 'ftp'
   // ...
-})
+});
 ```
 
 4. **Готово!** Модуль автоматически подхватит новый тип
@@ -395,12 +410,13 @@ storage: z.object({
 ## Тестирование
 
 Модуль покрыт unit тестами:
+
 - `local-storage.service.spec.ts` - 18 тестов
 - `s3.service.spec.ts` - 20 тестов
 - `s3-storage.service.spec.ts` - 14 тестов
 
 Запуск тестов:
+
 ```bash
 npm test
 ```
-

@@ -1,12 +1,10 @@
-import { createContext } from 'react'
+import { createContext } from 'react';
 
 export interface MobileMenuContextType {
-  isOpen: boolean
-  open: () => void
-  close: () => void
-  toggle: () => void
+  isOpen: boolean;
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
 }
 
-export const MobileMenuContext = createContext<
-  MobileMenuContextType | undefined
->(undefined)
+export const MobileMenuContext = createContext<MobileMenuContextType | undefined>(undefined);

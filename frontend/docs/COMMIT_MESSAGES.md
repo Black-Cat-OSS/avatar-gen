@@ -2,17 +2,20 @@
 
 ## Общие принципы
 
-Хорошие сообщения коммитов помогают команде понимать историю изменений проекта и упрощают отладку. Следуйте этим принципам:
+Хорошие сообщения коммитов помогают команде понимать историю изменений проекта и
+упрощают отладку. Следуйте этим принципам:
 
 ### 1. Используйте повелительное наклонение
 
 - ✅ **Правильно**: `Add user authentication`
-- ❌ **Неправильно**: `Added user authentication` или `Adding user authentication`
+- ❌ **Неправильно**: `Added user authentication` или
+  `Adding user authentication`
 
 ### 2. Первая строка должна быть краткой (до 50 символов)
 
 - ✅ **Правильно**: `Fix login validation bug`
-- ❌ **Неправильно**: `Fix the bug that occurs when user enters invalid email during login process`
+- ❌ **Неправильно**:
+  `Fix the bug that occurs when user enters invalid email during login process`
 
 ### 3. Используйте заглавную букву в начале
 
@@ -177,7 +180,8 @@ Resolves #45, #67
 
 ### 3. Breaking changes
 
-Если коммит содержит breaking changes, добавьте `BREAKING CHANGE:` в тело сообщения:
+Если коммит содержит breaking changes, добавьте `BREAKING CHANGE:` в тело
+сообщения:
 
 ```
 feat(api): change user authentication method
@@ -204,7 +208,8 @@ feat(auth,ui): add login functionality
 
 ### Commitlint (уже настроен в проекте)
 
-Проект использует commitlint для автоматической проверки сообщений коммитов. Все коммиты проверяются автоматически при создании.
+Проект использует commitlint для автоматической проверки сообщений коммитов. Все
+коммиты проверяются автоматически при создании.
 
 #### Доступные команды
 
@@ -218,10 +223,14 @@ pnpm commitlint
 
 #### Настройка
 
-Конфигурация commitlint находится в файле `commitlint.config.js` в корне проекта. Настройки включают:
+Конфигурация commitlint находится в файле `commitlint.config.js` в корне
+проекта. Настройки включают:
 
-- **Типы коммитов**: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert
-- **Области (scope)**: ui, auth, api, db, config, deps, docs, test, build, ci, chore, perf, refactor, style, types, utils, hooks, context, router, i18n, theme, layout, components, pages, widgets, features, entities, shared
+- **Типы коммитов**: feat, fix, docs, style, refactor, test, chore, perf, ci,
+  build, revert
+- **Области (scope)**: ui, auth, api, db, config, deps, docs, test, build, ci,
+  chore, perf, refactor, style, types, utils, hooks, context, router, i18n,
+  theme, layout, components, pages, widgets, features, entities, shared
 - **Правила форматирования**: длина заголовка, регистр, пунктуация и т.д.
 
 ### Commitizen (опционально)
