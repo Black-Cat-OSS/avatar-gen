@@ -294,11 +294,12 @@ services:
     profiles:
       - matrix-tests
     volumes:
-      - ../backend:/app/backend
+      - ../backend/configs/settings.test.yaml:/app/backend/settings.yaml:ro
       - ../backend/logs:/app/backend/logs
       - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
     command: ['pnpm', 'run', 'test:matrix']
     networks:
       - test-internal
