@@ -18,13 +18,13 @@
 
 ```typescript
 // Было
-export class SqliteDatabaseService 
-  extends PrismaClient 
-  implements IDatabaseConnection, OnModuleInit, OnModuleDestroy 
+export class SqliteDatabaseService
+  extends PrismaClient
+  implements IDatabaseConnection, OnModuleInit, OnModuleDestroy
 
 // Стало
-export class SqliteDatabaseService 
-  extends PrismaClient 
+export class SqliteDatabaseService
+  extends PrismaClient
   implements IDatabaseConnection
 ```
 
@@ -62,7 +62,7 @@ NestJS создавал экземпляры ОБОИХ провайдеров �
         } else if (driver === DatabaseDriver.POSTGRESQL) {
           return new PostgresDatabaseService(configService);
         }
-        
+
         throw new Error(`Unsupported driver: ${driver}`);
       },
       inject: [YamlConfigService],
@@ -89,7 +89,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   ) {
     this.activeConnection = activeProvider;
   }
-  
+
   // Больше не нужен selectDatabaseProvider()
 }
 ```
@@ -97,18 +97,22 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 ## Преимущества нового подхода
 
 ### ✅ Нулевой overhead
+
 - Неиспользуемый провайдер **физически не создается**
 - Не занимает память
 - Не создает экземпляр PrismaClient
 
 ### ✅ Невозможность случайного подключения
+
 - Провайдер не существует в DI контейнере
 - Нет риска обращения к неправильной БД
 
 ### ✅ Чистые логи
+
 Только сообщения от активной БД:
 
 **При `driver: "sqlite"`:**
+
 ```
 [DatabaseService] LOG Database service initialized with driver: sqlite
 [DatabaseService] LOG Initializing sqlite database connection...
@@ -118,6 +122,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 **НЕТ сообщений от PostgreSQL** ✓
 
 ### ✅ Экономия ресурсов
+
 - Один PrismaClient вместо двух
 - Одно подключение вместо двух
 - Меньше потребление памяти
@@ -131,7 +136,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
            └─> Читает config.app.database.driver
                └─> driver === 'sqlite'
                    └─> return new SqliteDatabaseService(config)
-                   
+
                    ⚠️ PostgresDatabaseService НЕ СОЗДАН!
 
 2. Factory: DatabaseService
@@ -151,12 +156,14 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 ### Проверка при `driver: "sqlite"`
 
 **Запуск:**
+
 ```bash
 cd backend
 npm run start:dev
 ```
 
 **Ожидаемые логи:**
+
 ```
 [DatabaseService] LOG Database service initialized with driver: sqlite
 [DatabaseService] LOG Initializing sqlite database connection...
@@ -164,6 +171,7 @@ npm run start:dev
 ```
 
 **НЕ должно быть:**
+
 ```
 [PostgresDatabaseService] LOG ...  ❌
 ```
@@ -171,13 +179,15 @@ npm run start:dev
 ### Проверка при `driver: "postgresql"`
 
 Измените `settings.yaml`:
+
 ```yaml
 app:
   database:
-    driver: "postgresql"  # Изменить на postgresql
+    driver: 'postgresql' # Изменить на postgresql
 ```
 
 **Ожидаемые логи:**
+
 ```
 [DatabaseService] LOG Database service initialized with driver: postgresql
 [DatabaseService] LOG Initializing postgresql database connection...
@@ -185,6 +195,7 @@ app:
 ```
 
 **НЕ должно быть:**
+
 ```
 [SqliteDatabaseService] LOG ...  ❌
 ```
@@ -219,6 +230,7 @@ async getData() {
 ## Примечания
 
 Этот hotfix был необходим из-за особенностей работы NestJS DI:
+
 - Все провайдеры в массиве `providers` создаются как синглтоны
 - `extends PrismaClient` создает подключение при создании экземпляра
 - Factory pattern позволяет создавать провайдеры условно
@@ -226,4 +238,3 @@ async getData() {
 ## Статус
 
 ✅ **ИСПРАВЛЕНО** - теперь создается только выбранный провайдер
-

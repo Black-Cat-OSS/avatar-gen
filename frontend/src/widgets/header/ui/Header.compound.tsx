@@ -1,21 +1,21 @@
-import { HeaderContent } from './HeaderContent'
+import { HeaderContent } from './HeaderContent';
 
 interface BaseHeaderProps {
-  className?: string
-  brandText?: string
-  onToggleMobileMenu?: () => void
-  isMobileMenuOpen?: boolean
+  className?: string;
+  brandText?: string;
+  onToggleMobileMenu?: () => void;
+  isMobileMenuOpen?: boolean;
 }
 
 interface SearchHeaderProps extends BaseHeaderProps {
-  searchPlaceholder?: string
-  onSearch?: (query: string) => void
+  searchPlaceholder?: string;
+  onSearch?: (query: string) => void;
 }
 
 interface DefaultHeaderProps extends BaseHeaderProps {
-  homeText?: string
-  aboutText?: string
-  signInText?: string
+  homeText?: string;
+  aboutText?: string;
+  signInText?: string;
 }
 
 const Default = ({
@@ -35,9 +35,9 @@ const Default = ({
     signInText={signInText}
     onToggleMobileMenu={onToggleMobileMenu}
     isMobileMenuOpen={isMobileMenuOpen}
-    variant='default'
+    variant="default"
   />
-)
+);
 
 // Search Header Component
 const Search = ({
@@ -55,9 +55,9 @@ const Search = ({
     onSearch={onSearch}
     onToggleMobileMenu={onToggleMobileMenu}
     isMobileMenuOpen={isMobileMenuOpen}
-    variant='search'
+    variant="search"
   />
-)
+);
 
 // Minimalism Header Component
 const Minimalism = ({
@@ -71,18 +71,18 @@ const Minimalism = ({
     brandText={brandText}
     onToggleMobileMenu={onToggleMobileMenu}
     isMobileMenuOpen={isMobileMenuOpen}
-    variant='minimalism'
+    variant="minimalism"
   />
-)
+);
 
 // Compound Component
 export const Header = {
   Default,
   Search,
   Minimalism,
-} as const
+} as const;
 
 // Export individual components for direct usage
-export { Default as HeaderDefault }
-export { Search as HeaderSearch }
-export { Minimalism as HeaderMinimalism }
+export { Default as HeaderDefault };
+export { Search as HeaderSearch };
+export { Minimalism as HeaderMinimalism };

@@ -1,1 +1,1 @@
-export { WideLayout } from './WideLayout'
+export { WideLayout } from './WideLayout';

@@ -1,88 +1,81 @@
-import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link } from '@tanstack/react-router'
-import { useAvatars } from '@/shared/lib'
-import { Button } from '@/shared/ui'
-import { AvatarCard } from '@/widgets'
-import type { Avatar } from '@/shared/api'
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from '@tanstack/react-router';
+import { useAvatars } from '@/shared/lib';
+import { Button } from '@/shared/ui';
+import { AvatarCard } from '@/widgets';
+import type { Avatar } from '@/shared/api';
 
 export const HomePage = () => {
-  const { t } = useTranslation()
-  const [offset, setOffset] = useState(0)
-  const [allAvatars, setAllAvatars] = useState<Avatar[]>([])
-  const [hasMore, setHasMore] = useState(true)
-  
-  const { data, isLoading, isError, error, refetch } = useAvatars({ pick: 10, offset })
+  const { t } = useTranslation();
+  const [offset, setOffset] = useState(0);
+  const [allAvatars, setAllAvatars] = useState<Avatar[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+
+  const { data, isLoading, isError, error, refetch } = useAvatars({ pick: 10, offset });
 
   // Update accumulated avatars when new data arrives
   useEffect(() => {
     if (data) {
       if (offset === 0) {
         // First load or refresh - replace all avatars
-        setAllAvatars(data.avatars)
+        setAllAvatars(data.avatars);
       } else {
         // Load more - append new avatars
-        setAllAvatars(prev => [...prev, ...data.avatars])
+        setAllAvatars(prev => [...prev, ...data.avatars]);
       }
-      setHasMore(data.pagination.hasMore)
+      setHasMore(data.pagination.hasMore);
     }
-  }, [data, offset])
+  }, [data, offset]);
 
   const handleLoadMore = () => {
-    setOffset(prevOffset => prevOffset + 10)
-  }
+    setOffset(prevOffset => prevOffset + 10);
+  };
 
   const handleRefresh = () => {
-    setOffset(0)
-    setAllAvatars([])
-    setHasMore(true)
-    refetch()
-  }
+    setOffset(0);
+    setAllAvatars([]);
+    setHasMore(true);
+    refetch();
+  };
 
-  const showLoadMore = allAvatars.length > 0 && hasMore && !isLoading
+  const showLoadMore = allAvatars.length > 0 && hasMore && !isLoading;
 
   return (
-    <div className='py-8'>
-      <div className='max-w-4xl mx-auto'>
-        <div className='text-center mb-8'>
-          <h1 className='text-4xl font-bold text-foreground mb-4'>
-            {t('pages.home.title')}
-          </h1>
-          <p className='text-muted-foreground mb-6'>
-            {t('pages.home.subtitle')}
-          </p>
-          
+    <div className="py-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-4">{t('pages.home.title')}</h1>
+          <p className="text-muted-foreground mb-6">{t('pages.home.subtitle')}</p>
+
           {/* Create Avatar Button */}
           <Link to="/avatar-generator">
-            <Button variant='default' size='lg'>
+            <Button variant="default" size="lg">
               {t('pages.home.generateAvatar')}
             </Button>
           </Link>
         </div>
 
-        <div className='mb-8'>
+        <div className="mb-8">
           {isLoading && (
-            <div className='text-center py-8'>
-              <p className='text-muted-foreground'>{t('pages.home.loading')}</p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">{t('pages.home.loading')}</p>
             </div>
           )}
 
           {isError && (
-            <div className='text-center py-8'>
-              <p className='text-red-500'>
-                {t('pages.home.error')}: {error instanceof Error ? error.message : t('pages.home.unknownError')}
+            <div className="text-center py-8">
+              <p className="text-red-500">
+                {t('pages.home.error')}:{' '}
+                {error instanceof Error ? error.message : t('pages.home.unknownError')}
               </p>
             </div>
           )}
 
           {!isLoading && allAvatars.length === 0 && (
-            <div className='text-center py-8'>
-              <p className='text-muted-foreground mb-4'>{t('pages.home.noAvatars')}</p>
-              <Button 
-                onClick={handleRefresh}
-                variant='outline'
-                disabled={isLoading}
-              >
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">{t('pages.home.noAvatars')}</p>
+              <Button onClick={handleRefresh} variant="outline" disabled={isLoading}>
                 {isLoading ? t('pages.home.refreshing') : t('pages.home.refresh')}
               </Button>
             </div>
@@ -90,21 +83,16 @@ export const HomePage = () => {
 
           {allAvatars.length > 0 && (
             <div>
-              <div className='mb-4 flex justify-between items-center'>
-                <div className='text-sm text-muted-foreground'>
+              <div className="mb-4 flex justify-between items-center">
+                <div className="text-sm text-muted-foreground">
                   {t('pages.home.avatarsFound')}: {data?.pagination.total ?? allAvatars.length}
                 </div>
-                <Button 
-                  onClick={handleRefresh}
-                  variant='outline'
-                  size='sm'
-                  disabled={isLoading}
-                >
+                <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isLoading}>
                   {isLoading ? t('pages.home.refreshing') : t('pages.home.refresh')}
                 </Button>
               </div>
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-                {allAvatars.map((avatar) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {allAvatars.map(avatar => (
                   <AvatarCard key={avatar.id} avatar={avatar} />
                 ))}
               </div>
@@ -114,18 +102,13 @@ export const HomePage = () => {
 
         {/* Load More Button */}
         {showLoadMore && (
-          <div className='text-center mt-8'>
-            <Button 
-              onClick={handleLoadMore}
-              variant='outline'
-              disabled={isLoading}
-              size='lg'
-            >
+          <div className="text-center mt-8">
+            <Button onClick={handleLoadMore} variant="outline" disabled={isLoading} size="lg">
               {isLoading ? t('pages.home.loading') : t('pages.home.loadMore')}
             </Button>
           </div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};

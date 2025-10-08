@@ -16,4 +16,3 @@ jest.mock('sharp', () => {
 
   return mockSharp;
 });
-

@@ -48,6 +48,10 @@ app:
       force_path_style: true
   database:
     driver: 'postgresql'
+    # Рекомендуется использовать прямой URL для production
+    postgresql_params:
+      url: 'postgresql://username:password@host:port/database'
+    # Дополнительные параметры (опционально)
     network:
       host: 'your-production-db-host'
       port: 5432
@@ -55,16 +59,22 @@ app:
       username: 'your-production-db-user'
       password: 'your-production-db-password'
       ssl: true
+  logging:
+    level: 'warn'
+    verbose: false
+    pretty: false
 ```
 
 ## Настройка для разработки
 
 1. Скопируйте пример файла:
+
    ```bash
    cp backend/settings.local.yaml.example backend/settings.local.yaml
    ```
 
 2. Отредактируйте файл под ваши нужды:
+
    ```bash
    nano backend/settings.local.yaml
    ```
@@ -74,6 +84,7 @@ app:
 ## Настройка для production
 
 1. На сервере создайте файл:
+
    ```bash
    nano backend/settings.production.local.yaml
    ```
@@ -87,14 +98,36 @@ app:
 
 ## Docker интеграция
 
-Docker compose файлы автоматически монтируют локальные конфигурационные файлы:
+### По умолчанию
+
+Docker Compose НЕ монтирует локальные конфигурационные файлы (`*.local.*.yaml`), чтобы избежать создания директорий вместо файлов, если они отсутствуют.
+
+По умолчанию монтируются только основные файлы:
 
 ```yaml
 volumes:
   - ../backend/settings.yaml:/app/settings.yaml:ro
   - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
-  - ../backend/settings.local.yaml:/app/settings.local.yaml:ro
-  - ../backend/settings.production.local.yaml:/app/settings.production.local.yaml:ro
+```
+
+### Монтирование локальных файлов (опционально)
+
+Если вам нужны локальные конфигурационные файлы в Docker, создайте `docker/docker-compose.override.yml`:
+
+```yaml
+services:
+  avatar-backend:
+    volumes:
+      - ../backend/settings.local.yaml:/app/settings.local.yaml:ro
+      - ../backend/settings.production.local.yaml:/app/settings.production.local.yaml:ro
+```
+
+**Важно:** Создайте файлы перед запуском Docker Compose, иначе Docker создаст директории вместо файлов:
+
+```bash
+touch backend/settings.local.yaml
+touch backend/settings.production.local.yaml
+docker compose up
 ```
 
 ## Безопасность
@@ -132,11 +165,16 @@ app:
       bucket: 'your-bucket'
       access_key: 'REAL_ACCESS_KEY'
       secret_key: 'REAL_SECRET_KEY'
+      region: 'us-east-1'
+      force_path_style: true
   database:
     driver: 'postgresql'
-    network:
-      host: 'prod-db-host'
-      password: 'REAL_DB_PASSWORD'
+    postgresql_params:
+      url: 'postgresql://user:REAL_DB_PASSWORD@prod-db-host:5432/database'
+  logging:
+    level: 'warn'
+    verbose: false
+    pretty: false
 ```
 
 ## Отладка

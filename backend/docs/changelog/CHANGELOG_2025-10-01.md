@@ -5,9 +5,11 @@
 ## 🗃️ Изменение расположения SQLite базы данных
 
 ### Изменение
+
 Перемещена SQLite база данных из `prisma/storage/` в `storage/database/`
 
 **Было:**
+
 ```
 backend/
 ├── prisma/
@@ -18,6 +20,7 @@ backend/
 ```
 
 **Стало:**
+
 ```
 backend/
 └── storage/
@@ -38,12 +41,14 @@ backend/
 #### 1. Конфигурация
 
 **backend/settings.yaml**
+
 ```yaml
 sqlite_params:
-  url: "file:./storage/database/database.sqlite"  # Было: file:./prisma/storage/database.sqlite
+  url: 'file:./storage/database/database.sqlite' # Было: file:./prisma/storage/database.sqlite
 ```
 
 **backend/env.example**
+
 ```
 DATABASE_URL="file:./storage/database/database.sqlite"  # Было: file:./prisma/storage/database.sqlite
 ```
@@ -51,19 +56,22 @@ DATABASE_URL="file:./storage/database/database.sqlite"  # Было: file:./prism
 #### 2. Провайдеры базы данных
 
 **backend/src/modules/database/providers/sqlite-database.service.ts**
+
 - Добавлено программное задание `datasourceUrl` через конструктор PrismaClient
 - Значение по умолчанию: `file:./storage/database/database.sqlite`
 
 **backend/src/modules/database/providers/postgres-database.service.ts**
+
 - Добавлено программное задание `datasourceUrl` через конструктор PrismaClient
 - Добавлен метод `buildPostgresUrl()` для построения URL из параметров конфигурации
 
 #### 3. Docker конфигурация
 
 **docker-compose.yml**
+
 ```yaml
 volumes:
-  - ./backend/storage:/app/storage  # Один volume вместо двух
+  - ./backend/storage:/app/storage # Один volume вместо двух
   # Удалено: - ./backend/prisma/storage:/app/prisma/storage
 
 environment:
@@ -71,6 +79,7 @@ environment:
 ```
 
 **backend/docker/Dockerfile**
+
 ```dockerfile
 # Create storage directories
 RUN mkdir -p storage/avatars storage/database  # Было: prisma/storage
@@ -82,6 +91,7 @@ ENV DATABASE_URL="file:./storage/database/database.sqlite"
 #### 4. Документация
 
 Обновлены следующие файлы:
+
 - `backend/README.md` - примеры Docker команд
 - `backend/docker/README.md` - volumes и примеры
 - `DOCKER_COMPOSE_README.md` - backup инструкции
@@ -101,15 +111,15 @@ ENV DATABASE_URL="file:./storage/database/database.sqlite"
 ```typescript
 constructor(private readonly configService: YamlConfigService) {
   const config = configService.getConfig();
-  
+
   // Программно задаем URL базы данных из конфигурации
-  const databaseUrl = config.app.database.sqlite_params?.url 
+  const databaseUrl = config.app.database.sqlite_params?.url
     || 'file:./storage/database/database.sqlite';
-  
+
   super({
     datasourceUrl: databaseUrl,  // ← Программное задание URL
   });
-  
+
   this.config = config;
 }
 ```
@@ -119,15 +129,15 @@ constructor(private readonly configService: YamlConfigService) {
 ```typescript
 constructor(private readonly configService: YamlConfigService) {
   const config = configService.getConfig();
-  
+
   // Программно строим URL из параметров конфигурации
   const postgresParams = config.app.database.postgresql_params;
   const databaseUrl = this.buildPostgresUrl(postgresParams);
-  
+
   super({
     datasourceUrl: databaseUrl,  // ← Программное задание URL
   });
-  
+
   this.config = config;
 }
 
@@ -145,7 +155,7 @@ private buildPostgresUrl(params: any): string {
   if (password) url += `:${password}`;
   url += `@${host}:${port}/${database}`;
   if (ssl) url += '?sslmode=require';
-  
+
   return url;
 }
 ```
@@ -221,12 +231,14 @@ DOCKER_COMPOSE_README.md           # ✨ Обновлена документац
 ### Локальная разработка
 
 1. **Скопировать базу данных** (если есть данные):
+
    ```bash
    mkdir -p backend/storage/database
    cp backend/prisma/storage/database.sqlite backend/storage/database/database.sqlite
    ```
 
 2. **Перезапустить приложение**:
+
    ```bash
    cd backend
    npm run start:dev
@@ -240,11 +252,13 @@ DOCKER_COMPOSE_README.md           # ✨ Обновлена документац
 ### Docker
 
 1. **Пересобрать образ**:
+
    ```bash
    docker-compose build avatar-backend
    ```
 
 2. **Запустить**:
+
    ```bash
    docker-compose up -d avatar-backend
    ```
@@ -288,6 +302,7 @@ tree backend/storage/
 
 1. **База данных не будет автоматически перемещена**
    - Необходимо вручную скопировать:
+
    ```bash
    mkdir -p backend/storage/database
    cp backend/prisma/storage/database.sqlite backend/storage/database/database.sqlite
@@ -312,4 +327,3 @@ tree backend/storage/
 **Дата:** 2025-10-01  
 **Версия:** 1.0.0  
 **Статус:** ✅ Завершено и протестировано
-

@@ -22,10 +22,12 @@ backend/storage
 # Backend local settings files (contain confidential data)
 backend/settings.local.yaml
 backend/settings.*.local.yaml
+backend/settings.production.local.yaml
 
-# Frontend .env files
-# Include base .env, .env.development, .env.production
-# Ignore only .env.local files
+# All local settings files (pattern: *.local.*.yaml)
+*.local.*.yaml
+
+# Frontend .env files (only local files are ignored)
 frontend/.env.local
 frontend/.env.development.local
 frontend/.env.production.local
@@ -49,3 +51,6 @@ docker/docker-compose.override.yml
 _task.md
 _issue.md
 reports/
+_reports/
+
+NOTE.md

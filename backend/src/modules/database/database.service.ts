@@ -1,21 +1,15 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { Avatar } from '../avatar/avatar.entity';
 import { YamlConfigService } from '../../config/yaml-config.service';
-import { IDatabaseConnection, DatabaseInfo } from './interfaces';
-import { DatabaseDriver } from './constants/database.constants';
 
 /**
- * Основной сервис для управления подключениями к базам данных
+ * Основной сервис для работы с базой данных через TypeORM
  *
- * Выступает в роли фасада (Facade Pattern) для работы с базой данных.
- * Делегирует все вызовы активному провайдеру, который выбирается на основе конфигурации.
- *
- * Отвечает за:
- * - Управление жизненным циклом подключения
- * - Делегирование операций активному провайдеру
- * - Предоставление единого интерфейса для работы с БД
- *
- * ⚠️ Важно: Создается только ОДИН провайдер на основе конфигурации.
- * Неиспользуемые провайдеры не создаются и не инициализируются.
+ * Предоставляет единый интерфейс для работы с базой данных,
+ * используя TypeORM Repository pattern. Автоматически работает
+ * с любым настроенным драйвером базы данных (PostgreSQL, SQLite).
  *
  * @class DatabaseService
  * @implements {OnModuleInit}
@@ -24,128 +18,99 @@ import { DatabaseDriver } from './constants/database.constants';
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(DatabaseService.name);
-  private readonly config: Record<string, unknown>;
-  private readonly activeConnection: IDatabaseConnection;
-  private readonly driver: DatabaseDriver;
 
   constructor(
+    @InjectRepository(Avatar)
+    private readonly avatarRepository: Repository<Avatar>,
+    private readonly dataSource: DataSource,
     private readonly configService: YamlConfigService,
-    activeProvider: IDatabaseConnection,
-  ) {
-    this.config = this.configService.getConfig();
-    this.driver = (this.config as { app: { database: { driver: string } } }).app.database
-      .driver as DatabaseDriver;
-    this.activeConnection = activeProvider;
-
-    this.logger.log(`Database service initialized with driver: ${this.driver}`);
-  }
+  ) {}
 
   /**
-   * Получение активного подключения к базе данных
-   *
-   * Возвращает PrismaClient активной реализации для прямого доступа к БД.
-   *
-   * @returns {IDatabaseConnection} Активное подключение
+   * Инициализация сервиса
    */
-  getConnection(): IDatabaseConnection {
-    return this.activeConnection;
-  }
-
-  /**
-   * Получение типа активного драйвера
-   *
-   * @returns {DatabaseDriver} Тип драйвера
-   */
-  getDriver(): DatabaseDriver {
-    return this.driver;
-  }
-
   async onModuleInit(): Promise<void> {
     try {
-      this.logger.log(`Initializing ${this.driver} database connection...`);
-      await this.activeConnection.onModuleInit();
-      this.logger.log(`${this.driver} database connection established successfully`);
+      // Проверяем подключение к базе данных
+      if (!this.dataSource.isInitialized) {
+        await this.dataSource.initialize();
+      }
+
+      const driver = this.configService.getConfig().app.database.driver;
+      this.logger.log(`🗄️  DatabaseService initialized - ${driver} provider active`);
     } catch (error) {
-      this.logger.error(
-        `${this.driver} database connection failed: ${error.message}`,
-        error.stack,
-        'DatabaseService',
-      );
+      this.logger.error(`DatabaseService initialization failed: ${error.message}`);
       throw error;
     }
   }
 
+  /**
+   * Очистка ресурсов при уничтожении модуля
+   */
   async onModuleDestroy(): Promise<void> {
-    this.logger.log(`Destroying ${this.driver} database connection...`);
-    await this.activeConnection.onModuleDestroy();
+    try {
+      if (this.dataSource.isInitialized) {
+        await this.dataSource.destroy();
+        this.logger.log('Database connection closed');
+      }
+    } catch (error) {
+      this.logger.error(`Error closing database connection: ${error.message}`);
+    }
   }
 
+  /**
+   * Получение репозитория для работы с аватарами
+   */
+  get avatar(): Repository<Avatar> {
+    return this.avatarRepository;
+  }
+
+  /**
+   * Проверка состояния подключения к базе данных
+   *
+   * @returns {Promise<boolean>} true если подключение активно, false в противном случае
+   */
   async healthCheck(): Promise<boolean> {
-    return await this.activeConnection.healthCheck();
+    try {
+      await this.dataSource.query('SELECT 1');
+      return true;
+    } catch (error) {
+      this.logger.error(`Database health check failed: ${error.message}`);
+      return false;
+    }
   }
 
-  getDatabaseInfo(): DatabaseInfo {
-    return this.activeConnection.getDatabaseInfo();
+  /**
+   * Получение информации о подключенной базе данных
+   *
+   * @returns {object} Объект с информацией о типе драйвера и статусе подключения
+   */
+  getDatabaseInfo(): { driver: string; isConnected: boolean; databaseName?: string } {
+    const config = this.configService.getConfig();
+    const driver = config.app.database.driver;
+
+    return {
+      driver,
+      isConnected: this.dataSource.isInitialized,
+      databaseName: config.app.database.network?.database || config.app.database.sqlite_params?.url,
+    };
   }
 
+  /**
+   * Принудительное переподключение к базе данных
+   *
+   * @returns {Promise<void>}
+   */
   async reconnect(): Promise<void> {
-    this.logger.log(`Reconnecting to ${this.driver} database...`);
-    await this.activeConnection.reconnect();
+    try {
+      if (this.dataSource.isInitialized) {
+        await this.dataSource.destroy();
+      }
+      await this.dataSource.initialize();
+      this.logger.log('Database reconnected successfully');
+    } catch (error) {
+      this.logger.error(`Database reconnection failed: ${error.message}`);
+      throw error;
+    }
   }
-
-  /**
-   * Прямой доступ к методам Prisma Client
-   *
-   * Все методы делегируются активному подключению
-   */
-  get $connect() {
-    return this.activeConnection.prisma.$connect.bind(this.activeConnection.prisma);
-  }
-
-  get $disconnect() {
-    return this.activeConnection.prisma.$disconnect.bind(this.activeConnection.prisma);
-  }
-
-  get $queryRaw() {
-    return this.activeConnection.prisma.$queryRaw.bind(this.activeConnection.prisma);
-  }
-
-  get $queryRawUnsafe() {
-    return this.activeConnection.prisma.$queryRawUnsafe.bind(this.activeConnection.prisma);
-  }
-
-  get $executeRaw() {
-    return this.activeConnection.prisma.$executeRaw.bind(this.activeConnection.prisma);
-  }
-
-  get $executeRawUnsafe() {
-    return this.activeConnection.prisma.$executeRawUnsafe.bind(this.activeConnection.prisma);
-  }
-
-  get $transaction() {
-    return this.activeConnection.prisma.$transaction.bind(this.activeConnection.prisma);
-  }
-
-  get $on() {
-    return this.activeConnection.prisma.$on.bind(this.activeConnection.prisma);
-  }
-
-  get $extends() {
-    return this.activeConnection.prisma.$extends.bind(this.activeConnection.prisma);
-  }
-
-  /**
-   * Делегирование доступа к моделям Prisma
-   *
-   * Все модели доступны через геттеры для прозрачного делегирования
-   */
-  get avatar() {
-    return this.activeConnection.prisma.avatar;
-  }
-
-  /**
-   * Делегирование других методов Prisma Client при необходимости
-   *
-   * Добавьте дополнительные геттеры для моделей по мере необходимости
-   */
 }

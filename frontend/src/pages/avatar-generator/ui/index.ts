@@ -1,1 +1,1 @@
-export { AvatarGeneratorPage } from './AvatarGeneratorPage'
+export { AvatarGeneratorPage } from './AvatarGeneratorPage';

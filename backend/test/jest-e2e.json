@@ -4,16 +4,18 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": ["ts-jest", {
-      "tsconfig": {
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "esModuleInterop": true,
+          "allowSyntheticDefaultImports": true
+        }
       }
-    }]
+    ]
   },
   "setupFilesAfterEnv": ["<rootDir>/jest-setup.ts"],
   "moduleNameMapper": {
     "^src/(.*)$": "<rootDir>/../src/$1"
   }
 }
-

@@ -21,12 +21,14 @@ src/modules/s3/
 ### Разделение ответственности
 
 **S3Module (корневой)** - низкоуровневые операции:
+
 - Управление подключением к S3
 - CRUD операции с объектами (uploadObject, getObject, deleteObject)
 - Health checks и reconnect логика
 - Универсальное использование для любых данных
 
 **S3StorageModule** (в storage/) - высокоуровневые операции:
+
 - Сохранение/загрузка аватаров
 - Бизнес-логика работы с аватарами
 - Использует S3Module как зависимость
@@ -52,15 +54,15 @@ src/modules/s3/
 export interface IS3Connection {
   onModuleInit(): Promise<void>;
   onModuleDestroy(): Promise<void>;
-  
+
   healthCheck(): Promise<boolean>;
   reconnect(): Promise<void>;
-  
+
   uploadObject(key: string, data: Buffer, contentType: string): Promise<string>;
   getObject(key: string): Promise<Buffer>;
   deleteObject(key: string): Promise<void>;
   objectExists(key: string): Promise<boolean>;
-  
+
   getS3Info(): S3Info;
 }
 ```
@@ -120,6 +122,7 @@ private async connectWithRetry(retryCount = 1): Promise<void> {
 ```
 
 **Параметры:**
+
 - `maxRetries` - максимальное количество попыток (по умолчанию 3)
 - `retryDelay` - задержка между попытками в мс (по умолчанию 2000)
 
@@ -134,6 +137,7 @@ async uploadObject(key: string, data: Buffer, contentType: string): Promise<stri
 ```
 
 **Параметры:**
+
 - `key` - путь к объекту в S3 (например, `avatars/abc123.obj`)
 - `data` - данные в виде Buffer
 - `contentType` - MIME тип (например, `application/json`)
@@ -149,6 +153,7 @@ async getObject(key: string): Promise<Buffer>
 ```
 
 **Параметры:**
+
 - `key` - путь к объекту в S3
 
 **Возвращает:** Buffer с данными объекта
@@ -180,6 +185,7 @@ async healthCheck(): Promise<boolean>
 ```
 
 **Использование:**
+
 ```typescript
 const isHealthy = await this.s3Service.healthCheck();
 if (!isHealthy) {
@@ -196,15 +202,15 @@ app:
   storage:
     type: 's3'
     s3:
-      endpoint: 'https://your-s3-endpoint.com'  # S3-совместимый endpoint
-      bucket: 'my-bucket-name'                         # Имя bucket
-      access_key: 'YOUR_ACCESS_KEY'                    # Access key
-      secret_key: 'YOUR_SECRET_KEY'                    # Secret key
-      region: 'us-east-1'                              # Регион (по умолчанию us-east-1)
-      force_path_style: true                           # Path-style URLs (для совместимости)
+      endpoint: 'https://your-s3-endpoint.com' # S3-совместимый endpoint
+      bucket: 'my-bucket-name' # Имя bucket
+      access_key: 'YOUR_ACCESS_KEY' # Access key
+      secret_key: 'YOUR_SECRET_KEY' # Secret key
+      region: 'us-east-1' # Регион (по умолчанию us-east-1)
+      force_path_style: true # Path-style URLs (для совместимости)
       connection:
-        maxRetries: 5                                  # Попыток подключения
-        retryDelay: 1000                               # Задержка между попытками (мс)
+        maxRetries: 5 # Попыток подключения
+        retryDelay: 1000 # Задержка между попытками (мс)
 ```
 
 ### Environment Variables
@@ -236,13 +242,9 @@ import { S3Module, S3Service } from '../s3';
 })
 export class MyModule {
   constructor(private readonly s3Service: S3Service) {}
-  
+
   async uploadFile(filename: string, data: Buffer): Promise<string> {
-    return await this.s3Service.uploadObject(
-      `files/${filename}`,
-      data,
-      'application/octet-stream'
-    );
+    return await this.s3Service.uploadObject(`files/${filename}`, data, 'application/octet-stream');
   }
 }
 ```
@@ -277,12 +279,14 @@ try {
 Файл: `src/modules/s3/s3.service.spec.ts`
 
 **Покрытие:**
+
 - Health checks и reconnect логика
 - Retry механизм при подключении
 - CRUD операции с объектами
 - Обработка ошибок S3
 
 **Запуск:**
+
 ```bash
 npm test -- s3.service.spec.ts
 ```
@@ -308,10 +312,7 @@ const mockS3Service = {
 };
 
 const module = await Test.createTestingModule({
-  providers: [
-    MyService,
-    { provide: S3Service, useValue: mockS3Service },
-  ],
+  providers: [MyService, { provide: S3Service, useValue: mockS3Service }],
 }).compile();
 ```
 
@@ -324,6 +325,7 @@ const module = await Test.createTestingModule({
 ## Совместимость
 
 S3Module совместим с:
+
 - ✅ Amazon S3
 - ✅ MinIO
 - ✅ Beget Cloud Storage
@@ -353,11 +355,13 @@ S3Module совместим с:
 ### Failed to connect to S3 after N attempts
 
 **Причина:**
+
 - Неверные credentials
 - Недоступен endpoint
 - Bucket не существует
 
 **Решение:**
+
 1. Проверьте конфигурацию S3
 2. Убедитесь что endpoint доступен
 3. Проверьте access_key и secret_key
@@ -378,4 +382,3 @@ S3Module совместим с:
 
 **Решение:**
 Endpoint должен быть полным URL: `https://s3.region.provider.com`
-

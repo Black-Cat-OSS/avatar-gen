@@ -1,2 +1,2 @@
-export { TestScssComponent as default } from './TestScssComponent'
-export { TestScssComponent } from './TestScssComponent'
+export { TestScssComponent as default } from './TestScssComponent';
+export { TestScssComponent } from './TestScssComponent';

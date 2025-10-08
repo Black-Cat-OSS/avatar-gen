@@ -1,8 +1,8 @@
 /**
  * Базовый класс для всех исключений базы данных
- * 
+ *
  * Предоставляет общую структуру для специфичных ошибок БД.
- * 
+ *
  * @class DatabaseException
  * @extends {Error}
  */
@@ -19,14 +19,12 @@ export class DatabaseException extends Error {
 
 /**
  * Исключение при отсутствии директории для базы данных SQLite
- * 
+ *
  * @class SqliteDirectoryNotFoundException
  * @extends {DatabaseException}
  */
 export class SqliteDirectoryNotFoundException extends DatabaseException {
-  constructor(
-    public readonly directoryPath: string,
-  ) {
+  constructor(public readonly directoryPath: string) {
     const message = `SQLite database directory does not exist: ${directoryPath}`;
     super(message, { directoryPath });
   }
@@ -34,14 +32,12 @@ export class SqliteDirectoryNotFoundException extends DatabaseException {
 
 /**
  * Исключение при отсутствии файла базы данных SQLite
- * 
+ *
  * @class SqliteDatabaseFileNotFoundException
  * @extends {DatabaseException}
  */
 export class SqliteDatabaseFileNotFoundException extends DatabaseException {
-  constructor(
-    public readonly filePath: string,
-  ) {
+  constructor(public readonly filePath: string) {
     const message = `SQLite database file does not exist: ${filePath}`;
     super(message, { filePath });
   }
@@ -49,7 +45,7 @@ export class SqliteDatabaseFileNotFoundException extends DatabaseException {
 
 /**
  * Исключение при недостаточных правах доступа к директории SQLite
- * 
+ *
  * @class SqliteDirectoryPermissionException
  * @extends {DatabaseException}
  */
@@ -67,7 +63,7 @@ export class SqliteDirectoryPermissionException extends DatabaseException {
 
 /**
  * Исключение при недостаточных правах доступа к файлу SQLite
- * 
+ *
  * @class SqliteDatabaseFilePermissionException
  * @extends {DatabaseException}
  */
@@ -85,7 +81,7 @@ export class SqliteDatabaseFilePermissionException extends DatabaseException {
 
 /**
  * Исключение при ошибке подключения к базе данных
- * 
+ *
  * @class DatabaseConnectionException
  * @extends {DatabaseException}
  */
@@ -101,4 +97,3 @@ export class DatabaseConnectionException extends DatabaseException {
     });
   }
 }
-

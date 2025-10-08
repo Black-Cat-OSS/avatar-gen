@@ -22,13 +22,35 @@ credentials в тестах CI/CD pipeline.
 
 ### Секреты для production
 
-| Secret Name       | Описание                     |
-| ----------------- | ---------------------------- |
-| `SSH_HOST`        | IP адрес production сервера  |
-| `SSH_PORT`        | SSH порт (обычно 22)         |
-| `SSH_PRIVATE_KEY` | Приватный SSH ключ           |
-| `SSH_USERNAME`    | Имя пользователя SSH         |
-| `APP_PATH`        | Путь к приложению на сервере |
+#### SSH и деплой
+
+| Secret Name       | Описание                     | Пример                |
+| ----------------- | ---------------------------- | --------------------- |
+| `SSH_HOST`        | IP адрес production сервера  | `192.168.1.100`       |
+| `SSH_PORT`        | SSH порт (обычно 22)         | `22`                  |
+| `SSH_PRIVATE_KEY` | Приватный SSH ключ           | `-----BEGIN RSA...`   |
+| `SSH_USERNAME`    | Имя пользователя SSH         | `deploy`              |
+| `APP_PATH`        | Путь к приложению на сервере | `/var/www/avatar-gen` |
+
+#### Production S3 Storage
+
+| Secret Name          | Описание                 | Пример                                     |
+| -------------------- | ------------------------ | ------------------------------------------ |
+| `PROD_S3_ENDPOINT`   | Production S3 endpoint   | `https://s3.amazonaws.com`                 |
+| `PROD_S3_BUCKET`     | Production S3 bucket     | `avatar-gen-production`                    |
+| `PROD_S3_ACCESS_KEY` | Production S3 Access Key | `AKIAIOSFODNN7EXAMPLE`                     |
+| `PROD_S3_SECRET_KEY` | Production S3 Secret Key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` |
+| `PROD_S3_REGION`     | Production S3 region     | `us-east-1`                                |
+
+#### Production PostgreSQL Database
+
+| Secret Name        | Описание          | Пример              |
+| ------------------ | ----------------- | ------------------- |
+| `PROD_DB_HOST`     | PostgreSQL host   | `db.example.com`    |
+| `PROD_DB_PORT`     | PostgreSQL port   | `5432`              |
+| `PROD_DB_NAME`     | Database name     | `avatar_gen_prod`   |
+| `PROD_DB_USERNAME` | Database username | `avatar_user`       |
+| `PROD_DB_PASSWORD` | Database password | `SecurePassword123` |
 
 ## 🛠️ Настройка секретов в GitHub
 
@@ -50,17 +72,34 @@ credentials в тестах CI/CD pipeline.
 
 Убедитесь, что все секреты добавлены:
 
+#### Тестовые секреты (опционально)
+
 ```
 ✅ TEST_S3_ENDPOINT
 ✅ TEST_S3_BUCKET
 ✅ TEST_S3_ACCESS_KEY
 ✅ TEST_S3_SECRET_KEY
 ✅ TEST_S3_REGION
+```
+
+#### Production секреты (обязательно)
+
+```
 ✅ SSH_HOST
 ✅ SSH_PORT
 ✅ SSH_PRIVATE_KEY
 ✅ SSH_USERNAME
 ✅ APP_PATH
+✅ PROD_S3_ENDPOINT
+✅ PROD_S3_BUCKET
+✅ PROD_S3_ACCESS_KEY
+✅ PROD_S3_SECRET_KEY
+✅ PROD_S3_REGION
+✅ PROD_DB_HOST
+✅ PROD_DB_PORT
+✅ PROD_DB_NAME
+✅ PROD_DB_USERNAME
+✅ PROD_DB_PASSWORD
 ```
 
 ## 🔧 Варианты настройки тестов
@@ -98,16 +137,29 @@ app:
 Затем используйте workflow `test-with-local-config.yml` с параметром
 `use_local_config: true`.
 
-### Вариант 3: Динамическая генерация
+### Вариант 3: Ручная настройка
 
-Используйте скрипт `scripts/generate-test-config.sh`:
+Создайте файл `backend/settings.test.yaml` с нужными настройками:
+
+```yaml
+app:
+  storage:
+    type: 's3'
+    s3:
+      endpoint: 'https://your-s3.com'
+      bucket: 'your-bucket'
+      access_key: '${TEST_S3_ACCESS_KEY}'
+      secret_key: '${TEST_S3_SECRET_KEY}'
+  database:
+    driver: 'sqlite'
+    sqlite_params:
+      url: 'file:./storage/test-database/database.test.sqlite'
+```
+
+Запуск тестов:
 
 ```bash
-# Генерация конфигурации
-./scripts/generate-test-config.sh sqlite s3 https://your-s3.com your-bucket
-
-# Запуск тестов
-NODE_ENV=test TEST_MATRIX_CONFIG=./backend/settings.test.matrix.yaml pnpm run test
+NODE_ENV=test pnpm run test
 ```
 
 ## 🧪 Тестирование настроек
@@ -117,8 +169,7 @@ NODE_ENV=test TEST_MATRIX_CONFIG=./backend/settings.test.matrix.yaml pnpm run te
 1. **Сгенерируйте конфигурацию:**
 
    ```bash
-   cd backend
-   ./scripts/generate-test-config.sh sqlite s3
+   # Создайте файл backend/settings.test.yaml с нужными настройками
    ```
 
 2. **Установите переменные окружения:**
@@ -150,6 +201,10 @@ NODE_ENV=test TEST_MATRIX_CONFIG=./backend/settings.test.matrix.yaml pnpm run te
 3. **Production Deploy:**
    - Push в `main` ветку автоматически запустит деплой
    - Сначала запустятся быстрые тесты, затем деплой
+   - На production сервере автоматически генерируется
+     `settings.production.local.yaml` из secrets
+   - Используется `docker-compose.prod.yaml` с PostgreSQL + S3 (без local
+     storage)
 
 ## 🔒 Безопасность
 
@@ -203,6 +258,115 @@ NODE_ENV=test TEST_MATRIX_CONFIG=./backend/settings.test.matrix.yaml pnpm run te
    - Настройте CloudWatch алерты
    - Отслеживайте размер бакета
    - Проверяйте логи доступа
+
+## 🚀 Настройка Production секретов
+
+### Пошаговая инструкция
+
+#### 1. SSH доступ
+
+Генерация SSH ключа для деплоя:
+
+```bash
+# Генерация SSH ключа
+ssh-keygen -t rsa -b 4096 -C "deploy@avatar-gen" -f ~/.ssh/avatar-gen-deploy
+
+# Копирование публичного ключа на сервер
+ssh-copy-id -i ~/.ssh/avatar-gen-deploy.pub user@your-server.com
+
+# Получение приватного ключа для GitHub Secret
+cat ~/.ssh/avatar-gen-deploy
+```
+
+Добавьте приватный ключ в `SSH_PRIVATE_KEY` (включая
+`-----BEGIN RSA PRIVATE KEY-----` и `-----END RSA PRIVATE KEY-----`).
+
+#### 2. Production S3
+
+Создайте IAM пользователя с политикой:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::avatar-gen-production",
+        "arn:aws:s3:::avatar-gen-production/*"
+      ]
+    }
+  ]
+}
+```
+
+#### 3. Production PostgreSQL
+
+Создайте пользователя БД:
+
+```sql
+-- На production сервере PostgreSQL
+CREATE DATABASE avatar_gen_prod;
+CREATE USER avatar_user WITH ENCRYPTED PASSWORD 'SecurePassword123';
+GRANT ALL PRIVILEGES ON DATABASE avatar_gen_prod TO avatar_user;
+
+-- Дайте права на схему
+\c avatar_gen_prod
+GRANT ALL ON SCHEMA public TO avatar_user;
+```
+
+### Проверка конфигурации
+
+После настройки всех секретов, проверьте деплой:
+
+```bash
+# 1. Локальная проверка SSH
+ssh -i ~/.ssh/avatar-gen-deploy deploy@your-server.com "echo 'SSH OK'"
+
+# 2. Тест S3 подключения
+aws s3 ls s3://avatar-gen-production --profile production
+
+# 3. Тест PostgreSQL подключения
+psql -h db.example.com -U avatar_user -d avatar_gen_prod -c "SELECT version();"
+```
+
+### Автоматическая генерация конфигурации
+
+При деплое автоматически создаётся `backend/settings.production.local.yaml`:
+
+```yaml
+app:
+  storage:
+    type: 's3'
+    s3:
+      endpoint: '${PROD_S3_ENDPOINT}'
+      bucket: '${PROD_S3_BUCKET}'
+      access_key: '${PROD_S3_ACCESS_KEY}'
+      secret_key: '${PROD_S3_SECRET_KEY}'
+      region: '${PROD_S3_REGION}'
+      force_path_style: true
+  database:
+    driver: 'postgresql'
+    network:
+      host: '${PROD_DB_HOST}'
+      port: ${PROD_DB_PORT}
+      database: '${PROD_DB_NAME}'
+      username: '${PROD_DB_USERNAME}'
+      password: '${PROD_DB_PASSWORD}'
+      ssl: false
+  logging:
+    level: 'warn'
+    verbose: false
+    pretty: false
+```
+
+Этот файл **не коммитится** в git и существует только на production сервере.
 
 ## 📊 Мониторинг
 

@@ -8,6 +8,7 @@
 ## 📋 Обзор
 
 Backend приложение покрыто тестами на трех уровнях:
+
 - **Unit тесты** - тестирование отдельных компонентов
 - **Integration тесты** - тестирование взаимодействия компонентов
 - **E2E тесты** - тестирование API эндпоинтов
@@ -70,12 +71,12 @@ npm run test:debug
 
 ### Текущее покрытие
 
-| Модуль | Покрытие | Статус |
-|--------|----------|--------|
-| HealthController | 100% | ✅ |
-| AvatarController | 95%+ | ✅ |
-| AvatarService | 90%+ | ✅ |
-| YamlConfigService | 90%+ | ✅ |
+| Модуль            | Покрытие | Статус |
+| ----------------- | -------- | ------ |
+| HealthController  | 100%     | ✅     |
+| AvatarController  | 95%+     | ✅     |
+| AvatarService     | 90%+     | ✅     |
+| YamlConfigService | 90%+     | ✅     |
 
 ### Просмотр отчета
 
@@ -91,12 +92,13 @@ npm run test:cov
 
 ### Health Endpoints
 
-| Endpoint | Method | Тесты | Статус |
-|----------|--------|-------|--------|
-| `/health` | GET | Unit + E2E | ✅ |
-| `/health/detailed` | GET | Unit + E2E | ✅ |
+| Endpoint           | Method | Тесты      | Статус |
+| ------------------ | ------ | ---------- | ------ |
+| `/health`          | GET    | Unit + E2E | ✅     |
+| `/health/detailed` | GET    | Unit + E2E | ✅     |
 
 **Покрываемые сценарии:**
+
 - ✅ Успешная проверка здоровья
 - ✅ Возврат правильного формата данных
 - ✅ Проверка timestamp в ISO формате
@@ -106,18 +108,19 @@ npm run test:cov
 
 ### Avatar Endpoints
 
-| Endpoint | Method | Тесты | Статус |
-|----------|--------|-------|--------|
-| `/api/generate` | POST | Unit | ✅ |
-| `/api/health` | GET | Unit | ✅ |
-| `/api/list` | GET | Unit | ✅ |
-| `/api/color-schemes` | GET | Unit | ✅ |
-| `/api/:id` | GET | Unit | ✅ |
-| `/api/:id` | DELETE | Unit | ✅ |
+| Endpoint             | Method | Тесты | Статус |
+| -------------------- | ------ | ----- | ------ |
+| `/api/generate`      | POST   | Unit  | ✅     |
+| `/api/health`        | GET    | Unit  | ✅     |
+| `/api/list`          | GET    | Unit  | ✅     |
+| `/api/color-schemes` | GET    | Unit  | ✅     |
+| `/api/:id`           | GET    | Unit  | ✅     |
+| `/api/:id`           | DELETE | Unit  | ✅     |
 
 **Покрываемые сценарии:**
 
 #### POST /api/generate
+
 - ✅ Успешная генерация аватара
 - ✅ Генерация с кастомными цветами
 - ✅ Генерация с seed
@@ -126,12 +129,14 @@ npm run test:cov
 - ✅ Ошибка при слишком длинном seed (>32 символов)
 
 #### GET /api/health
+
 - ✅ Успешная проверка здоровья
 - ✅ Проверка подключения к БД
 - ✅ Проверка доступности storage
 - ✅ Ошибка при недоступности ресурсов
 
 #### GET /api/list
+
 - ✅ Получение списка с пагинацией
 - ✅ Использование параметров pick и offset
 - ✅ Значения по умолчанию (pick=10, offset=0)
@@ -139,10 +144,12 @@ npm run test:cov
 - ✅ Сортировка по дате создания (desc)
 
 #### GET /api/color-schemes
+
 - ✅ Получение списка цветовых схем
 - ✅ Правильный формат данных
 
 #### GET /api/:id
+
 - ✅ Получение аватара по ID
 - ✅ Применение фильтра (grayscale, sepia, negative)
 - ✅ Изменение размера (size 5-9)
@@ -151,6 +158,7 @@ npm run test:cov
 - ✅ Ошибка при невалидном размере
 
 #### DELETE /api/:id
+
 - ✅ Успешное удаление аватара
 - ✅ Ошибка 404 при несуществующем ID
 - ✅ Обработка ошибок БД
@@ -169,18 +177,14 @@ module.exports = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  collectCoverageFrom: [
-    '**/*.(t|j)s',
-  ],
+  collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/$1',
     '^uuid$': require.resolve('uuid'),
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(uuid|sharp)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(uuid|sharp)/)'],
 };
 ```
 
@@ -263,7 +267,7 @@ describe('GET /health', () => {
     return request(app.getHttpServer())
       .get('/health')
       .expect(200)
-      .expect((res) => {
+      .expect(res => {
         expect(res.body).toHaveProperty('status', 'ok');
         expect(res.body).toHaveProperty('timestamp');
         expect(res.body).toHaveProperty('uptime');
@@ -277,12 +281,14 @@ describe('GET /health', () => {
 ### Проблема с ES модулями (uuid, sharp)
 
 **Ошибка:**
+
 ```
 SyntaxError: Unexpected token 'export'
 ```
 
 **Решение:**
 Добавлено в `jest.config.js`:
+
 ```javascript
 transformIgnorePatterns: [
   'node_modules/(?!(uuid|sharp)/)',
@@ -297,6 +303,7 @@ moduleNameMapper: {
 **Проблема:** Тесты выполняются долго
 
 **Решение:**
+
 ```bash
 # Запускать тесты параллельно
 npm test -- --maxWorkers=4
@@ -308,6 +315,7 @@ npm run test:watch
 ### Ошибки таймаута
 
 **Решение:**
+
 ```typescript
 // Увеличить таймаут для конкретного теста
 it('long running test', async () => {
@@ -342,10 +350,10 @@ it('should generate avatar successfully', async () => {
   // Arrange
   const dto = { seed: 'test' };
   mockService.generateAvatar.mockResolvedValue(mockResult);
-  
+
   // Act
   const result = await controller.generateAvatar(dto);
-  
+
   // Assert
   expect(result.statusCode).toBe(201);
   expect(mockService.generateAvatar).toHaveBeenCalled();
@@ -393,20 +401,17 @@ describe('POST /api/generate', () => {
 
 Тесты используют специальную конфигурацию:
 
-- **Storage**: 
+- **Storage**:
   - По умолчанию: `local` (для изоляции тестов)
   - Для S3 тестов: тестовый бакет `avatar-gen-test`
   - Тестовый endpoint: `https://test-s3-endpoint.com`
   - ⚠️ **Важно**: Никогда не используйте production бакет для тестов!
-  
-- **Database**: 
+- **Database**:
   - SQLite in-memory (для скорости)
   - Отдельная тестовая БД для каждого запуска
-  
-- **Server**: 
+- **Server**:
   - Порт 3002 (отдельный от production и development)
-  
-- **Logging**: 
+- **Logging**:
   - Минимальный уровень (error)
   - Без verbose вывода
 
@@ -425,4 +430,3 @@ describe('POST /api/generate', () => {
 
 **Поддержка:** Backend Team  
 **Последнее обновление:** 2025-10-04
-

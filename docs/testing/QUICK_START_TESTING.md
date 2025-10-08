@@ -12,17 +12,20 @@
 
 ### Вариант 1: Использование скрипта (Рекомендуется)
 
-1. **Сгенерируйте конфигурацию:**
+1. **Настройте тестовую конфигурацию:**
 
-   ```bash
-   # Для SQLite + Local storage
-   ./scripts/generate-test-config.sh sqlite local
+   Создайте файл `backend/settings.test.yaml` с нужными настройками:
 
-   # Для SQLite + S3
-   ./scripts/generate-test-config.sh sqlite s3 https://your-s3-endpoint.com your-test-bucket
-
-   # Для PostgreSQL + S3
-   ./scripts/generate-test-config.sh postgresql s3 https://your-s3-endpoint.com your-test-bucket
+   ```yaml
+   app:
+     storage:
+       type: 'local' # или 's3'
+       local:
+         save_path: './storage/test-avatars'
+     database:
+       driver: 'sqlite' # или 'postgresql'
+       sqlite_params:
+         url: 'file:./storage/test-database/database.test.sqlite'
    ```
 
 2. **Установите переменные окружения (для S3):**
@@ -41,13 +44,7 @@
 
 ### Вариант 2: Ручная настройка
 
-1. **Скопируйте пример файла:**
-
-   ```bash
-   cp backend/settings.test.example.yaml backend/settings.test.yaml
-   ```
-
-2. **Отредактируйте настройки:**
+1. **Создайте файл `backend/settings.test.yaml`:**
 
    ```yaml
    app:
@@ -61,7 +58,7 @@
          region: 'us-east-1'
    ```
 
-3. **Запустите тесты:**
+2. **Запустите тесты:**
    ```bash
    cd backend
    NODE_ENV=test pnpm run test

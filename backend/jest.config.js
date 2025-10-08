@@ -3,12 +3,15 @@ module.exports = {
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': ['ts-jest', {
-      tsconfig: {
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
+    '^.+\\.(t|j)s$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+        },
       },
-    }],
+    ],
   },
   collectCoverageFrom: [
     '**/*.(t|j)s',
@@ -24,4 +27,3 @@ module.exports = {
     '^src/(.*)$': '<rootDir>/$1',
   },
 };
-

@@ -65,9 +65,15 @@ start_period: 30s
 **Environment:**
 
 - `NODE_ENV=production`
-- `DATABASE_PROVIDER=sqlite` (или `postgresql`)
-- `DATABASE_URL` - URL подключения к БД
 - `CONFIG_PATH=./settings.yaml`
+
+**Автоматическая генерация конфигурации:**
+
+При запуске контейнера автоматически:
+
+1. Загружается YAML конфигурация
+2. Инициализируется TypeORM подключение к базе данных
+3. Выполняется автоматическая синхронизация схемы базы данных
 
 **Health Check:**
 
@@ -338,7 +344,7 @@ docker-compose exec postgres pg_isready -U postgres
 3. Проверьте переменные окружения:
 
 ```bash
-docker-compose config | grep DATABASE_URL
+docker-compose config | grep -A 5 -B 5 "environment:"
 ```
 
 ### Проблема: Порты заняты
@@ -464,6 +470,51 @@ docker inspect --format='{{json .State.Health}}' avatar-gen-backend | jq
 ```
 
 ## 🚀 Production Deployment
+
+### Использование docker-compose.prod.yaml
+
+Для production окружения используется отдельный файл
+`docker/docker-compose.prod.yaml`:
+
+**Особенности production конфигурации:**
+
+- ✅ Только один конфигурационный файл (генерируется из GitHub Secrets)
+- ✅ PostgreSQL - только внешняя БД (не контейнер)
+- ✅ S3 Storage (не монтируется local storage)
+- ✅ Упрощённая структура volumes
+
+**Запуск на production сервере:**
+
+```bash
+# На production сервере после git pull
+docker compose -f docker/docker-compose.prod.yaml build
+docker compose -f docker/docker-compose.prod.yaml up -d
+```
+
+**Структура конфигурации:**
+
+```yaml
+avatar-backend:
+  volumes:
+    # Генерируемый конфиг монтируется как settings.yaml (единственный конфиг!)
+    - settings.production.local.yaml:/app/settings.yaml:ro
+    # Логи
+    - ../backend/logs:/app/logs
+    # Storage НЕ монтируется - всё в S3!
+  environment:
+    - NODE_ENV=production
+```
+
+**Как это работает:**
+
+1. GitHub Actions генерирует `backend/settings.production.local.yaml` из
+   секретов (S3, PostgreSQL)
+2. Docker монтирует его как `/app/settings.yaml` внутри контейнера
+3. Приложение загружает единственный конфиг файл - никаких merge/override
+
+**Примечание:** Файл `backend/settings.production.local.yaml` генерируется
+автоматически из GitHub Secrets при деплое. См.
+[GitHub Secrets Configuration](./GITHUB_SECRETS_CONFIGURATION.md)
 
 ### Рекомендации
 
