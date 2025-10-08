@@ -27,6 +27,9 @@ async function bootstrap() {
 
     loggerService.log('Application bootstrap completed successfully');
 
+    loggerService.debug('Setting global API prefix...');
+    app.setGlobalPrefix('api');
+
     loggerService.debug('Setting up global validation pipe...');
     app.useGlobalPipes(
       new ValidationPipe({

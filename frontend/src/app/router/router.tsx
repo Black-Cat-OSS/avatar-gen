@@ -1,21 +1,16 @@
-import {
-  createRouter,
-  createRoute,
-  createRootRoute,
-  Outlet,
-} from '@tanstack/react-router'
-import { HomePage } from '@/pages'
-import { AboutPage } from '@/pages'
-import { AvatarGeneratorPage } from '@/pages'
-import { AvatarViewerPage } from '@/pages'
-import { DevStackPage } from '@/pages'
-import { LoginPage } from '@/pages'
-import { DefaultLayout, CenterLayout } from '@/shared/ui'
+import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { HomePage } from '@/pages';
+import { AboutPage } from '@/pages';
+import { AvatarGeneratorPage } from '@/pages';
+import { AvatarViewerPage } from '@/pages';
+import { DevStackPage } from '@/pages';
+import { LoginPage } from '@/pages';
+import { DefaultLayout, CenterLayout } from '@/shared/ui';
 
 // Create the root route
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
-})
+});
 
 // Create the index route
 const indexRoute = createRoute({
@@ -26,7 +21,7 @@ const indexRoute = createRoute({
       <HomePage />
     </DefaultLayout>
   ),
-})
+});
 
 // Create the about route
 const aboutRoute = createRoute({
@@ -37,7 +32,7 @@ const aboutRoute = createRoute({
       <AboutPage />
     </DefaultLayout>
   ),
-})
+});
 
 // Create the avatar generator route
 const avatarGeneratorRoute = createRoute({
@@ -48,7 +43,7 @@ const avatarGeneratorRoute = createRoute({
       <AvatarGeneratorPage />
     </DefaultLayout>
   ),
-})
+});
 
 // Create the avatar viewer route
 const avatarViewerRoute = createRoute({
@@ -62,7 +57,7 @@ const avatarViewerRoute = createRoute({
       <AvatarViewerPage />
     </DefaultLayout>
   ),
-})
+});
 
 // Create the dev-stack route
 const devStackRoute = createRoute({
@@ -73,7 +68,7 @@ const devStackRoute = createRoute({
       <DevStackPage />
     </DefaultLayout>
   ),
-})
+});
 
 // Create the login route
 const loginRoute = createRoute({
@@ -84,7 +79,7 @@ const loginRoute = createRoute({
       <LoginPage />
     </CenterLayout>
   ),
-})
+});
 
 // Create the route tree
 const routeTree = rootRoute.addChildren([
@@ -94,17 +89,17 @@ const routeTree = rootRoute.addChildren([
   avatarViewerRoute,
   devStackRoute,
   loginRoute,
-])
+]);
 
 // Create the router
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
-})
+});
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
   interface Register {
-    router: typeof router
+    router: typeof router;
   }
 }

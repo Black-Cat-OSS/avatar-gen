@@ -55,6 +55,7 @@ npm run start:dev
 - 90%+ покрытие AvatarService
 
 **Документы:**
+
 - [Testing Guide](./testing/TESTING.md) - Полное руководство
 - [Test Results](./testing/TEST_RESULTS.md) - Результаты и статистика
 
@@ -124,21 +125,21 @@ src/
 
 ### Health Endpoints
 
-| Endpoint | Method | Описание |
-|----------|--------|----------|
-| `/health` | GET | Базовая проверка здоровья |
-| `/health/detailed` | GET | Детальная информация |
+| Endpoint           | Method | Описание                  |
+| ------------------ | ------ | ------------------------- |
+| `/health`          | GET    | Базовая проверка здоровья |
+| `/health/detailed` | GET    | Детальная информация      |
 
 ### Avatar Endpoints
 
-| Endpoint | Method | Описание |
-|----------|--------|----------|
-| `/api/generate` | POST | Генерация нового аватара |
-| `/api/list` | GET | Список аватаров (пагинация) |
-| `/api/color-schemes` | GET | Доступные цветовые схемы |
-| `/api/:id` | GET | Получение аватара по ID |
-| `/api/:id` | DELETE | Удаление аватара |
-| `/api/health` | GET | Проверка здоровья сервиса |
+| Endpoint             | Method | Описание                    |
+| -------------------- | ------ | --------------------------- |
+| `/api/generate`      | POST   | Генерация нового аватара    |
+| `/api/list`          | GET    | Список аватаров (пагинация) |
+| `/api/color-schemes` | GET    | Доступные цветовые схемы    |
+| `/api/:id`           | GET    | Получение аватара по ID     |
+| `/api/:id`           | DELETE | Удаление аватара            |
+| `/api/health`        | GET    | Проверка здоровья сервиса   |
 
 **Подробнее:** [Swagger UI](http://localhost:3000/swagger)
 
@@ -148,17 +149,17 @@ src/
 
 ```yaml
 app:
-  save_path: "./storage/avatars"
+  save_path: './storage/avatars'
   server:
-    host: "0.0.0.0"
+    host: '0.0.0.0'
     port: 3000
   database:
-    driver: "sqlite"  # или "postgresql"
+    driver: 'sqlite' # или "postgresql"
     connection:
       maxRetries: 3
       retryDelay: 2000
     sqlite_params:
-      url: "file:./storage/database/database.sqlite"
+      url: 'file:./storage/database/database.sqlite'
 ```
 
 ### Переменные окружения
@@ -230,6 +231,7 @@ npm test avatar
 - Health check
 
 **Документация:**
+
 - [README](./modules/database/README.md)
 - [Architecture](./modules/database/ARCHITECTURE.md)
 - [Migration Guide](./modules/database/MIGRATION_GUIDE.md)
@@ -338,7 +340,7 @@ this.logger.warn('Low disk space');
 ### 4. Транзакции
 
 ```typescript
-await this.db.$transaction(async (tx) => {
+await this.db.$transaction(async tx => {
   await tx.avatar.create({ data: avatar1 });
   await tx.avatar.create({ data: avatar2 });
 });
@@ -372,12 +374,12 @@ npm run build
 
 ## 📝 Статус документации
 
-| Раздел | Статус | Обновлено |
-|--------|--------|-----------|
-| Modules | ✅ Актуально | 2025-10-03 |
-| Testing | ✅ Актуально | 2025-10-03 |
+| Раздел    | Статус       | Обновлено  |
+| --------- | ------------ | ---------- |
+| Modules   | ✅ Актуально | 2025-10-03 |
+| Testing   | ✅ Актуально | 2025-10-03 |
 | Changelog | ✅ Актуально | 2025-10-03 |
-| Archive | ✅ Актуально | 2025-10-03 |
+| Archive   | ✅ Актуально | 2025-10-03 |
 
 ## 🎉 Что нового в v0.0.2
 

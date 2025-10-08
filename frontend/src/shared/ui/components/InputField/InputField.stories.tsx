@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { InputField } from './InputField'
+import type { Meta, StoryObj } from '@storybook/react';
+import { InputField } from './InputField';
 
 const meta: Meta<typeof InputField> = {
   title: 'UI/InputField',
@@ -9,7 +9,7 @@ const meta: Meta<typeof InputField> = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    Story => (
       <div
         style={{
           padding: '1rem',
@@ -49,10 +49,10 @@ const meta: Meta<typeof InputField> = {
       control: { type: 'text' },
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Default story
 export const Default: Story = {
@@ -61,7 +61,7 @@ export const Default: Story = {
     placeholder: 'Enter your email',
     type: 'email',
   },
-}
+};
 
 // With description
 export const WithDescription: Story = {
@@ -70,7 +70,7 @@ export const WithDescription: Story = {
     placeholder: 'Enter your username',
     description: 'This will be your public display name.',
   },
-}
+};
 
 // Required field
 export const Required: Story = {
@@ -80,7 +80,7 @@ export const Required: Story = {
     type: 'password',
     required: true,
   },
-}
+};
 
 // Error state
 export const Error: Story = {
@@ -92,7 +92,7 @@ export const Error: Story = {
     statusMessage: 'Please enter a valid email address',
     defaultValue: 'invalid-email',
   },
-}
+};
 
 // Success state
 export const Success: Story = {
@@ -104,7 +104,7 @@ export const Success: Story = {
     statusMessage: 'Email address is valid',
     defaultValue: 'user@example.com',
   },
-}
+};
 
 // Warning state
 export const Warning: Story = {
@@ -113,11 +113,10 @@ export const Warning: Story = {
     placeholder: 'Enter your password',
     type: 'password',
     status: 'warning',
-    statusMessage:
-      'Password should be at least 8 characters long',
+    statusMessage: 'Password should be at least 8 characters long',
     defaultValue: '123',
   },
-}
+};
 
 // Disabled state
 export const Disabled: Story = {
@@ -128,149 +127,97 @@ export const Disabled: Story = {
     disabled: true,
     defaultValue: 'user@example.com',
   },
-}
+};
 
 // Different sizes
 export const Sizes: Story = {
   render: () => (
-    <div className='space-y-4'>
-      <InputField
-        label='Small'
-        placeholder='Small input'
-        size='sm'
-      />
-      <InputField
-        label='Default'
-        placeholder='Default input'
-        size='default'
-      />
-      <InputField
-        label='Large'
-        placeholder='Large input'
-        size='lg'
-      />
-      <InputField
-        label='Extra Large'
-        placeholder='Extra large input'
-        size='xl'
-      />
-      <InputField
-        label='Full Width'
-        placeholder='Full width input'
-        size='full'
-      />
+    <div className="space-y-4">
+      <InputField label="Small" placeholder="Small input" size="sm" />
+      <InputField label="Default" placeholder="Default input" size="default" />
+      <InputField label="Large" placeholder="Large input" size="lg" />
+      <InputField label="Extra Large" placeholder="Extra large input" size="xl" />
+      <InputField label="Full Width" placeholder="Full width input" size="full" />
     </div>
   ),
-}
+};
 
 // Different input types
 export const InputTypes: Story = {
   render: () => (
-    <div className='space-y-4'>
-      <InputField
-        label='Text'
-        placeholder='Enter text'
-        type='text'
-      />
-      <InputField
-        label='Email'
-        placeholder='Enter email'
-        type='email'
-      />
-      <InputField
-        label='Password'
-        placeholder='Enter password'
-        type='password'
-      />
-      <InputField
-        label='Number'
-        placeholder='Enter number'
-        type='number'
-      />
-      <InputField
-        label='URL'
-        placeholder='Enter URL'
-        type='url'
-      />
-      <InputField
-        label='Search'
-        placeholder='Search...'
-        type='search'
-      />
+    <div className="space-y-4">
+      <InputField label="Text" placeholder="Enter text" type="text" />
+      <InputField label="Email" placeholder="Enter email" type="email" />
+      <InputField label="Password" placeholder="Enter password" type="password" />
+      <InputField label="Number" placeholder="Enter number" type="number" />
+      <InputField label="URL" placeholder="Enter URL" type="url" />
+      <InputField label="Search" placeholder="Search..." type="search" />
     </div>
   ),
-}
+};
 
 // Form example
 export const FormExample: Story = {
   render: () => (
-    <form className='space-y-4 w-full max-w-md'>
+    <form className="space-y-4 w-full max-w-md">
+      <InputField label="First Name" placeholder="Enter your first name" required />
+      <InputField label="Last Name" placeholder="Enter your last name" required />
       <InputField
-        label='First Name'
-        placeholder='Enter your first name'
-        required
-      />
-      <InputField
-        label='Last Name'
-        placeholder='Enter your last name'
-        required
-      />
-      <InputField
-        label='Email'
-        placeholder='Enter your email'
-        type='email'
+        label="Email"
+        placeholder="Enter your email"
+        type="email"
         required
         description="We'll never share your email with anyone else."
       />
       <InputField
-        label='Password'
-        placeholder='Enter your password'
-        type='password'
+        label="Password"
+        placeholder="Enter your password"
+        type="password"
         required
-        status='warning'
-        statusMessage='Password must be at least 8 characters long'
+        status="warning"
+        statusMessage="Password must be at least 8 characters long"
       />
       <InputField
-        label='Confirm Password'
-        placeholder='Confirm your password'
-        type='password'
+        label="Confirm Password"
+        placeholder="Confirm your password"
+        type="password"
         required
       />
     </form>
   ),
-}
+};
 
 // All status variants
 export const AllStatuses: Story = {
   render: () => (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       <InputField
-        label='Default Status'
-        placeholder='Default input'
-        status='default'
-        statusMessage='This is a default status message'
+        label="Default Status"
+        placeholder="Default input"
+        status="default"
+        statusMessage="This is a default status message"
       />
       <InputField
-        label='Error Status'
-        placeholder='Error input'
-        status='error'
-        statusMessage='This is an error message'
-        defaultValue='invalid value'
+        label="Error Status"
+        placeholder="Error input"
+        status="error"
+        statusMessage="This is an error message"
+        defaultValue="invalid value"
       />
       <InputField
-        label='Success Status'
-        placeholder='Success input'
-        status='success'
-        statusMessage='This is a success message'
-        defaultValue='valid value'
+        label="Success Status"
+        placeholder="Success input"
+        status="success"
+        statusMessage="This is a success message"
+        defaultValue="valid value"
       />
       <InputField
-        label='Warning Status'
-        placeholder='Warning input'
-        status='warning'
-        statusMessage='This is a warning message'
-        defaultValue='warning value'
+        label="Warning Status"
+        placeholder="Warning input"
+        status="warning"
+        statusMessage="This is a warning message"
+        defaultValue="warning value"
       />
     </div>
   ),
-}
+};

@@ -1,40 +1,30 @@
-import * as React from 'react'
-import {
-  cva,
-  type VariantProps,
-} from 'class-variance-authority'
-import styles from './InputField.module.scss'
-import { cn } from '@/shared/lib/utils'
-import { Input } from '@/components/ui/input'
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import styles from './InputField.module.scss';
+import { cn } from '@/shared/lib/utils';
+import { Input } from '@/components/ui/input';
 
-export type InputStatus =
-  | 'default'
-  | 'error'
-  | 'success'
-  | 'warning'
+export type InputStatus = 'default' | 'error' | 'success' | 'warning';
 
-const inputFieldVariants = cva(
-  'grid w-full items-center gap-2',
-  {
-    variants: {
-      size: {
-        default: 'max-w-sm',
-        sm: 'max-w-xs',
-        lg: 'max-w-md',
-        xl: 'max-w-lg',
-        full: 'max-w-full',
-      },
-      disabled: {
-        true: 'opacity-50 pointer-events-none',
-        false: '',
-      },
+const inputFieldVariants = cva('grid w-full items-center gap-2', {
+  variants: {
+    size: {
+      default: 'max-w-sm',
+      sm: 'max-w-xs',
+      lg: 'max-w-md',
+      xl: 'max-w-lg',
+      full: 'max-w-full',
     },
-    defaultVariants: {
-      size: 'default',
-      disabled: false,
+    disabled: {
+      true: 'opacity-50 pointer-events-none',
+      false: '',
     },
   },
-)
+  defaultVariants: {
+    size: 'default',
+    disabled: false,
+  },
+});
 
 // Input variants are now handled by shadcn Input component
 
@@ -58,7 +48,7 @@ const labelVariants = cva(
       disabled: false,
     },
   },
-)
+);
 
 const statusMessageVariants = cva('text-xs mt-1', {
   variants: {
@@ -72,26 +62,20 @@ const statusMessageVariants = cva('text-xs mt-1', {
   defaultVariants: {
     status: 'default',
   },
-})
+});
 
 export interface InputFieldProps
-  extends Omit<
-      React.InputHTMLAttributes<HTMLInputElement>,
-      'size' | 'disabled'
-    >,
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'disabled'>,
     VariantProps<typeof inputFieldVariants> {
-  label: string
-  status?: InputStatus
-  statusMessage?: string
-  description?: string
-  required?: boolean
-  inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+  label: string;
+  status?: InputStatus;
+  statusMessage?: string;
+  description?: string;
+  required?: boolean;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 }
 
-const InputField = React.forwardRef<
-  HTMLInputElement,
-  InputFieldProps
->(
+const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
   (
     {
       className,
@@ -108,9 +92,9 @@ const InputField = React.forwardRef<
     },
     ref,
   ) => {
-    const inputId = React.useId()
-    const finalInputId = id || `input-${inputId}`
-    const isDisabled = disabled
+    const inputId = React.useId();
+    const finalInputId = id || `input-${inputId}`;
+    const isDisabled = disabled;
 
     return (
       <div
@@ -134,9 +118,7 @@ const InputField = React.forwardRef<
           )}
         >
           {label}
-          {required && (
-            <span className={cn(styles.required)}>*</span>
-          )}
+          {required && <span className={cn(styles.required)}>*</span>}
         </label>
 
         <Input
@@ -152,11 +134,7 @@ const InputField = React.forwardRef<
           {...props}
         />
 
-        {description && (
-          <p className={cn(styles.description)}>
-            {description}
-          </p>
-        )}
+        {description && <p className={cn(styles.description)}>{description}</p>}
 
         {statusMessage && (
           <p
@@ -167,12 +145,9 @@ const InputField = React.forwardRef<
               styles.statusMessage,
               {
                 [styles.statusError]: status === 'error',
-                [styles.statusSuccess]:
-                  status === 'success',
-                [styles.statusWarning]:
-                  status === 'warning',
-                [styles.statusDefault]:
-                  status === 'default',
+                [styles.statusSuccess]: status === 'success',
+                [styles.statusWarning]: status === 'warning',
+                [styles.statusDefault]: status === 'default',
               },
             )}
           >
@@ -180,10 +155,10 @@ const InputField = React.forwardRef<
           </p>
         )}
       </div>
-    )
+    );
   },
-)
+);
 
-InputField.displayName = 'InputField'
+InputField.displayName = 'InputField';
 
-export { InputField }
+export { InputField };

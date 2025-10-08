@@ -1,4 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { StorageService } from '../storage/storage.service';
 import { GeneratorService } from './modules';
 import {
@@ -6,14 +8,15 @@ import {
   GetAvatarDto,
   ListAvatarsDto,
 } from '../../common/dto/generate-avatar.dto';
-import { DatabaseService } from '../database';
+import { Avatar } from './avatar.entity';
 
 @Injectable()
 export class AvatarService {
   private readonly logger = new Logger(AvatarService.name);
 
   constructor(
-    private readonly databaseService: DatabaseService,
+    @InjectRepository(Avatar)
+    private readonly avatarRepository: Repository<Avatar>,
     private readonly avatarGenerator: GeneratorService,
     private readonly storageService: StorageService,
   ) {}
@@ -38,25 +41,25 @@ export class AvatarService {
       // Save to file system
       const filePath = await this.storageService.saveAvatar(avatarObject);
 
-      // Save metadata to database
-      const avatar = await this.databaseService.avatar.create({
-        data: {
-          id: avatarObject.meta_data_name,
-          name: avatarObject.meta_data_name,
-          filePath,
-          primaryColor: dto.primaryColor,
-          foreignColor: dto.foreignColor,
-          colorScheme: dto.colorScheme,
-          seed: dto.seed,
-        },
+      // Save metadata to database using TypeORM
+      const avatar = this.avatarRepository.create({
+        id: avatarObject.meta_data_name,
+        name: avatarObject.meta_data_name,
+        filePath,
+        primaryColor: dto.primaryColor,
+        foreignColor: dto.foreignColor,
+        colorScheme: dto.colorScheme,
+        seed: dto.seed,
       });
 
-      this.logger.log(`Avatar generated successfully with ID: ${avatar.id}`);
+      const savedAvatar = await this.avatarRepository.save(avatar);
+
+      this.logger.log(`Avatar generated successfully with ID: ${savedAvatar.id}`);
 
       return {
-        id: avatar.id,
-        createdAt: avatar.createdAt,
-        version: avatar.version,
+        id: savedAvatar.id,
+        createdAt: savedAvatar.createdAt,
+        version: savedAvatar.version,
       };
     } catch (error) {
       this.logger.error(`Failed to generate avatar: ${error.message}`, error);
@@ -73,8 +76,8 @@ export class AvatarService {
         throw new BadRequestException('Size must be between 4 and 9 (2^n where 4 <= n <= 9)');
       }
 
-      // Get avatar from database
-      const avatar = await this.databaseService.avatar.findUnique({
+      // Get avatar from database using TypeORM
+      const avatar = await this.avatarRepository.findOne({
         where: { id },
       });
 
@@ -116,8 +119,8 @@ export class AvatarService {
     this.logger.log(`Deleting avatar with ID: ${id}`);
 
     try {
-      // Check if avatar exists in database
-      const avatar = await this.databaseService.avatar.findUnique({
+      // Check if avatar exists in database using TypeORM
+      const avatar = await this.avatarRepository.findOne({
         where: { id },
       });
 
@@ -128,10 +131,8 @@ export class AvatarService {
       // Delete from file system
       await this.storageService.deleteAvatar(id);
 
-      // Delete from database
-      await this.databaseService.avatar.delete({
-        where: { id },
-      });
+      // Delete from database using TypeORM
+      await this.avatarRepository.remove(avatar);
 
       this.logger.log(`Avatar deleted successfully: ${id}`);
 
@@ -156,25 +157,24 @@ export class AvatarService {
       const pick = dto.pick || 10;
       const offset = dto.offset || 0;
 
-      const avatars = await this.databaseService.avatar.findMany({
+      // Use TypeORM query builder for pagination
+      const [avatars, total] = await this.avatarRepository.findAndCount({
         take: pick,
         skip: offset,
-        orderBy: {
-          createdAt: 'asc',
+        order: {
+          createdAt: 'ASC',
         },
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          version: true,
-          primaryColor: true,
-          foreignColor: true,
-          colorScheme: true,
-          seed: true,
-        },
+        select: [
+          'id',
+          'name',
+          'createdAt',
+          'version',
+          'primaryColor',
+          'foreignColor',
+          'colorScheme',
+          'seed',
+        ],
       });
-
-      const total = await this.databaseService.avatar.count();
 
       this.logger.log(`Retrieved ${avatars.length} avatars from ${offset} offset`);
 
@@ -194,7 +194,8 @@ export class AvatarService {
   }
 
   async healthCheck() {
-    const dbHealth = await this.databaseService.healthCheck();
+    // Простая проверка подключения к репозиторию
+    const dbHealth = await this.avatarRepository.count();
     return {
       database: dbHealth,
       status: dbHealth ? 'healthy' : 'unhealthy',

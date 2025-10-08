@@ -189,9 +189,9 @@
         "forest": "Лес",
         "royal": "Королевский"
       },
-            "randomPalette": "Случайная палитра",
-            "generateSeed": "Сгенерировать фразу",
-            "currentPalette": "Текущая палитра"
+      "randomPalette": "Случайная палитра",
+      "generateSeed": "Сгенерировать фразу",
+      "currentPalette": "Текущая палитра"
     }
   },
   "login": {

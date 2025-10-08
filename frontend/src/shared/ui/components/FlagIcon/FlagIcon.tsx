@@ -1,4 +1,4 @@
-import { cn } from '../../../lib/utils/utils'
+import { cn } from '../../../lib/utils/utils';
 import {
   GB,
   RU,
@@ -19,20 +19,20 @@ import {
   IN,
   EE,
   type FlagComponent,
-} from 'country-flag-icons/react/3x2'
+} from 'country-flag-icons/react/3x2';
 
 export interface FlagIconProps {
-  countryCode: string
-  size?: 'sm' | 'md' | 'lg'
-  overrideSize?: string
-  className?: string
+  countryCode: string;
+  size?: 'sm' | 'md' | 'lg';
+  overrideSize?: string;
+  className?: string;
 }
 
 const sizeClasses = {
   sm: 'text-xs w-4 h-3',
   md: 'text-sm w-5 h-4',
   lg: 'text-base w-6 h-4',
-}
+};
 
 // Country code to component mapping
 const flagComponents: Record<string, FlagComponent> = {
@@ -54,18 +54,12 @@ const flagComponents: Record<string, FlagComponent> = {
   au: AU,
   in: IN,
   ee: EE,
-}
+};
 
-export const FlagIcon = ({
-  countryCode,
-  size = 'md',
-  overrideSize,
-  className,
-}: FlagIconProps) => {
-  const FlagComponent =
-    flagComponents[countryCode.toLowerCase()]
+export const FlagIcon = ({ countryCode, size = 'md', overrideSize, className }: FlagIconProps) => {
+  const FlagComponent = flagComponents[countryCode.toLowerCase()];
 
-  const sizeClass = overrideSize || sizeClasses[size]
+  const sizeClass = overrideSize || sizeClasses[size];
 
   if (!FlagComponent) {
     return (
@@ -78,10 +72,8 @@ export const FlagIcon = ({
       >
         {countryCode.toUpperCase()}
       </div>
-    )
+    );
   }
 
-  return (
-    <FlagComponent className={cn(sizeClass, className)} />
-  )
-}
+  return <FlagComponent className={cn(sizeClass, className)} />;
+};

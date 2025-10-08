@@ -22,10 +22,10 @@
 # backend/settings.test.yaml
 app:
   storage:
-    type: 'local'  # По умолчанию для быстрых тестов
+    type: 'local' # По умолчанию для быстрых тестов
     s3:
       endpoint: 'https://test-s3-endpoint.com'
-      bucket: 'avatar-gen-test'  # ← Тестовый бакет
+      bucket: 'avatar-gen-test' # ← Тестовый бакет
       access_key: 'test-access-key'
       secret_key: 'test-secret-key'
       region: 'us-east-1'
@@ -49,6 +49,7 @@ docker run -p 9000:9000 -p 9001:9001 \
 ```
 
 Создайте тестовый бакет через MinIO Console (http://localhost:9001):
+
 1. Войдите с credentials: `test-access-key` / `test-secret-key`
 2. Создайте бакет `avatar-gen-test`
 
@@ -115,6 +116,7 @@ services:
    - Yandex Object Storage: `avatar-gen-test`
 
 2. **Настройте lifecycle политику для автоматической очистки**:
+
    ```json
    {
      "Rules": [
@@ -137,12 +139,12 @@ services:
 
 В GitHub Actions тесты запускаются с разными комбинациями:
 
-| Database   | Storage | S3 Bucket        | Описание                      |
-|------------|---------|------------------|-------------------------------|
-| SQLite     | local   | N/A              | Быстрые локальные тесты       |
-| SQLite     | s3      | avatar-gen-test  | Тесты с тестовым S3           |
-| PostgreSQL | local   | N/A              | Интеграционные тесты          |
-| PostgreSQL | s3      | avatar-gen-test  | Полные интеграционные тесты   |
+| Database   | Storage | S3 Bucket       | Описание                    |
+| ---------- | ------- | --------------- | --------------------------- |
+| SQLite     | local   | N/A             | Быстрые локальные тесты     |
+| SQLite     | s3      | avatar-gen-test | Тесты с тестовым S3         |
+| PostgreSQL | local   | N/A             | Интеграционные тесты        |
+| PostgreSQL | s3      | avatar-gen-test | Полные интеграционные тесты |
 
 ## 🔒 Безопасность
 
@@ -165,7 +167,7 @@ TEST_S3_SECRET_KEY    # test-user-secret-key
 app:
   storage:
     s3:
-      endpoint: 'http://localhost:9000'  # Локальный MinIO
+      endpoint: 'http://localhost:9000' # Локальный MinIO
       bucket: 'avatar-gen-test'
       access_key: 'your-local-key'
       secret_key: 'your-local-secret'
@@ -237,4 +239,3 @@ aws s3 ls s3://avatar-gen-test --recursive --summarize
 
 **Поддержка:** Backend Team  
 **Последнее обновление:** 2025-10-04
-

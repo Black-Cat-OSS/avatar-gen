@@ -1,1 +1,6 @@
-export { IDatabaseConnection, DatabaseInfo } from './database-connection.interface';
+/**
+ * Экспорты всех интерфейсов database модуля
+ */
+
+export * from './driver';
+export * from './configs';

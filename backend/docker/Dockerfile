@@ -17,33 +17,37 @@ RUN for i in 1 2 3; do \
           apk update; sleep 5; }; \
     done
 
+# Install pnpm globally
+RUN npm install -g pnpm@latest
+
+# Copy workspace configuration and lock file
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+
+# Copy backend package files first for better caching
+COPY backend/package.json ./backend/
+
 # Set environment variable to skip husky installation
 ENV HUSKY_SKIP_INSTALL=1
 
-# Copy package files first for better caching
-COPY package*.json ./
-COPY package-lock.json ./
+# Install ALL dependencies from workspace (including devDependencies for build)
+RUN pnpm install --frozen-lockfile --filter backend...
 
-# Install ALL dependencies (including devDependencies for build)
-# Use installation for faster builds
-RUN npm install
+# Copy backend source code
+COPY backend/src ./backend/src
+COPY backend/tsconfig.json ./backend/
+COPY backend/nest-cli.json ./backend/
 
-# Copy source code and Prisma schema templates
-COPY src ./src
-COPY prisma ./prisma
-COPY tsconfig.json ./
-COPY nest-cli.json ./
-
-# Generate Prisma client для SQLite (по умолчанию для сборки)
-# В runtime будет перегенерирован с правильным provider
-RUN cp prisma/schema.sqlite.prisma prisma/schema.prisma && \
-    npx prisma generate
+# Copy test files and configuration for testing
+COPY backend/test ./backend/test
+COPY backend/jest.config.js ./backend/
 
 # Build the application with parallel compilation
 # Set max old space size for large builds and enable parallel compilation
+WORKDIR /app/backend
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm install -g typescript && \ 
-    npm run build
+RUN pnpm run build
 
 # Production stage
 FROM node:20-alpine AS production
@@ -64,41 +68,43 @@ RUN for i in 1 2 3; do \
           apk update; sleep 5; }; \
     done
 
-# Copy package files
-COPY package*.json ./
-COPY package-lock.json ./
+# Install pnpm globally
+RUN npm install -g pnpm@latest
 
-# Install only production dependencies + prisma CLI (needed for runtime schema switching)
-RUN npm install --omit=dev && \
-    npm install -g prisma@6.16.3 && \
-    npm cache clean --force
+# Copy workspace configuration and lock file
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+
+# Copy backend package files
+COPY backend/package.json ./backend/
+
+# Set environment variable to skip husky installation
+ENV HUSKY_SKIP_INSTALL=1
+
+# Install only production dependencies from workspace (ignore scripts to skip husky)
+RUN pnpm install --prod --frozen-lockfile --filter backend --ignore-scripts && \
+    pnpm store prune
 
 # Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
-# Копируем ТОЛЬКО schema templates (НЕ копируем schema.prisma из builder)
-COPY --from=builder /app/prisma/schema.sqlite.prisma ./prisma/schema.sqlite.prisma
-COPY --from=builder /app/prisma/schema.postgresql.prisma ./prisma/schema.postgresql.prisma
-# НЕ копируем /app/node_modules/.prisma из builder - будет сгенерирован в runtime!
+COPY --from=builder /app/backend/dist ./backend/dist
 
-# Create storage directories
-RUN mkdir -p storage/avatars storage/database
-
-# Copy startup script only (конфигурации монтируются через volumes)
-COPY start.sh ./start.sh
-
-# Don't copy configuration files - they should be mounted as volumes
-# Don't copy existing database - create fresh one in container
-# This avoids permission and cross-platform issues
+# Copy startup script
+COPY backend/start.sh ./backend/start.sh
 
 # Make startup script executable
-RUN chmod +x /app/start.sh && ls -la /app/start.sh
+RUN chmod +x /app/backend/start.sh && ls -la /app/backend/start.sh
+
+# Create storage directories
+RUN mkdir -p backend/storage/avatars backend/storage/database
+
+# Set working directory to backend
+WORKDIR /app/backend
 
 # Expose port
 EXPOSE 3000
 
 # Set environment variables
-# NOTE: DATABASE_URL передаётся через docker-compose environment
-# Не задаём дефолтное значение здесь, чтобы избежать конфликтов!
 ENV NODE_ENV=production
 ENV CONFIG_PATH="./settings.yaml"
 
@@ -108,4 +114,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start the application
 # Use sh explicitly to avoid issues with node's docker-entrypoint
-CMD ["sh", "/app/start.sh"]
+CMD ["sh", "/app/backend/start.sh"]

@@ -46,16 +46,16 @@ export class YamlConfigService {
   private processEnvironmentVariables(content: string): string {
     return content.replace(/\$\{([^}:]+)(:-[^}]*)?\}/g, (match, varName, defaultValue) => {
       const envValue = process.env[varName];
-      
+
       if (envValue !== undefined) {
         return envValue;
       }
-      
+
       // Если есть значение по умолчанию, используем его
       if (defaultValue && defaultValue.startsWith(':-')) {
         return defaultValue.substring(2); // Убираем ':-'
       }
-      
+
       // Если переменная не найдена и нет значения по умолчанию, возвращаем пустую строку
       return '';
     });
@@ -68,6 +68,9 @@ export class YamlConfigService {
       let baseConfigPath = process.env.CONFIG_PATH;
 
       // Поддержка матричной конфигурации для тестов
+      /*
+      TODO: переделать чтение конфигураций. Думаю это 
+      */
       if (process.env.TEST_MATRIX_CONFIG && existsSync(process.env.TEST_MATRIX_CONFIG)) {
         baseConfigPath = process.env.TEST_MATRIX_CONFIG;
       } else if (!baseConfigPath) {
@@ -121,14 +124,14 @@ export class YamlConfigService {
 
         const processedLocalContents = this.processEnvironmentVariables(localFileContents);
         const localConfig = yaml.load(processedLocalContents);
-        this.logger.debug(
-          `Local configuration loaded: ${JSON.stringify(localConfig, null, 2)}`,
-        );
+        this.logger.debug(`Local configuration loaded: ${JSON.stringify(localConfig, null, 2)}`);
 
         // Объединяем конфигурации, где localConfig переопределяет baseConfig
         finalConfig = this.deepMerge(finalConfig, localConfig);
         this.logger.log(`Local configuration loaded and merged successfully`);
-        this.logger.debug(`After local merge configuration: ${JSON.stringify(finalConfig, null, 2)}`);
+        this.logger.debug(
+          `After local merge configuration: ${JSON.stringify(finalConfig, null, 2)}`,
+        );
       } else {
         this.logger.debug('Local configuration file not found, using base configuration only');
       }
@@ -157,7 +160,9 @@ export class YamlConfigService {
           // Объединяем конфигурации, где envConfig переопределяет baseConfig
           finalConfig = this.deepMerge(finalConfig, envConfig);
           this.logger.log(`Environment-specific configuration loaded and merged successfully`);
-          this.logger.debug(`After env merge configuration: ${JSON.stringify(finalConfig, null, 2)}`);
+          this.logger.debug(
+            `After env merge configuration: ${JSON.stringify(finalConfig, null, 2)}`,
+          );
         } else {
           this.logger.warn(
             `Environment-specific configuration file not found: ${envConfigPath}, using base configuration only`,
@@ -169,7 +174,9 @@ export class YamlConfigService {
         this.logger.debug(`Looking for environment local config at: ${envLocalConfigPath}`);
 
         if (existsSync(envLocalConfigPath)) {
-          this.logger.log(`Loading environment-specific local configuration from: ${envLocalConfigPath}`);
+          this.logger.log(
+            `Loading environment-specific local configuration from: ${envLocalConfigPath}`,
+          );
           const envLocalFileContents = readFileSync(envLocalConfigPath, 'utf8');
           this.logger.debug(
             `Environment local config file contents length: ${envLocalFileContents.length} characters`,
@@ -183,8 +190,12 @@ export class YamlConfigService {
 
           // Объединяем конфигурации, где envLocalConfig переопределяет все предыдущие
           finalConfig = this.deepMerge(finalConfig, envLocalConfig);
-          this.logger.log(`Environment-specific local configuration loaded and merged successfully`);
-          this.logger.debug(`Final configuration after all merges: ${JSON.stringify(finalConfig, null, 2)}`);
+          this.logger.log(
+            `Environment-specific local configuration loaded and merged successfully`,
+          );
+          this.logger.debug(
+            `Final configuration after all merges: ${JSON.stringify(finalConfig, null, 2)}`,
+          );
         } else {
           this.logger.debug('Environment-specific local configuration file not found');
         }

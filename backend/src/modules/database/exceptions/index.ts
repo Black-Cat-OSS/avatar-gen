@@ -6,4 +6,3 @@ export {
   SqliteDatabaseFilePermissionException,
   DatabaseConnectionException,
 } from './database.exception';
-

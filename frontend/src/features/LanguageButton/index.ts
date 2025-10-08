@@ -1,1 +1,1 @@
-export { LanguageButton } from './LanguageButton'
+export { LanguageButton } from './LanguageButton';
