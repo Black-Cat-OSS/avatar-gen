@@ -67,6 +67,17 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Build backend test image with cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/docker/Dockerfile
+          target: builder
+          push: false
+          tags: avatar-gen-test-backend:builder
+          cache-from: type=gha,scope=backend-matrix
+          cache-to: type=gha,mode=max,scope=backend-matrix
+
       - name: Run matrix tests with Docker Compose
         run: |
           # Устанавливаем переменные окружения
@@ -89,8 +100,8 @@ jobs:
             export TEST_DB_PASSWORD=test_password
           fi
           
-          # Запускаем матричные тесты
-          docker-compose -f docker/docker-compose.test.yaml --profile matrix-tests up --build --abort-on-container-exit test-runner
+          # Запускаем матричные тесты (используя предсобранный образ)
+          docker compose -f docker/docker-compose.test.yaml --profile matrix-tests up --abort-on-container-exit test-runner
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

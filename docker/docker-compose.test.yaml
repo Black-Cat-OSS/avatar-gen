@@ -1,6 +1,48 @@
 name: avatar-gen-test
 
 services:
+  # ============================================================================
+  # BUILD SERVICES - Собирают образы один раз, не запускаются автоматически
+  # ============================================================================
+
+  # Backend Builder - собирает образ для всех backend тестов
+  backend-builder:
+    build:
+      context: ..
+      dockerfile: backend/docker/Dockerfile
+      target: builder
+    image: avatar-gen-test-backend:builder
+    profiles:
+      - build-only
+    container_name: avatar-gen-backend-builder
+    command: ['echo', 'Builder image created']
+
+  # Frontend Builder - собирает образ для frontend
+  frontend-builder:
+    build:
+      context: ..
+      dockerfile: frontend/docker/Dockerfile
+    image: avatar-gen-test-frontend:latest
+    profiles:
+      - build-only
+    container_name: avatar-gen-frontend-builder
+    command: ['echo', 'Builder image created']
+
+  # Gateway Builder - собирает образ для gateway
+  gateway-builder:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    image: avatar-gen-test-gateway:latest
+    profiles:
+      - build-only
+    container_name: avatar-gen-gateway-builder
+    command: ['echo', 'Builder image created']
+
+  # ============================================================================
+  # INFRASTRUCTURE SERVICES - MinIO, PostgreSQL
+  # ============================================================================
+
   # MinIO для имитации S3 в тестовой среде
   minio:
     image: minio/minio:latest
@@ -57,12 +99,17 @@ services:
     # Автоматическое удаление при остановке
     restart: 'no'
 
+  # ============================================================================
+  # TEST SERVICES - Используют предсобранные образы
+  # ============================================================================
+
   # Backend для Unit тестов (SQLite + Local Storage)
   avatar-backend-unit:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
       target: builder
+    image: avatar-gen-test-backend:builder
     container_name: avatar-gen-backend-unit-test
     profiles:
       - unit-tests
@@ -83,6 +130,7 @@ services:
       context: ..
       dockerfile: backend/docker/Dockerfile
       target: builder
+    image: avatar-gen-test-backend:builder
     container_name: avatar-gen-backend-integration-test
     profiles:
       - integration-tests
@@ -117,6 +165,7 @@ services:
       context: ..
       dockerfile: backend/docker/Dockerfile
       target: builder
+    image: avatar-gen-test-backend:builder
     container_name: avatar-gen-backend-e2e-test
     profiles:
       - e2e-tests
@@ -142,6 +191,7 @@ services:
     build:
       context: ..
       dockerfile: frontend/docker/Dockerfile
+    image: avatar-gen-test-frontend:latest
     container_name: avatar-gen-frontend-e2e-test
     profiles:
       - e2e-tests
@@ -162,6 +212,7 @@ services:
     build:
       context: ../gateway
       dockerfile: Dockerfile
+    image: avatar-gen-test-gateway:latest
     container_name: avatar-gen-gateway-e2e-test
     profiles:
       - e2e-tests
@@ -177,12 +228,68 @@ services:
     networks:
       - test-internal
 
+  # E2E Test Runner - запускает ВСЕ E2E тесты
+  e2e-test-runner:
+    build:
+      context: ..
+      dockerfile: backend/docker/Dockerfile
+      target: builder
+    image: avatar-gen-test-backend:builder
+    container_name: avatar-gen-e2e-test-runner
+    profiles:
+      - e2e-tests
+      - e2e-full
+    depends_on:
+      - avatar-backend-e2e
+      - avatar-frontend-e2e
+      - gateway-e2e
+    volumes:
+      - ../backend/configs/settings.test.e2e.yaml:/app/backend/settings.yaml:ro
+      - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
+    environment:
+      - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
+      - BACKEND_URL=http://avatar-backend-e2e:3000
+      - GATEWAY_URL=http://gateway-e2e:80
+    command: ['pnpm', 'run', 'test:e2e', '--verbose']
+    networks:
+      - test-internal
+
+  # E2E Health Tests - только health endpoint тесты
+  e2e-health-runner:
+    build:
+      context: ..
+      dockerfile: backend/docker/Dockerfile
+      target: builder
+    image: avatar-gen-test-backend:builder
+    container_name: avatar-gen-e2e-health-runner
+    profiles:
+      - e2e-health
+    depends_on:
+      - avatar-backend-e2e
+      - avatar-frontend-e2e
+      - gateway-e2e
+    volumes:
+      - ../backend/configs/settings.test.e2e.yaml:/app/backend/settings.yaml:ro
+      - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
+    environment:
+      - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
+      - BACKEND_URL=http://avatar-backend-e2e:3000
+      - GATEWAY_URL=http://gateway-e2e:80
+    command: ['pnpm', 'run', 'test:e2e', '--testNamePattern=HealthController', '--verbose']
+    networks:
+      - test-internal
+
   # Test Runner для матричного тестирования
   test-runner:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
       target: builder
+    image: avatar-gen-test-backend:builder
     container_name: avatar-gen-test-runner
     profiles:
       - matrix-tests

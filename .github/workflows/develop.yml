@@ -169,6 +169,17 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Build backend test image with cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/docker/Dockerfile
+          target: builder
+          push: false
+          tags: avatar-gen-test-backend:builder
+          cache-from: type=gha,scope=backend-test
+          cache-to: type=gha,mode=max,scope=backend-test
+
       - name: Run integration tests with Docker Compose
         run: |
           # Устанавливаем переменные окружения для MinIO
@@ -187,8 +198,8 @@ jobs:
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
           
-          # Запускаем integration тесты
-          docker compose -f docker/docker-compose.test.yaml --profile integration-tests up --build --abort-on-container-exit avatar-backend-integration
+          # Запускаем integration тесты (используя предсобранный образ)
+          docker compose -f docker/docker-compose.test.yaml --profile integration-tests up --abort-on-container-exit avatar-backend-integration
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -262,6 +273,37 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Build backend test image with cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/docker/Dockerfile
+          target: builder
+          push: false
+          tags: avatar-gen-test-backend:builder
+          cache-from: type=gha,scope=backend-test
+          cache-to: type=gha,mode=max,scope=backend-test
+
+      - name: Build frontend test image with cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./frontend/docker/Dockerfile
+          push: false
+          tags: avatar-gen-test-frontend:latest
+          cache-from: type=gha,scope=frontend-test
+          cache-to: type=gha,mode=max,scope=frontend-test
+
+      - name: Build gateway test image with cache
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gateway
+          file: ./gateway/Dockerfile
+          push: false
+          tags: avatar-gen-test-gateway:latest
+          cache-from: type=gha,scope=gateway-test
+          cache-to: type=gha,mode=max,scope=gateway-test
+
       - name: Run E2E tests with Docker Compose
         run: |
           # Устанавливаем переменные окружения для MinIO
@@ -280,11 +322,11 @@ jobs:
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
           
-          # Запускаем E2E тесты
-          docker compose -f docker/docker-compose.test.yaml --profile e2e-tests up --build --abort-on-container-exit gateway-e2e
+          # Запускаем E2E тесты через test runner
+          docker compose -f docker/docker-compose.test.yaml --profile e2e-tests up --abort-on-container-exit --exit-code-from e2e-test-runner
 
   docker-build-test:
-    name: Docker Build Test
+    name: Docker Build Test (Production Images)
     runs-on: ubuntu-latest
     needs: [test-e2e]
 
@@ -295,25 +337,31 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build backend image
+      - name: Build backend production image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
+          context: .
           file: ./backend/docker/Dockerfile
+          target: production
           push: false
           tags: avatar-gen-backend:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=backend-test
+            type=gha,scope=backend-prod
+          cache-to: type=gha,mode=max,scope=backend-prod
 
-      - name: Build frontend image
+      - name: Build frontend production image
         uses: docker/build-push-action@v6
         with:
-          context: ./frontend
+          context: .
           file: ./frontend/docker/Dockerfile
+          target: production
           push: false
           tags: avatar-gen-frontend:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=frontend-test
+            type=gha,scope=frontend-prod
+          cache-to: type=gha,mode=max,scope=frontend-prod
 
       - name: Build gateway image
         uses: docker/build-push-action@v6
@@ -322,5 +370,5 @@ jobs:
           file: ./gateway/Dockerfile
           push: false
           tags: avatar-gen-gateway:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=gateway-test
+          cache-to: type=gha,scope=gateway-prod
