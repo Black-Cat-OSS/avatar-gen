@@ -172,7 +172,7 @@ jobs:
           fi
           
           # Запускаем integration тесты
-          docker-compose -f docker/docker-compose.test.yaml --profile integration-tests up --build --abort-on-container-exit avatar-backend-integration
+          docker compose -f docker/docker-compose.test.yaml --profile integration-tests up --build --abort-on-container-exit avatar-backend-integration
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -235,7 +235,7 @@ jobs:
           fi
           
           # Запускаем E2E тесты
-          docker-compose -f docker/docker-compose.test.yaml --profile e2e-tests up --build --abort-on-container-exit gateway-e2e
+          docker compose -f docker/docker-compose.test.yaml --profile e2e-tests up --build --abort-on-container-exit gateway-e2e
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -293,7 +293,7 @@ jobs:
           fi
           
           # Запускаем матричные тесты
-          docker-compose -f docker/docker-compose.test.yaml --profile matrix-tests up --build --abort-on-container-exit test-runner
+          docker compose -f docker/docker-compose.test.yaml --profile matrix-tests up --build --abort-on-container-exit test-runner
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

@@ -49,7 +49,7 @@ import { SqliteDriverService, PostgreSQLDriverService } from './drivers';
         // Добавляем сущности
         typeormConfig.entities = [Avatar];
 
-        return typeormConfig;
+        return typeormConfig as any;
       },
       inject: [YamlConfigService, DatabaseDriverFactory],
     }),

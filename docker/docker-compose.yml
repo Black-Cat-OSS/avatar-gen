@@ -61,8 +61,8 @@ services:
   # 3. PostgreSQL (внешняя): Настроить в settings.yaml
   avatar-backend:
     build:
-      context: ../backend
-      dockerfile: docker/Dockerfile
+      context: ..
+      dockerfile: backend/docker/Dockerfile
     container_name: avatar-gen-backend
     expose:
       - '3000'
@@ -94,8 +94,8 @@ services:
   # Frontend Service
   avatar-frontend:
     build:
-      context: ../frontend
-      dockerfile: docker/Dockerfile
+      context: ..
+      dockerfile: frontend/docker/Dockerfile
     container_name: avatar-gen-frontend
     expose:
       - '8080'

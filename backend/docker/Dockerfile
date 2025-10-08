@@ -17,24 +17,37 @@ RUN for i in 1 2 3; do \
           apk update; sleep 5; }; \
     done
 
+# Install pnpm globally
+RUN npm install -g pnpm@latest
 
-# Copy package files first for better caching
-COPY package*.json ./
-COPY package-lock.json ./
+# Copy workspace configuration and lock file
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
 
-# Install ALL dependencies (including devDependencies for build)
-RUN npm install
+# Copy backend package files first for better caching
+COPY backend/package.json ./backend/
 
-# Copy source code
-COPY src ./src
-COPY tsconfig.json ./
-COPY nest-cli.json ./
+# Set environment variable to skip husky installation
+ENV HUSKY_SKIP_INSTALL=1
+
+# Install ALL dependencies from workspace (including devDependencies for build)
+RUN pnpm install --frozen-lockfile --filter backend...
+
+# Copy backend source code
+COPY backend/src ./backend/src
+COPY backend/tsconfig.json ./backend/
+COPY backend/nest-cli.json ./backend/
+
+# Copy test files and configuration for testing
+COPY backend/test ./backend/test
+COPY backend/jest.config.js ./backend/
 
 # Build the application with parallel compilation
 # Set max old space size for large builds and enable parallel compilation
+WORKDIR /app/backend
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm install -g typescript && \ 
-    npm run build
+RUN pnpm run build
 
 # Production stage
 FROM node:20-alpine AS production
@@ -55,25 +68,38 @@ RUN for i in 1 2 3; do \
           apk update; sleep 5; }; \
     done
 
-# Copy package files
-COPY package*.json ./
-COPY package-lock.json ./
+# Install pnpm globally
+RUN npm install -g pnpm@latest
 
-# Install only production dependencies
-RUN npm install --omit=dev && \
-    npm cache clean --force
+# Copy workspace configuration and lock file
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+
+# Copy backend package files
+COPY backend/package.json ./backend/
+
+# Set environment variable to skip husky installation
+ENV HUSKY_SKIP_INSTALL=1
+
+# Install only production dependencies from workspace (ignore scripts to skip husky)
+RUN pnpm install --prod --frozen-lockfile --filter backend --ignore-scripts && \
+    pnpm store prune
 
 # Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
-
-# Create storage directories
-RUN mkdir -p storage/avatars storage/database
+COPY --from=builder /app/backend/dist ./backend/dist
 
 # Copy startup script
-COPY start.sh ./start.sh
+COPY backend/start.sh ./backend/start.sh
 
 # Make startup script executable
-RUN chmod +x /app/start.sh && ls -la /app/start.sh
+RUN chmod +x /app/backend/start.sh && ls -la /app/backend/start.sh
+
+# Create storage directories
+RUN mkdir -p backend/storage/avatars backend/storage/database
+
+# Set working directory to backend
+WORKDIR /app/backend
 
 # Expose port
 EXPOSE 3000
@@ -88,4 +114,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start the application
 # Use sh explicitly to avoid issues with node's docker-entrypoint
-CMD ["sh", "/app/start.sh"]
+CMD ["sh", "/app/backend/start.sh"]
