@@ -33,10 +33,10 @@ start_postgres() {
     log "Запуск временного PostgreSQL контейнера для тестов..."
     
     # Останавливаем и удаляем существующий контейнер если есть
-    docker-compose -f docker/docker-compose.test-postgres.yaml down --volumes --remove-orphans 2>/dev/null || true
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only down --volumes --remove-orphans 2>/dev/null || true
     
     # Запускаем новый контейнер
-    docker-compose -f docker/docker-compose.test-postgres.yaml up -d postgres-temp
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only up -d postgres-test
     
     # Ждем пока контейнер будет готов
     log "Ожидание готовности PostgreSQL..."
@@ -44,7 +44,7 @@ start_postgres() {
     local attempt=0
     
     while [ $attempt -lt $max_attempts ]; do
-        if docker-compose -f docker/docker-compose.test-postgres.yaml exec postgres-temp pg_isready -U test_user -d avatar_gen_test >/dev/null 2>&1; then
+        if docker exec avatar-gen-postgres-test pg_isready -U test_user -d avatar_gen_test >/dev/null 2>&1; then
             success "PostgreSQL готов к работе!"
             return 0
         fi
@@ -61,17 +61,17 @@ start_postgres() {
 # Функция для остановки временного PostgreSQL
 stop_postgres() {
     log "Остановка временного PostgreSQL контейнера..."
-    docker-compose -f docker/docker-compose.test-postgres.yaml down --volumes --remove-orphans
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only down --volumes --remove-orphans
     success "PostgreSQL контейнер остановлен и удален"
 }
 
 # Функция для проверки статуса PostgreSQL
 status_postgres() {
-    if docker-compose -f docker/docker-compose.test-postgres.yaml ps postgres-temp | grep -q "Up"; then
+    if docker-compose -f docker/docker-compose.test.yaml --profile postgres-only ps postgres-test | grep -q "Up"; then
         success "PostgreSQL контейнер запущен"
         
         # Проверяем подключение
-        if docker-compose -f docker/docker-compose.test-postgres.yaml exec postgres-temp pg_isready -U test_user -d avatar_gen_test >/dev/null 2>&1; then
+        if docker-compose -f docker/docker-compose.test.yaml --profile postgres-only exec postgres-test pg_isready -U test_user -d avatar_gen_test >/dev/null 2>&1; then
             success "PostgreSQL готов к подключениям"
         else
             warning "PostgreSQL запущен, но не готов к подключениям"
@@ -103,13 +103,13 @@ exec_sql() {
     fi
     
     log "Выполнение SQL команды: $sql_command"
-    docker-compose -f docker/docker-compose.test-postgres.yaml exec postgres-temp psql -U test_user -d avatar_gen_test -c "$sql_command"
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only exec postgres-test psql -U test_user -d avatar_gen_test -c "$sql_command"
 }
 
 # Функция для подключения к PostgreSQL
 connect_postgres() {
     log "Подключение к PostgreSQL..."
-    docker-compose -f docker/docker-compose.test-postgres.yaml exec postgres-temp psql -U test_user -d avatar_gen_test
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only exec postgres-test psql -U test_user -d avatar_gen_test
 }
 
 # Функция для сброса базы данных
@@ -148,7 +148,7 @@ show_help() {
 
 # Функция для показа логов
 show_logs() {
-    docker-compose -f docker/docker-compose.test-postgres.yaml logs postgres-temp
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only logs postgres-test
 }
 
 # Основная логика

@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 
 /**
  * Сущность Avatar для TypeORM
  *
- * Соответствует Prisma модели Avatar с теми же полями и ограничениями.
+ * TypeORM сущность Avatar с полями для хранения информации об аватарах.
  * Использует TypeORM декораторы для определения структуры таблицы.
  *
  * @class Avatar

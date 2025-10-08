@@ -33,6 +33,7 @@ services:
     image: postgres:17-alpine
     container_name: avatar-gen-postgres-test
     profiles:
+      - postgres-only # Для standalone запуска PostgreSQL
       - postgresql-storage
       - integration-tests
       - e2e-tests

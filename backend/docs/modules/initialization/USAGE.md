@@ -240,7 +240,7 @@ curl http://localhost:3000/api/health
   "details": {
     "directories": {
       "storage": "ok",
-      "prisma": "ok",
+      "typeorm": "ok",
       "logs": "ok"
     }
   }
@@ -275,7 +275,7 @@ cd backend && npm run start:dev
 
 ```bash
 # Дайте права текущему пользователю
-sudo chown -R $USER:$USER storage/ prisma/ logs/
+sudo chown -R $USER:$USER storage/ logs/
 ```
 
 **На Windows:**
