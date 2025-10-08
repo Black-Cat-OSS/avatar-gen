@@ -60,4 +60,15 @@ export interface IDatabaseConfig {
 
   /** Конфигурация для SQLite (если type === 'sqlite') */
   sqlite?: ISqliteConfig;
+
+  /** PostgreSQL параметры подключения (на верхнем уровне для TypeORM) */
+  host?: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  database?: string;
+  ssl?: boolean;
+
+  /** SQLite параметр (на верхнем уровне для TypeORM) */
+  databasePath?: string;
 }

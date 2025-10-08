@@ -37,11 +37,16 @@ export class PostgreSQLDriverService implements IDataBaseDriver {
 
     const typeOrmConfig: IDatabaseConfig = {
       type: 'postgres',
+      host: postgresConfig.host,
+      port: postgresConfig.port,
+      username: postgresConfig.username,
+      password: postgresConfig.password,
+      database: postgresConfig.database,
+      ssl: postgresConfig.ssl,
       entities: [], // Будет заполнено в DatabaseModule
       synchronize: false, // PostgreSQL не поддерживает автоматическую синхронизацию в production
       logging: configService.getLoggingConfig().verbose,
       logger: 'simple-console',
-      postgres: postgresConfig,
     };
 
     this.logger.debug(

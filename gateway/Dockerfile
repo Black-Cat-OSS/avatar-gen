@@ -3,12 +3,17 @@ FROM nginx:alpine
 LABEL maintainer="Avatar Generator"
 LABEL description="Nginx reverse proxy with Let's Encrypt support"
 
-RUN apk add --no-cache \
-    certbot \
-    certbot-nginx \
-    openssl \
-    bash \
-    && rm -rf /var/cache/apk/*
+RUN echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
+    echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories || true
+
+RUN for i in 1 2 3; do \
+        apk update && apk add --no-cache certbot certbot-nginx openssl bash && break || \
+        { echo "Retry $i/3 failed, trying default mirrors..."; \
+          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
+          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
+          apk update; sleep 5; }; \
+    done && \
+    rm -rf /var/cache/apk/*
 
 RUN mkdir -p /var/www/certbot \
     /etc/letsencrypt/live/localhost \

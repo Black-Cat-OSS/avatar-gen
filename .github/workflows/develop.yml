@@ -188,7 +188,7 @@ jobs:
           export TEST_DB_PASSWORD=test_password
           
           # Запускаем integration тесты
-          docker-compose -f docker/docker-compose.test.yaml --profile integration-tests up --build --abort-on-container-exit avatar-backend-integration
+          docker compose -f docker/docker-compose.test.yaml --profile integration-tests up --build --abort-on-container-exit avatar-backend-integration
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -281,7 +281,7 @@ jobs:
           export TEST_DB_PASSWORD=test_password
           
           # Запускаем E2E тесты
-          docker-compose -f docker/docker-compose.test.yaml --profile e2e-tests up --build --abort-on-container-exit gateway-e2e
+          docker compose -f docker/docker-compose.test.yaml --profile e2e-tests up --build --abort-on-container-exit gateway-e2e
 
   docker-build-test:
     name: Docker Build Test

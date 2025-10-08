@@ -78,14 +78,12 @@ describe('PostgreSQLDriverService', () => {
         synchronize: false,
         logging: true,
         logger: 'simple-console',
-        postgres: {
-          host: 'localhost',
-          port: 5432,
-          username: 'testuser',
-          password: 'testpass',
-          database: 'testdb',
-          ssl: false,
-        },
+        host: 'localhost',
+        port: 5432,
+        username: 'testuser',
+        password: 'testpass',
+        database: 'testdb',
+        ssl: false,
       });
     });
 
@@ -134,7 +132,7 @@ describe('PostgreSQLDriverService', () => {
 
       const result = service.buildConfigs(mockYamlConfigService);
 
-      expect(result.postgres?.ssl).toBe(true);
+      expect(result.ssl).toBe(true);
       expect(result.logging).toBe(false);
     });
   });
