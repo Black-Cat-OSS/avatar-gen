@@ -173,7 +173,7 @@ backend/
 │   │   ├── enums/          # Перечисления
 │   │   └── interfaces/     # Интерфейсы
 │   └── config/             # Конфигурация
-├── prisma/                 # Схема БД и миграции
+├── src/modules/database/   # TypeORM конфигурация и сущности
 └── storage/               # Файловое хранилище
 ```
 

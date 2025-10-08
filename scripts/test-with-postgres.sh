@@ -32,7 +32,6 @@ warning() {
 cleanup() {
     log "Очистка тестовых контейнеров..."
     docker-compose -f docker/docker-compose.test.yaml down --volumes --remove-orphans 2>/dev/null || true
-    docker-compose -f docker/docker-compose.test-postgres.yaml down --volumes --remove-orphans 2>/dev/null || true
 }
 
 # Функция для запуска тестов с PostgreSQL
@@ -43,14 +42,14 @@ run_tests_with_postgres() {
     
     # Запускаем временный PostgreSQL
     log "Запуск временного PostgreSQL контейнера..."
-    docker-compose -f docker/docker-compose.test-postgres.yaml up -d postgres-temp
+    docker-compose -f docker/docker-compose.test.yaml --profile postgres-only up -d postgres-test
     
     # Ждем готовности PostgreSQL
     local max_attempts=30
     local attempt=0
     
     while [ $attempt -lt $max_attempts ]; do
-        if docker-compose -f docker/docker-compose.test-postgres.yaml exec postgres-temp pg_isready -U test_user -d avatar_gen_test >/dev/null 2>&1; then
+        if docker exec avatar-gen-postgres-test pg_isready -U test_user -d avatar_gen_test >/dev/null 2>&1; then
             success "PostgreSQL готов к работе!"
             break
         fi
