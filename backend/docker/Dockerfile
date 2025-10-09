@@ -1,117 +1,46 @@
-# Multi-stage build for optimization
+FROM node:20-alpine AS installation
+WORKDIR /app
+
+COPY package.json .
+COPY src .
+
+RUN npm install
+
 FROM node:20-alpine AS builder
-
-# Set working directory
 WORKDIR /app
 
-# Use alternative Alpine mirrors if default is unavailable
-RUN echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
-    echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories || true
+COPY --from=installation package.json .
+COPY --from=installation node_modules .
+COPY --from=installation src .
+COPY tsconfig.json .
+COPY nest-cli.json .
 
-# Install system dependencies for Sharp (image processing) with retry logic
-RUN for i in 1 2 3; do \
-        apk update && apk add --no-cache vips-dev python3 make g++ && break || \
-        { echo "Retry $i/3 failed, trying default mirrors..."; \
-          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
-          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
-          apk update; sleep 5; }; \
-    done
+RUN npm run build
 
-# Install pnpm globally
-RUN npm install -g pnpm@latest
-
-# Copy workspace configuration and lock file
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-
-# Copy backend package files first for better caching
-COPY backend/package.json ./backend/
-
-# Set environment variable to skip husky installation
-ENV HUSKY_SKIP_INSTALL=1
-
-# Install ALL dependencies from workspace (including devDependencies for build)
-RUN pnpm install --frozen-lockfile --filter backend...
-
-# Copy backend source code
-COPY backend/src ./backend/src
-COPY backend/tsconfig.json ./backend/
-COPY backend/nest-cli.json ./backend/
-
-# Copy test files and configuration for testing
-COPY backend/test ./backend/test
-COPY backend/jest.config.js ./backend/
-
-# Build the application with parallel compilation
-# Set max old space size for large builds and enable parallel compilation
-WORKDIR /app/backend
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN pnpm run build
-
-# Production stage
 FROM node:20-alpine AS production
-
-# Set working directory
 WORKDIR /app
 
-# Use alternative Alpine mirrors if default is unavailable
+COPY --from=builder dist .
+COPY --from=builder package.json .
+COPY --from=builder package-lock.json .
+COPY start.sh ./scripts
+
 RUN echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
-    echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories || true
+  echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories && \
+  echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" >> /etc/apk/repositories && \
+  echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
+  apk update && \
+  apk add --no-cache vips-dev python3 make g++ && \
+  npm ci --omit=dev &&\
+  chmod +x /app/scripts/start.sh
 
-# Install only runtime dependencies for Sharp with retry logic
-RUN for i in 1 2 3; do \
-        apk update && apk add --no-cache vips curl && break || \
-        { echo "Retry $i/3 failed, trying default mirrors..."; \
-          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
-          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
-          apk update; sleep 5; }; \
-    done
+WORKDIR /app/scripts
 
-# Install pnpm globally
-RUN npm install -g pnpm@latest
-
-# Copy workspace configuration and lock file
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-
-# Copy backend package files
-COPY backend/package.json ./backend/
-
-# Set environment variable to skip husky installation
-ENV HUSKY_SKIP_INSTALL=1
-
-# Install only production dependencies from workspace (ignore scripts to skip husky)
-RUN pnpm install --prod --frozen-lockfile --filter backend --ignore-scripts && \
-    pnpm store prune
-
-# Copy built application from builder stage
-COPY --from=builder /app/backend/dist ./backend/dist
-
-# Copy startup script
-COPY backend/start.sh ./backend/start.sh
-
-# Make startup script executable
-RUN chmod +x /app/backend/start.sh && ls -la /app/backend/start.sh
-
-# Create storage directories
-RUN mkdir -p backend/storage/avatars backend/storage/database
-
-# Set working directory to backend
-WORKDIR /app/backend
-
-# Expose port
 EXPOSE 3000
 
-# Set environment variables
 ENV NODE_ENV=production
-ENV CONFIG_PATH="./settings.yaml"
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start the application
-# Use sh explicitly to avoid issues with node's docker-entrypoint
-CMD ["sh", "/app/backend/start.sh"]
+ENTRYPOINT ["./start.sh"]
