@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@tanstack/react-router';
 import { useAvatars } from '@/shared/lib';
-import { Button } from '@/shared/ui';
+import { Button, Callout } from '@/shared/ui';
 import { AvatarCard } from '@/widgets';
 import type { Avatar } from '@/shared/api';
 
@@ -17,13 +17,7 @@ export const HomePage = () => {
   // Update accumulated avatars when new data arrives
   useEffect(() => {
     if (data) {
-      if (offset === 0) {
-        // First load or refresh - replace all avatars
-        setAllAvatars(data.avatars);
-      } else {
-        // Load more - append new avatars
-        setAllAvatars(prev => [...prev, ...data.avatars]);
-      }
+      setAllAvatars(prev => [...prev, ...data.avatars]);
       setHasMore(data.pagination.hasMore);
     }
   }, [data, offset]);
@@ -64,12 +58,7 @@ export const HomePage = () => {
           )}
 
           {isError && (
-            <div className="text-center py-8">
-              <p className="text-red-500">
-                {t('pages.home.error')}:{' '}
-                {error instanceof Error ? error.message : t('pages.home.unknownError')}
-              </p>
-            </div>
+            <Callout title={t('pages.home.error')} type='error' text={error}/>
           )}
 
           {!isLoading && allAvatars.length === 0 && (
