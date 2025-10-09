@@ -90,12 +90,7 @@
 }
 
 // SCSS Mixins for Button Themes
-@mixin button-theme(
-  $bg-var,
-  $border-var,
-  $text-var,
-  $hover-bg-var
-) {
+@mixin button-theme($bg-var, $border-var, $text-var, $hover-bg-var) {
   background-color: var($bg-var);
   border-color: var($border-var);
   color: var($text-var);
@@ -169,11 +164,7 @@
   }
 }
 
-@mixin button-secondary-theme(
-  $bg-var,
-  $text-var,
-  $hover-bg-var
-) {
+@mixin button-secondary-theme($bg-var, $text-var, $hover-bg-var) {
   background-color: var($bg-var);
   border-color: var($bg-var);
   color: var($text-var);
@@ -249,10 +240,7 @@
 }
 
 .buttonInfoGhost {
-  @include button-ghost-theme(
-    --button-info-text-ghost,
-    --button-info-hover-bg
-  );
+  @include button-ghost-theme(--button-info-text-ghost, --button-info-hover-bg);
 }
 
 .buttonInfoLink {
@@ -260,11 +248,7 @@
 }
 
 .buttonInfoSecondary {
-  @include button-secondary-theme(
-    --button-info-bg,
-    --button-info-text,
-    --button-info-hover-bg
-  );
+  @include button-secondary-theme(--button-info-bg, --button-info-text, --button-info-hover-bg);
 }
 
 // Warning Theme Variants
@@ -273,10 +257,7 @@
 }
 
 .buttonWarningGhost {
-  @include button-ghost-theme(
-    --button-warning-text-ghost,
-    --button-warning-hover-bg
-  );
+  @include button-ghost-theme(--button-warning-text-ghost, --button-warning-hover-bg);
 }
 
 .buttonWarningLink {
@@ -297,10 +278,7 @@
 }
 
 .buttonErrorGhost {
-  @include button-ghost-theme(
-    --button-error-text-ghost,
-    --button-error-hover-bg
-  );
+  @include button-ghost-theme(--button-error-text-ghost, --button-error-hover-bg);
 }
 
 .buttonErrorLink {
@@ -308,11 +286,7 @@
 }
 
 .buttonErrorSecondary {
-  @include button-secondary-theme(
-    --button-error-bg,
-    --button-error-text,
-    --button-error-hover-bg
-  );
+  @include button-secondary-theme(--button-error-bg, --button-error-text, --button-error-hover-bg);
 }
 
 // Tips Theme Variants
@@ -321,10 +295,7 @@
 }
 
 .buttonTipsGhost {
-  @include button-ghost-theme(
-    --button-tips-text-ghost,
-    --button-tips-hover-bg
-  );
+  @include button-ghost-theme(--button-tips-text-ghost, --button-tips-hover-bg);
 }
 
 .buttonTipsLink {
@@ -332,11 +303,7 @@
 }
 
 .buttonTipsSecondary {
-  @include button-secondary-theme(
-    --button-tips-bg,
-    --button-tips-text,
-    --button-tips-hover-bg
-  );
+  @include button-secondary-theme(--button-tips-bg, --button-tips-text, --button-tips-hover-bg);
 }
 
 // Success Theme Variants
@@ -345,10 +312,7 @@
 }
 
 .buttonSuccessGhost {
-  @include button-ghost-theme(
-    --button-success-text-ghost,
-    --button-success-hover-bg
-  );
+  @include button-ghost-theme(--button-success-text-ghost, --button-success-hover-bg);
 }
 
 .buttonSuccessLink {
@@ -369,10 +333,7 @@
 }
 
 .buttonQuoteGhost {
-  @include button-ghost-theme(
-    --button-quote-text-ghost,
-    --button-quote-hover-bg
-  );
+  @include button-ghost-theme(--button-quote-text-ghost, --button-quote-hover-bg);
 }
 
 .buttonQuoteLink {
@@ -380,11 +341,7 @@
 }
 
 .buttonQuoteSecondary {
-  @include button-secondary-theme(
-    --button-quote-bg,
-    --button-quote-text,
-    --button-quote-hover-bg
-  );
+  @include button-secondary-theme(--button-quote-bg, --button-quote-text, --button-quote-hover-bg);
 }
 
 // Additional overrides for link variants to ensure transparency
