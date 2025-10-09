@@ -1,7 +1,6 @@
 name: ava-gen
 
 services:
-  # Nginx Gateway (Reverse Proxy)
   gateway:
     build:
       context: ../gateway
@@ -26,9 +25,6 @@ services:
       - internal
       - external
 
-  # Avatar Backend Service (Production Configuration)
-  # - Database and storage configured via YAML files
-  # - All configuration in settings.production.local.yaml
   avatar-backend:
     build:
       context: ..
@@ -37,14 +33,10 @@ services:
     expose:
       - '3000'
     volumes:
-      # Configuration: mount generated config as settings.yaml (the only config file)
       - ../backend/settings.production.local.yaml:/app/settings.yaml:ro
-      # Logs only
       - ../backend/logs:/app/logs
-      # NOTE: NO storage mount - all data in S3!
     environment:
       - NODE_ENV=production
-      # CONFIG_PATH defaults to ./settings.yaml (no need to override)
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -59,7 +51,6 @@ services:
     networks:
       - internal
 
-  # Frontend Service
   avatar-frontend:
     build:
       context: ..
@@ -86,12 +77,10 @@ volumes:
     driver: local
 
 networks:
-  # External network for gateway (internet access)
   external:
     external: true
     name: avatar-gen-external
 
-  # Internal network for gateway, backend and frontend
   internal:
     driver: bridge
     internal: false
