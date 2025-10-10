@@ -94,3 +94,5 @@ ecosystem.config.js
 # Static assets
 static/
 public/
+
+Dockerfile*

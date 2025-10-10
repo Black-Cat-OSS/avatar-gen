@@ -1,9 +1,7 @@
 // Callout Component Variables - Default Light Theme
 :root {
   // Default text color - Lighter for better visibility in light mode
-  --callout-text-color: oklch(
-    0.6 0 0
-  ); // Medium gray for better visibility
+  --callout-text-color: oklch(0.6 0 0); // Medium gray for better visibility
 
   // Info Callout (Dark Blue)
   --callout-info-bg: var(--color-sky-600);
@@ -91,12 +89,7 @@
 }
 
 // SCSS Mixins for Callout Types
-@mixin callout-type(
-  $bg-var,
-  $border-var,
-  $text-var,
-  $content-text-var
-) {
+@mixin callout-type($bg-var, $border-var, $text-var, $content-text-var) {
   background-color: var($bg-var);
   border-color: var($border-var);
 
@@ -186,66 +179,40 @@
 @media (prefers-color-scheme: dark) {
   :root {
     // Text Colors - Almost white but not pure white
-    --callout-text-color: oklch(
-      0.7 0 0
-    ); // Very light gray, almost white
+    --callout-text-color: oklch(0.7 0 0); // Very light gray, almost white
 
     // Info Callout Dark Theme (Dark Blue)
-    --callout-info-bg: color-mix(
-      in oklab,
-      var(--color-sky-600) 30%,
-      transparent
-    );
+    --callout-info-bg: color-mix(in oklab, var(--color-sky-600) 30%, transparent);
     --callout-info-border: var(--color-sky-600);
     --callout-info-text: var(--color-sky-600);
     --callout-info-content-text: var(--color-sky-600);
 
     // Warning Callout Dark Theme (Amber)
-    --callout-warning-bg: color-mix(
-      in oklab,
-      var(--color-amber-500) 30%,
-      transparent
-    );
+    --callout-warning-bg: color-mix(in oklab, var(--color-amber-500) 30%, transparent);
     --callout-warning-border: var(--color-amber-500);
     --callout-warning-text: var(--color-amber-500);
     --callout-warning-content-text: var(--color-amber-500);
 
     // Error Callout Dark Theme (Red)
-    --callout-error-bg: color-mix(
-      in oklab,
-      var(--color-red-500) 30%,
-      transparent
-    );
+    --callout-error-bg: color-mix(in oklab, var(--color-red-500) 30%, transparent);
     --callout-error-border: var(--color-red-500);
     --callout-error-text: var(--color-red-500);
     --callout-error-content-text: var(--color-red-500);
 
     // Tips Callout Dark Theme (Cyan)
-    --callout-tips-bg: color-mix(
-      in oklab,
-      var(--color-cyan-500) 30%,
-      transparent
-    );
+    --callout-tips-bg: color-mix(in oklab, var(--color-cyan-500) 30%, transparent);
     --callout-tips-border: var(--color-cyan-500);
     --callout-tips-text: var(--color-cyan-500);
     --callout-tips-content-text: var(--color-cyan-500);
 
     // Success Callout Dark Theme (Green)
-    --callout-success-bg: color-mix(
-      in oklab,
-      var(--color-green-500) 30%,
-      transparent
-    );
+    --callout-success-bg: color-mix(in oklab, var(--color-green-500) 30%, transparent);
     --callout-success-border: var(--color-green-500);
     --callout-success-text: var(--color-green-500);
     --callout-success-content-text: var(--color-green-500);
 
     // Quote Callout Dark Theme (Purple/Violet)
-    --callout-quote-bg: color-mix(
-      in oklab,
-      var(--color-violet-500) 30%,
-      transparent
-    );
+    --callout-quote-bg: color-mix(in oklab, var(--color-violet-500) 30%, transparent);
     --callout-quote-border: var(--color-violet-500);
     --callout-quote-text: var(--color-violet-500);
     --callout-quote-content-text: var(--color-violet-500);
@@ -255,60 +222,34 @@
 // Dark class override (for manual dark mode toggle) - Override variables
 .dark {
   // Text Colors - Almost white but not pure white
-  --callout-text-color: oklch(
-    0.95 0 0
-  ); // Very light gray, almost white
+  --callout-text-color: oklch(0.95 0 0); // Very light gray, almost white
 
-  --callout-info-bg: color-mix(
-    in oklab,
-    var(--color-sky-500) 30%,
-    transparent
-  );
+  --callout-info-bg: color-mix(in oklab, var(--color-sky-500) 30%, transparent);
   --callout-info-border: var(--color-sky-600);
   --callout-info-text: var(--color-sky-600);
   --callout-info-content-text: var(--color-sky-600);
 
-  --callout-warning-bg: color-mix(
-    in oklab,
-    var(--color-amber-500) 30%,
-    transparent
-  );
+  --callout-warning-bg: color-mix(in oklab, var(--color-amber-500) 30%, transparent);
   --callout-warning-border: var(--color-amber-500);
   --callout-warning-text: var(--color-amber-500);
   --callout-warning-content-text: var(--color-amber-500);
 
-  --callout-error-bg: color-mix(
-    in oklab,
-    var(--color-red-500) 30%,
-    transparent
-  );
+  --callout-error-bg: color-mix(in oklab, var(--color-red-500) 30%, transparent);
   --callout-error-border: var(--color-red-500);
   --callout-error-text: var(--color-red-500);
   --callout-error-content-text: var(--color-red-500);
 
-  --callout-tips-bg: color-mix(
-    in oklab,
-    var(--color-cyan-500) 30%,
-    transparent
-  );
+  --callout-tips-bg: color-mix(in oklab, var(--color-cyan-500) 30%, transparent);
   --callout-tips-border: var(--color-cyan-500);
   --callout-tips-text: var(--color-cyan-500);
   --callout-tips-content-text: var(--color-cyan-500);
 
-  --callout-success-bg: color-mix(
-    in oklab,
-    var(--color-green-500) 30%,
-    transparent
-  );
+  --callout-success-bg: color-mix(in oklab, var(--color-green-500) 30%, transparent);
   --callout-success-border: var(--color-green-500);
   --callout-success-text: var(--color-green-500);
   --callout-success-content-text: var(--color-green-500);
 
-  --callout-quote-bg: color-mix(
-    in oklab,
-    var(--color-violet-500) 30%,
-    transparent
-  );
+  --callout-quote-bg: color-mix(in oklab, var(--color-violet-500) 30%, transparent);
   --callout-quote-border: var(--color-violet-500);
   --callout-quote-text: var(--color-violet-500);
   --callout-quote-content-text: var(--color-violet-500);
