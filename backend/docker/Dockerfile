@@ -1,46 +1,43 @@
-FROM node:20-alpine AS installation
+FROM node:20-bullseye AS deps
 WORKDIR /app
 
-COPY package.json .
-COPY src .
+COPY ../package.json .
 
-RUN npm install
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  curl python3 make g++ libvips-dev && \
+  rm -rf /var/lib/apt/lists/* && \
+  npm install
 
-FROM node:20-alpine AS builder
+FROM node:20-bullseye AS builder
 WORKDIR /app
 
-COPY --from=installation package.json .
-COPY --from=installation node_modules .
-COPY --from=installation src .
-COPY tsconfig.json .
-COPY nest-cli.json .
+COPY --from=deps /app/node_modules node_modules
+COPY --from=deps /app/package*.json .
+COPY ../src ./src
+COPY ../tsconfig.json .
+COPY ../nest-cli.json .
 
-RUN npm run build
+RUN npm run build && \
+  rm -rf ./node_modules && \
+  rm -rf ./src && \
+  rm ./tsconfig.json && \
+  rm ./nest-cli.json
 
-FROM node:20-alpine AS production
+FROM node:20-bullseye AS production
 WORKDIR /app
 
-COPY --from=builder dist .
-COPY --from=builder package.json .
-COPY --from=builder package-lock.json .
-COPY start.sh ./scripts
+COPY --from=builder /app/dist dist
+COPY --from=builder /app/package*.json .
+COPY ../start.sh /app/start.sh
 
-RUN echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
-  echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories && \
-  echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" >> /etc/apk/repositories && \
-  echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
-  apk update && \
-  apk add --no-cache vips-dev python3 make g++ && \
-  npm ci --omit=dev &&\
-  chmod +x /app/scripts/start.sh
-
-WORKDIR /app/scripts
-
-EXPOSE 3000
+RUN npm ci && \
+  chmod +x /app/start.sh
 
 ENV NODE_ENV=production
+EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-ENTRYPOINT ["./start.sh"]
+ENTRYPOINT ["sh", "/app/start.sh"]
