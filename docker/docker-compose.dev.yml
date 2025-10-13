@@ -3,9 +3,7 @@ name: ava-gen-dev
 services:
   gateway:
     profiles:
-      - frontend-dev
-      - backend-dev
-      - fullstack-dev
+      - i-am-fullstack
     build:
       context: ../gateway
       dockerfile: Dockerfile
@@ -33,8 +31,8 @@ services:
     image: minio/minio:latest
     container_name: minio
     profiles:
-      - fullstack-dev
-      - frontend-dev
+      - i-am-fullstack
+      - i-am-frontender
       - backend-dev
     environment:
       MINIO_ROOT_USER: test-access-key
@@ -59,9 +57,9 @@ services:
     image: postgres:17-alpine
     container_name: postgres
     profiles:
-      - frontend-dev
+      - i-am-frontender
       - backend-dev
-      - fullstack-dev
+      - i-am-fullstack
     environment:
       POSTGRES_DB: avatar_gen
       POSTGRES_USER: postgres
@@ -83,13 +81,12 @@ services:
 
   avatar-backend:
     profiles:
-      - frontend-dev
-      - fullstack-dev
+      - i-am-fullstack
     build:
-      context: ..
-      dockerfile: backend/docker/Dockerfile
+      context: ../backend
+      dockerfile: docker/Dockerfile
     container_name: backend
-    expose:
+    ports:
       - '3000'
     volumes:
       - ../backend/storage:/app/storage
@@ -114,9 +111,64 @@ services:
       - internal
       - backend-db
 
+  avatar-backend-dev-frontend:
+    profiles:
+      - i-am-frontender
+    build:
+      context: ../backend
+      dockerfile: docker/Dockerfile
+    container_name: avatar-gen-backend
+    ports:
+      - '3000'
+    volumes:
+      - ../backend/storage:/app/storage
+      - ../backend/profiles/settings.development-frontend.yaml:/app/settings.yaml:ro
+      - ../backend/logs:/app/logs
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - internal
+      - backend-db
+
+  gateway-dev-frontend:
+    profiles:
+      - i-am-frontender
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    container_name: avatar-gen-gateway
+    ports:
+      - '15745:15745'
+      - '18650:18650'
+    volumes:
+      - ../gateway/configs/profiles/nginx.dev-frontend.conf:/etc/nginx/nginx.conf:ro
+      - ../gateway/configs/static:/usr/share/nginx/html/static:ro
+      - ../gateway/logs:/var/log/nginx
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'nginx', '-t']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+      - external
+
   avatar-frontend:
     profiles:
-      - fullstack-dev
+      - i-am-fullstack
     build:
       context: ..
       dockerfile: frontend/docker/Dockerfile
@@ -148,11 +200,11 @@ volumes:
 networks:
   external:
     external: true
-    name: avatar-gen-external
+    name: avatar-gen-dev-external
 
   internal:
     driver: bridge
-    internal: false
+    internal: true
     name: avatar-gen-internal
 
   backend-db:

@@ -1,8 +1,8 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigModule } from '../../config/config.module';
 import { StorageService } from './storage.service';
-import { LocalStorageModule } from './modules/local';
-import { S3StorageModule } from './modules/s3';
+import { LocalStorageModule } from './modules/local-driver';
+import { S3StorageModule } from './modules/s3-driver';
 
 /**
  * Главный модуль хранилища

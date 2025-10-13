@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import { dirname } from 'path';
-import { YamlConfigService } from '../../../config/yaml-config.service';
-import { Configuration } from '../../../config/configuration';
+import { YamlConfigService } from '../../../config/modules/yaml-driver/yaml-config.service';
+import { Configuration } from '../../../config/config.schema';
 
 /**
  * Сервис для инициализации директорий приложения на основе настроек
@@ -27,18 +27,15 @@ export class DirectoryInitializerService implements OnModuleInit {
     try {
       this.logger.log('Initializing application directories from configuration...');
 
-      // Логируем текущую рабочую директорию для отладки
       const cwd = process.cwd();
       this.logger.debug(`Current working directory: ${cwd}`);
 
       this.logger.debug('Extracting directories from configuration');
-      // Получаем директории из настроек
       const directoriesToCreate = this.extractDirectoriesFromConfig();
       this.logger.debug(
         `Found ${directoriesToCreate.length} directories to create: ${JSON.stringify(directoriesToCreate, null, 2)}`,
       );
 
-      // Создаем директории
       this.logger.debug('Creating directories');
       await this.ensureDirectoriesExist(directoriesToCreate);
 
@@ -65,12 +62,9 @@ export class DirectoryInitializerService implements OnModuleInit {
   private extractDirectoriesFromConfig(): string[] {
     const directories = new Set<string>();
 
-    // Извлекаем директории из различных настроек
     this.extractStorageDirectories(directories);
     this.extractDatabaseDirectories(directories);
     this.extractLogDirectories(directories);
-
-    // Добавляем дополнительные директории, которые могут потребоваться
     this.addAdditionalDirectories(directories);
 
     return Array.from(directories).sort();
@@ -85,7 +79,6 @@ export class DirectoryInitializerService implements OnModuleInit {
   private extractStorageDirectories(directories: Set<string>): void {
     this.logger.debug('Extracting storage directories from config');
 
-    // Директория для аватаров
     const storageConfig = this.config.app?.storage;
     if (storageConfig?.type === 'local' && storageConfig.local?.save_path) {
       this.logger.debug(`Avatar save path: ${storageConfig.local.save_path}`);
@@ -102,7 +95,6 @@ export class DirectoryInitializerService implements OnModuleInit {
       this.logger.warn('No avatar save path configured in settings');
     }
 
-    // Добавляем корневую директорию storage если используется
     directories.add('storage');
     this.logger.debug('Added root storage directory');
   }
@@ -116,16 +108,13 @@ export class DirectoryInitializerService implements OnModuleInit {
   private extractDatabaseDirectories(directories: Set<string>): void {
     this.logger.debug('Extracting database directories from config');
 
-    // Получаем текущий драйвер БД
     const dbDriver = this.config.app?.database?.driver;
     this.logger.debug(`Database driver: ${dbDriver}`);
 
-    // Обработка директорий SQLite - только если драйвер sqlite
     if (dbDriver === 'sqlite' && this.config.app?.database?.sqlite_params?.url) {
       const sqliteUrl = this.config.app.database.sqlite_params.url;
       this.logger.debug(`SQLite URL: ${sqliteUrl}`);
 
-      // Извлекаем путь из file:// URL
       if (sqliteUrl.startsWith('file:')) {
         const filePath = sqliteUrl.replace('file:', '');
         this.logger.debug(`SQLite file path: ${filePath}`);
@@ -142,6 +131,7 @@ export class DirectoryInitializerService implements OnModuleInit {
       } else {
         this.logger.warn(`Invalid SQLite URL format: ${sqliteUrl}`);
       }
+      //FIXME: It`s look seem bad
     } else if (dbDriver === 'sqlite') {
       this.logger.debug('SQLite driver selected but no configuration found');
     } else if (dbDriver === 'postgresql') {

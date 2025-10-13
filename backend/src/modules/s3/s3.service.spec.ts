@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { S3Service } from './s3.service';
 import { Logger } from '@nestjs/common';
+import { vi } from 'vitest';
 
-jest.mock('@aws-sdk/client-s3');
+vi.mock('@aws-sdk/client-s3');
 
 describe('S3Service', () => {
   let service: S3Service;
@@ -29,11 +30,11 @@ describe('S3Service', () => {
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     mockS3Client = {
-      send: jest.fn(),
-      destroy: jest.fn(),
+      send: vi.fn(),
+      destroy: vi.fn(),
     };
 
     const { S3Client } = require('@aws-sdk/client-s3');
@@ -58,7 +59,7 @@ describe('S3Service', () => {
 
     it('should return false when bucket is not accessible', async () => {
       mockS3Client.send.mockRejectedValue(new Error('Bucket not found'));
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
 
       const result = await service.healthCheck();
 
@@ -69,7 +70,7 @@ describe('S3Service', () => {
   describe('uploadObject', () => {
     it('should upload object successfully', async () => {
       mockS3Client.send.mockResolvedValue({});
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
 
       const buffer = Buffer.from('test data');
       const result = await service.uploadObject('test-key', buffer, 'application/json');
@@ -80,7 +81,7 @@ describe('S3Service', () => {
 
     it('should throw error when upload fails', async () => {
       mockS3Client.send.mockRejectedValue(new Error('Upload failed'));
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
 
       const buffer = Buffer.from('test data');
 
@@ -100,7 +101,7 @@ describe('S3Service', () => {
       };
 
       mockS3Client.send.mockResolvedValue({ Body: mockStream });
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
 
       const result = await service.getObject('test-key');
 
@@ -110,14 +111,14 @@ describe('S3Service', () => {
 
     it('should throw error when object not found', async () => {
       mockS3Client.send.mockRejectedValue(new Error('Object not found'));
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
 
       await expect(service.getObject('test-key')).rejects.toThrow('Failed to get object from S3');
     });
 
     it('should throw error when response body is empty', async () => {
       mockS3Client.send.mockResolvedValue({ Body: null });
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
 
       await expect(service.getObject('test-key')).rejects.toThrow('Empty response body');
     });
@@ -126,7 +127,7 @@ describe('S3Service', () => {
   describe('deleteObject', () => {
     it('should delete object successfully', async () => {
       mockS3Client.send.mockResolvedValue({});
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
 
       await service.deleteObject('test-key');
 
@@ -135,7 +136,7 @@ describe('S3Service', () => {
 
     it('should throw error when delete fails', async () => {
       mockS3Client.send.mockRejectedValue(new Error('Delete failed'));
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
 
       await expect(service.deleteObject('test-key')).rejects.toThrow(
         'Failed to delete object from S3',
@@ -174,7 +175,7 @@ describe('S3Service', () => {
 
     it('should throw error for other errors', async () => {
       mockS3Client.send.mockRejectedValue(new Error('Server error'));
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
 
       await expect(service.objectExists('test-key')).rejects.toThrow(
         'Failed to check object existence in S3',
@@ -199,7 +200,7 @@ describe('S3Service', () => {
   describe('onModuleInit', () => {
     it('should initialize successfully', async () => {
       mockS3Client.send.mockResolvedValue({});
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
 
       await service.onModuleInit();
 
@@ -212,9 +213,9 @@ describe('S3Service', () => {
         .mockRejectedValueOnce(new Error('Failed'))
         .mockResolvedValueOnce({});
 
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
-      jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+      vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
 
       await service.onModuleInit();
 
@@ -223,9 +224,9 @@ describe('S3Service', () => {
 
     it('should throw error after max retries', async () => {
       mockS3Client.send.mockRejectedValue(new Error('Failed'));
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
-      jest.spyOn(Logger.prototype, 'error').mockImplementation();
-      jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+      vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
 
       await expect(service.onModuleInit()).rejects.toThrow('S3 connection failed after');
     });
@@ -233,7 +234,7 @@ describe('S3Service', () => {
 
   describe('onModuleDestroy', () => {
     it('should destroy S3 client', async () => {
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
 
       await service.onModuleDestroy();
 
@@ -244,7 +245,7 @@ describe('S3Service', () => {
   describe('reconnect', () => {
     it('should reconnect successfully', async () => {
       mockS3Client.send.mockResolvedValue({});
-      jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
 
       await service.reconnect();
 

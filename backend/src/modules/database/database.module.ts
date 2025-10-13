@@ -1,11 +1,11 @@
 import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '../../config/config.module';
-import { YamlConfigService } from '../../config/yaml-config.service';
+import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
 import { Avatar } from '../avatar/avatar.entity';
 import { DatabaseService } from './database.service';
 import { DatabaseDriverFactory } from './utils/driver-factory';
-import { SqliteDriverService, PostgreSQLDriverService } from './drivers';
+import { SqliteDriverService, PostgreSQLDriverService } from './modules';
 
 /**
  * Глобальный модуль для работы с базой данных через TypeORM
@@ -40,15 +40,12 @@ import { SqliteDriverService, PostgreSQLDriverService } from './drivers';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: YamlConfigService, driverFactory: DatabaseDriverFactory) => {
-        // Создаем драйвер на основе конфигурации
         const driver = driverFactory.createDriver(configService);
-
-        // Строим конфигурацию через драйвер
         const typeormConfig = driver.buildConfigs(configService);
 
-        // Добавляем сущности
         typeormConfig.entities = [Avatar];
 
+        //FIXME replace any to config type
         return typeormConfig as any;
       },
       inject: [YamlConfigService, DatabaseDriverFactory],

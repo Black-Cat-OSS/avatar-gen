@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Avatar } from '../avatar/avatar.entity';
-import { YamlConfigService } from '../../config/yaml-config.service';
+import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
 
 /**
  * Основной сервис для работы с базой данных через TypeORM
@@ -31,13 +31,14 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    */
   async onModuleInit(): Promise<void> {
     try {
-      // Проверяем подключение к базе данных
       if (!this.dataSource.isInitialized) {
+        this.logger.log('Initializing database connection...');
         await this.dataSource.initialize();
+        this.logger.log('Database connection established');
       }
 
       const driver = this.configService.getConfig().app.database.driver;
-      this.logger.log(`🗄️  DatabaseService initialized - ${driver} provider active`);
+      this.logger.log(`DatabaseService initialized - ${driver} provider active`);
     } catch (error) {
       this.logger.error(`DatabaseService initialization failed: ${error.message}`);
       throw error;

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { vi } from 'vitest';
 import { AvatarService } from './avatar.service';
 import { Avatar } from './avatar.entity';
 import { GeneratorService } from './modules';
@@ -20,27 +21,27 @@ describe('AvatarService', () => {
   let storageService: StorageService;
 
   const mockAvatarRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
-    findOne: jest.fn(),
-    find: jest.fn(),
-    findAndCount: jest.fn(),
-    count: jest.fn(),
-    delete: jest.fn(),
-    remove: jest.fn(),
+    create: vi.fn(),
+    save: vi.fn(),
+    findOne: vi.fn(),
+    find: vi.fn(),
+    findAndCount: vi.fn(),
+    count: vi.fn(),
+    delete: vi.fn(),
+    remove: vi.fn(),
   };
 
   const mockGeneratorService = {
-    generateAvatar: jest.fn(),
-    applyFilter: jest.fn(),
-    getColorSchemes: jest.fn(),
+    generateAvatar: vi.fn(),
+    applyFilter: vi.fn(),
+    getColorSchemes: vi.fn(),
   };
 
   const mockStorageService = {
-    saveAvatar: jest.fn(),
-    loadAvatar: jest.fn(),
-    deleteAvatar: jest.fn(),
-    getStorageStats: jest.fn(),
+    saveAvatar: vi.fn(),
+    loadAvatar: vi.fn(),
+    deleteAvatar: vi.fn(),
+    getStorageStats: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -68,7 +69,7 @@ describe('AvatarService', () => {
     storageService = module.get<StorageService>(StorageService);
 
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {

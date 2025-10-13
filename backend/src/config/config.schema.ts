@@ -13,7 +13,7 @@ const configSchema = z
           .optional(),
         s3: z
           .object({
-            endpoint: z.httpUrl('S3 endpoint must be a valid URL'),
+            endpoint: z.url('S3 endpoint must be a valid URL'),
             bucket: z.string().min(1, 'S3 bucket name is required'),
             access_key: z.string().min(1, 'S3 access key is required'),
             secret_key: z.string().min(1, 'S3 secret key is required'),
@@ -29,6 +29,7 @@ const configSchema = z
       server: networkSchema,
       database: z.object({
         driver: z.enum(['sqlite', 'postgresql']),
+        synchronize: z.boolean().default(false).optional(),
         connection: z.object({
           maxRetries: z.number().min(1).max(10).default(3),
           retryDelay: z.number().min(100).max(10000).default(2000),
