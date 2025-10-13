@@ -2,11 +2,19 @@
 
 ## Обзор
 
-Система CI/CD состоит из трех основных workflows:
+Система CI/CD состоит из восьми основных workflows с использованием новой системы тестирования контейнера:
 
+### Основные Workflows
 1. **develop.yml** - Быстрые тесты для PR в develop
 2. **deploy-prod.yml** - Полное тестирование и деплой в production
 3. **matrix-tests.yml** - Расширенное матричное тестирование
+
+### Специализированные Workflows ⭐ НОВЫЕ
+4. **test-unit.yml** - Unit тесты
+5. **test-integration.yml** - Integration тесты
+6. **test-e2e.yml** - E2E тесты
+7. **test-specialized.yml** - PostgreSQL, S3, Performance тесты
+8. **test-all.yml** - Комплексное тестирование
 
 ## Workflows
 
@@ -25,6 +33,7 @@
 - ✅ Docker Build Test
 
 **Время выполнения:** ~5-10 минут
+**Конфигурация:** `docker-compose.test-extended.yaml`
 
 ### 2. deploy-prod.yml (Production Deploy)
 
@@ -38,6 +47,7 @@
 - ✅ Deploy to Production
 
 **Время выполнения:** ~15-20 минут
+**Конфигурация:** `docker-compose.test-extended.yaml`
 
 ### 3. matrix-tests.yml (Расширенное тестирование)
 
@@ -53,17 +63,123 @@
 - **Custom Matrix** - Настраиваемые комбинации
 
 **Время выполнения:** ~20-30 минут
+**Конфигурация:** `docker-compose.test-extended.yaml`
+
+### 4. test-unit.yml ⭐ НОВЫЙ
+
+**Триггеры:**
+- Изменения unit тестов
+- PR в develop
+- Ручной запуск
+
+**Тесты:**
+- ✅ Unit Tests (SQLite in-memory + Local Storage)
+- ✅ Быстрое выполнение (~30 секунд)
+- ✅ Минимальное логирование
+
+**Конфигурация:** `settings.test.unit.yaml`
+
+### 5. test-integration.yml ⭐ НОВЫЙ
+
+**Триггеры:**
+- Изменения integration тестов
+- PR в develop
+- Ручной запуск
+
+**Тесты:**
+- ✅ Integration Tests (PostgreSQL + MinIO)
+- ✅ Гибкие параметры БД и хранилища
+- ✅ Подробное логирование
+
+**Конфигурация:** `settings.test.yaml`
+
+### 6. test-e2e.yml ⭐ НОВЫЙ
+
+**Триггеры:**
+- Изменения E2E тестов
+- PR в main
+- Ручной запуск
+
+**Тесты:**
+- ✅ E2E Tests (Full Stack: Backend + Frontend + Gateway)
+- ✅ Health check тесты
+- ✅ API тесты
+
+**Конфигурация:** `settings.test.e2e.yaml`
+
+### 7. test-specialized.yml ⭐ НОВЫЙ
+
+**Триггеры:**
+- Изменения специализированных конфигураций
+- Ручной запуск
+
+**Тесты:**
+- ✅ PostgreSQL Specialized Tests
+- ✅ S3/MinIO Specialized Tests
+- ✅ Performance Tests
+- ✅ Custom Matrix Tests
+
+**Конфигурации:** `settings.test.postgres.yaml`, `settings.test.s3.yaml`
+
+### 8. test-all.yml ⭐ НОВЫЙ
+
+**Триггеры:**
+- Создание тегов
+- PR в main
+- Ручной запуск
+
+**Тесты:**
+- ✅ Unit Tests
+- ✅ Integration Tests
+- ✅ E2E Tests
+- ✅ PostgreSQL Specialized
+- ✅ S3 Specialized
+- ✅ Комплексная отчетность
+
+**Время выполнения:** ~10-15 минут (параллельно)
+
+## Новая архитектура тестирования
+
+### Принципы
+- ✅ **Dockerfile не изменяется** - все настройки через монтирование
+- ✅ **Гибкие конфигурации** - разные файлы для разных сценариев
+- ✅ **Изолированные окружения** - каждый тип тестов в своем профиле
+- ✅ **Автоматизация** - готовые workflow для всех сценариев
+
+### Конфигурационные файлы
+```
+backend/configs/
+├── settings.test.unit.yaml     # Unit тесты (SQLite, локальное)
+├── settings.test.yaml          # Основная конфигурация
+├── settings.test.postgres.yaml # PostgreSQL-специфичные
+├── settings.test.s3.yaml       # S3/MinIO-специфичные
+└── settings.test.e2e.yaml      # E2E тесты
+
+gateway/configs/
+├── nginx.test.unit.conf        # Unit тесты
+├── nginx.test.integration.conf # Integration тесты
+└── nginx.test.conf             # E2E тесты
+```
+
+### Docker Compose профили
+- `unit-only` - Unit тесты
+- `integration-only` - Integration тесты
+- `postgres-tests` - PostgreSQL-специфичные
+- `s3-tests` - S3-специфичные
+- `e2e-only` - E2E тесты
+- `performance-tests` - Performance тесты
+- `matrix-tests` - Матричные тесты
 
 ## Матричное тестирование
 
 ### Поддерживаемые комбинации:
 
-| Database | Storage | Unit | Integration | E2E |
-|----------|---------|------|-------------|-----|
-| SQLite   | Local   | ✅   | ✅          | ❌  |
-| SQLite   | S3      | ❌   | ✅          | ❌  |
-| PostgreSQL | Local | ❌   | ✅          | ❌  |
-| PostgreSQL | S3    | ❌   | ✅          | ✅  |
+| Database | Storage | Unit | Integration | E2E | Specialized |
+|----------|---------|------|-------------|-----|-------------|
+| SQLite   | Local   | ✅   | ✅          | ❌  | ❌          |
+| SQLite   | S3      | ❌   | ✅          | ❌  | ✅          |
+| PostgreSQL | Local | ❌   | ✅          | ❌  | ✅          |
+| PostgreSQL | S3    | ❌   | ✅          | ✅  | ✅          |
 
 ### Переменные окружения для тестов:
 
@@ -83,23 +199,45 @@ TEST_DB_PORT=5433
 TEST_DB_NAME=avatar_gen_test
 TEST_DB_USER=test_user
 TEST_DB_PASSWORD=test_password
+
+# Server & Logging
+TEST_SERVER_PORT=3000|3002
+TEST_LOG_LEVEL=debug|info|warn|error
 ```
 
-## Docker Compose профили
+## Локальное тестирование
 
-### develop.yml использует:
-- `unit-tests` - Unit тесты
-- `integration-tests` - Integration тесты
-- `e2e-tests` - E2E тесты
+### Запуск тестов локально (новые скрипты):
 
-### deploy-prod.yml использует:
-- `matrix-tests` - Матричное тестирование
+```bash
+# Все тесты одной командой
+bash scripts/test-all.sh
 
-### matrix-tests.yml использует:
-- `unit-tests` - Unit тесты
-- `integration-tests` - Integration тесты
-- `e2e-tests` - E2E тесты
-- `matrix-tests` - Кастомное матричное тестирование
+# Отдельные типы тестов
+bash scripts/test-unit.sh         # Unit тесты (~30с)
+bash scripts/test-integration.sh  # Integration тесты (~2м)
+bash scripts/test-postgres.sh     # PostgreSQL тесты (~1м)
+bash scripts/test-s3.sh           # S3 тесты (~1м)
+bash scripts/test-e2e.sh          # E2E тесты (~5м)
+
+# Старые скрипты (совместимость)
+bash scripts/test-matrix.sh unit
+bash scripts/test-with-postgres.sh integration-postgres
+bash scripts/test-with-postgres.sh e2e-full
+```
+
+### Управление временным PostgreSQL:
+
+```bash
+# Запуск PostgreSQL
+bash scripts/test-postgres.sh start
+
+# Проверка статуса
+bash scripts/test-postgres.sh status
+
+# Остановка
+bash scripts/test-postgres.sh stop
+```
 
 ## Секреты
 
@@ -129,37 +267,6 @@ TEST_DB_PASSWORD=test_password
 - `SSH_PRIVATE_KEY` - SSH private key
 - `APP_PATH` - Application path on server
 
-## Локальное тестирование
-
-### Запуск тестов локально:
-
-```bash
-# Unit тесты
-bash scripts/test-matrix.sh unit
-
-# Integration тесты с PostgreSQL
-bash scripts/test-with-postgres.sh integration-postgres
-
-# E2E тесты с полным стеком
-bash scripts/test-with-postgres.sh e2e-full
-
-# Матричное тестирование
-bash scripts/test-matrix.sh matrix --storage s3 --database postgresql
-```
-
-### Управление временным PostgreSQL:
-
-```bash
-# Запуск PostgreSQL
-bash scripts/test-postgres.sh start
-
-# Проверка статуса
-bash scripts/test-postgres.sh status
-
-# Остановка
-bash scripts/test-postgres.sh stop
-```
-
 ## Troubleshooting
 
 ### Частые проблемы:
@@ -169,18 +276,26 @@ bash scripts/test-postgres.sh stop
    - Перезапустить: `bash scripts/test-postgres.sh restart`
 
 2. **MinIO недоступен**
-   - Проверить статус: `docker-compose -f docker/docker-compose.test.yaml ps minio`
-   - Проверить логи: `docker-compose -f docker/docker-compose.test.yaml logs minio`
+   - Проверить статус: `docker-compose -f docker/docker-compose.test-extended.yaml ps minio`
+   - Проверить логи: `docker-compose -f docker/docker-compose.test-extended.yaml logs minio`
 
 3. **Тесты падают в CI**
    - Проверить переменные окружения
    - Проверить доступность сервисов
    - Проверить логи контейнеров
 
+4. **Проблемы с монтированием конфигураций**
+   - Проверить, что файлы конфигурации существуют
+   - Убедиться в правильности путей в docker-compose
+   - Проверить права доступа к файлам
+
 ### Очистка:
 
 ```bash
-# Очистка всех тестовых контейнеров
+# Очистка всех тестовых контейнеров (новые)
+docker-compose -f docker/docker-compose.test-extended.yaml down --volumes --remove-orphans
+
+# Очистка старых контейнеров (совместимость)
 docker-compose -f docker/docker-compose.test.yaml down --volumes --remove-orphans
 docker-compose -f docker/docker-compose.test-postgres.yaml down --volumes --remove-orphans
 
@@ -195,8 +310,28 @@ docker volume prune -f
 - Автоматически загружаются в Codecov
 - Доступны в каждом job'е
 - Группируются по типам тестов
+- Отдельные флаги для каждого типа тестов
 
 ### Test Summary:
-- Автоматически генерируется в matrix-tests.yml
+- Автоматически генерируется во всех workflow
 - Показывает статус всех типов тестов
 - Доступен в GitHub Actions UI
+- Детальная отчетность в test-all.yml
+
+### Артефакты:
+- Результаты тестов сохраняются на 3-7 дней
+- Логи доступны для скачивания
+- Возможность отладки через артефакты
+
+## Миграция с старых workflow
+
+### Что изменилось:
+1. **Новые конфигурационные файлы** - специализированные настройки для каждого типа тестов
+2. **Расширенный docker-compose** - `docker-compose.test-extended.yaml` с новыми профилями
+3. **Специализированные workflow** - отдельные файлы для каждого типа тестов
+4. **Новые скрипты** - упрощенные команды для локального тестирования
+
+### Совместимость:
+- Старые workflow продолжают работать
+- Старые скрипты сохранены для совместимости
+- Постепенная миграция на новые workflow

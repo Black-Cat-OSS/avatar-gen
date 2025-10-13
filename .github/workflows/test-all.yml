@@ -1,0 +1,395 @@
+name: All Tests
+
+on:
+  # Ручной запуск
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Набор тестов для запуска'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit-only
+          - integration-only
+          - e2e-only
+          - specialized-only
+          - quick
+      parallel_execution:
+        description: 'Параллельное выполнение тестов'
+        required: false
+        default: true
+        type: boolean
+
+  # Запуск при создании тега
+  push:
+    tags:
+      - 'v*'
+
+  # Запуск при PR в main
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10'
+
+jobs:
+  # ========================================
+  # Unit Tests
+  # ========================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: |
+      github.event.inputs.test_suite == 'all' ||
+      github.event.inputs.test_suite == 'unit-only' ||
+      github.event.inputs.test_suite == 'quick' ||
+      github.event.inputs.test_suite == ''
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run unit tests
+        run: |
+          echo "🧪 Запуск Unit тестов..."
+          docker compose -f docker/docker-compose.test-extended.yaml --profile unit-only up --build --abort-on-container-exit avatar-backend-unit
+
+      - name: Collect unit test results
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-unit > unit-results.log
+          echo "## 🧪 Unit Tests - ✅ Completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: unit-results.log
+          retention-days: 3
+
+      - name: Cleanup unit tests
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml --profile unit-only down --remove-orphans
+
+  # ========================================
+  # Integration Tests
+  # ========================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: |
+      github.event.inputs.test_suite == 'all' ||
+      github.event.inputs.test_suite == 'integration-only' ||
+      github.event.inputs.test_suite == ''
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run integration tests
+        run: |
+          echo "🔗 Запуск Integration тестов..."
+          
+          export TEST_DB_DRIVER=postgresql
+          export TEST_DB_HOST=localhost
+          export TEST_DB_PORT=5433
+          export TEST_DB_NAME=avatar_gen_test
+          export TEST_DB_USER=test_user
+          export TEST_DB_PASSWORD=test_password
+          export TEST_STORAGE_TYPE=local
+          
+          docker compose -f docker/docker-compose.test-extended.yaml --profile integration-only up --build --abort-on-container-exit avatar-backend-integration
+
+      - name: Collect integration test results
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-integration > integration-results.log
+          echo "## 🔗 Integration Tests - ✅ Completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: integration-results.log
+          retention-days: 3
+
+      - name: Upload integration coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: integration-all
+          name: integration-coverage-all
+
+      - name: Cleanup integration tests
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml --profile integration-only down --remove-orphans
+
+  # ========================================
+  # E2E Tests
+  # ========================================
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    if: |
+      github.event.inputs.test_suite == 'all' ||
+      github.event.inputs.test_suite == 'e2e-only' ||
+      github.event.inputs.test_suite == ''
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test images
+        run: |
+          echo "🏗️ Сборка тестовых образов..."
+          docker build -f backend/docker/Dockerfile --target builder -t avatar-gen-test-backend:builder .
+          docker build -f frontend/docker/Dockerfile -t avatar-gen-test-frontend:latest .
+          docker build -f gateway/Dockerfile -t avatar-gen-test-gateway:latest ./gateway
+
+      - name: Run E2E tests
+        run: |
+          echo "🎭 Запуск E2E тестов..."
+          
+          export TEST_DB_DRIVER=postgresql
+          export TEST_DB_HOST=localhost
+          export TEST_DB_PORT=5433
+          export TEST_DB_NAME=avatar_gen_test
+          export TEST_DB_USER=test_user
+          export TEST_DB_PASSWORD=test_password
+          export TEST_STORAGE_TYPE=local
+          
+          docker compose -f docker/docker-compose.test-extended.yaml --profile e2e-only up --build --abort-on-container-exit e2e-test-runner
+
+      - name: Collect E2E test results
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml logs e2e-test-runner > e2e-results.log
+          echo "## 🎭 E2E Tests - ✅ Completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: e2e-results.log
+          retention-days: 3
+
+      - name: Upload E2E coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: e2e-all
+          name: e2e-coverage-all
+
+      - name: Cleanup E2E tests
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml --profile e2e-only down --remove-orphans
+
+  # ========================================
+  # Specialized Tests
+  # ========================================
+  postgres-specialized:
+    name: PostgreSQL Specialized Tests
+    runs-on: ubuntu-latest
+    if: |
+      github.event.inputs.test_suite == 'all' ||
+      github.event.inputs.test_suite == 'specialized-only' ||
+      github.event.inputs.test_suite == ''
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run PostgreSQL specialized tests
+        run: |
+          echo "🐘 Запуск PostgreSQL-специфичных тестов..."
+          
+          export TEST_DB_DRIVER=postgresql
+          export TEST_DB_HOST=localhost
+          export TEST_DB_PORT=5433
+          export TEST_DB_NAME=avatar_gen_test
+          export TEST_DB_USER=test_user
+          export TEST_DB_PASSWORD=test_password
+          export TEST_STORAGE_TYPE=local
+          
+          docker compose -f docker/docker-compose.test-extended.yaml --profile postgres-tests up --build --abort-on-container-exit avatar-backend-postgres
+
+      - name: Collect PostgreSQL test results
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-postgres > postgres-results.log
+          echo "## 🐘 PostgreSQL Tests - ✅ Completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup PostgreSQL tests
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml --profile postgres-tests down --remove-orphans
+
+  s3-specialized:
+    name: S3 Specialized Tests
+    runs-on: ubuntu-latest
+    if: |
+      github.event.inputs.test_suite == 'all' ||
+      github.event.inputs.test_suite == 'specialized-only' ||
+      github.event.inputs.test_suite == ''
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run S3 specialized tests
+        run: |
+          echo "☁️ Запуск S3-специфичных тестов..."
+          
+          export TEST_STORAGE_TYPE=s3
+          export TEST_S3_ENDPOINT=http://localhost:9000
+          export TEST_S3_ACCESS_KEY=test-access-key
+          export TEST_S3_SECRET_KEY=test-secret-key
+          export TEST_S3_BUCKET=avatar-gen-test
+          export TEST_S3_REGION=us-east-1
+          export TEST_DB_DRIVER=sqlite
+          
+          docker compose -f docker/docker-compose.test-extended.yaml --profile s3-tests up --build --abort-on-container-exit avatar-backend-s3
+
+      - name: Collect S3 test results
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-s3 > s3-results.log
+          echo "## ☁️ S3 Tests - ✅ Completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup S3 tests
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.test-extended.yaml --profile s3-tests down --remove-orphans
+
+  # ========================================
+  # Test Summary
+  # ========================================
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests, postgres-specialized, s3-specialized]
+    if: always()
+
+    steps:
+      - name: Generate comprehensive test summary
+        run: |
+          echo "## 🧪 Comprehensive Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status | Duration |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Unit Tests
+          if [ "${{ needs.unit-tests.result }}" = "success" ]; then
+            echo "| Unit Tests | ✅ Passed | ~30s |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.unit-tests.result }}" = "skipped" ]; then
+            echo "| Unit Tests | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Unit Tests | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Integration Tests
+          if [ "${{ needs.integration-tests.result }}" = "success" ]; then
+            echo "| Integration Tests | ✅ Passed | ~2m |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.integration-tests.result }}" = "skipped" ]; then
+            echo "| Integration Tests | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Integration Tests | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # E2E Tests
+          if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "| E2E Tests | ✅ Passed | ~5m |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.e2e-tests.result }}" = "skipped" ]; then
+            echo "| E2E Tests | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| E2E Tests | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # PostgreSQL Specialized
+          if [ "${{ needs.postgres-specialized.result }}" = "success" ]; then
+            echo "| PostgreSQL Specialized | ✅ Passed | ~1m |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.postgres-specialized.result }}" = "skipped" ]; then
+            echo "| PostgreSQL Specialized | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| PostgreSQL Specialized | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # S3 Specialized
+          if [ "${{ needs.s3-specialized.result }}" = "success" ]; then
+            echo "| S3 Specialized | ✅ Passed | ~1m |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.s3-specialized.result }}" = "skipped" ]; then
+            echo "| S3 Specialized | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| S3 Specialized | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Test Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test Suite**: ${{ github.event.inputs.test_suite || 'all' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Parallel Execution**: ${{ github.event.inputs.parallel_execution || 'true' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker Compose**: docker-compose.test-extended.yaml" >> $GITHUB_STEP_SUMMARY
+          echo "- **Configurations**: Monitored via volume mounts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall result
+          FAILED_COUNT=0
+          if [ "${{ needs.unit-tests.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
+          if [ "${{ needs.integration-tests.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
+          if [ "${{ needs.e2e-tests.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
+          if [ "${{ needs.postgres-specialized.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
+          if [ "${{ needs.s3-specialized.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
+          
+          if [ $FAILED_COUNT -eq 0 ]; then
+            echo "### 🎉 Overall Result: ALL TESTS PASSED!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 💥 Overall Result: $FAILED_COUNT test suite(s) failed!" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Test results are available in the individual job artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage reports are uploaded to Codecov" >> $GITHUB_STEP_SUMMARY
