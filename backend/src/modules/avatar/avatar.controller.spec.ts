@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
+import { vi } from 'vitest';
 import { AvatarController } from './avatar.controller';
 import { AvatarService } from './avatar.service';
 import {
@@ -15,12 +16,12 @@ describe('AvatarController', () => {
   let service: AvatarService;
 
   const mockAvatarService = {
-    generateAvatar: jest.fn(),
-    getAvatar: jest.fn(),
-    listAvatars: jest.fn(),
-    deleteAvatar: jest.fn(),
-    healthCheck: jest.fn(),
-    getColorSchemes: jest.fn(),
+    generateAvatar: vi.fn(),
+    getAvatar: vi.fn(),
+    listAvatars: vi.fn(),
+    deleteAvatar: vi.fn(),
+    healthCheck: vi.fn(),
+    getColorSchemes: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -38,7 +39,7 @@ describe('AvatarController', () => {
     service = module.get<AvatarService>(AvatarService);
 
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -214,8 +215,8 @@ describe('AvatarController', () => {
   describe('GET /api/:id', () => {
     it('should return avatar image', async () => {
       const mockResponse = {
-        set: jest.fn(),
-        send: jest.fn(),
+        set: vi.fn(),
+        send: vi.fn(),
       } as unknown as Response;
 
       const dto: GetAvatarDto = {};
@@ -246,8 +247,8 @@ describe('AvatarController', () => {
 
     it('should apply filter when specified', async () => {
       const mockResponse = {
-        set: jest.fn(),
-        send: jest.fn(),
+        set: vi.fn(),
+        send: vi.fn(),
       } as unknown as Response;
 
       const dto: GetAvatarDto = { filter: FilterType.GRAYSCALE };
@@ -270,8 +271,8 @@ describe('AvatarController', () => {
 
     it('should apply size when specified', async () => {
       const mockResponse = {
-        set: jest.fn(),
-        send: jest.fn(),
+        set: vi.fn(),
+        send: vi.fn(),
       } as unknown as Response;
 
       const dto: GetAvatarDto = { size: 7 };
@@ -294,8 +295,8 @@ describe('AvatarController', () => {
 
     it('should throw HttpException when avatar not found', async () => {
       const mockResponse = {
-        set: jest.fn(),
-        send: jest.fn(),
+        set: vi.fn(),
+        send: vi.fn(),
       } as unknown as Response;
 
       const dto: GetAvatarDto = {};

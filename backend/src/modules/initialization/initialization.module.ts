@@ -28,26 +28,9 @@ import { InitializationService } from './services/initialization.service';
  */
 @Global()
 @Module({
-  imports: [ConfigModule], // Импортируем ConfigModule для доступа к YamlConfigService
-  providers: [
-    // Основной сервис инициализации
-    InitializationService,
-
-    // Сервисы инициализации (подмодули)
-    DirectoryInitializerService,
-
-    // В будущем можно добавить:
-    // DatabaseInitializerService,
-    // ConfigurationInitializerService,
-    // MigrationInitializerService,
-    // CacheInitializerService,
-    // QueueInitializerService,
-  ],
-  exports: [
-    // Экспортируем сервисы для внешнего использования
-    InitializationService,
-    DirectoryInitializerService,
-  ],
+  imports: [ConfigModule],
+  providers: [InitializationService, DirectoryInitializerService],
+  exports: [InitializationService, DirectoryInitializerService],
 })
 export class InitializationModule implements OnModuleInit {
   private readonly logger = new Logger(InitializationModule.name);

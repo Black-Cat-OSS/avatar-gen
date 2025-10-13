@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IDataBaseDriver } from '../interfaces/driver';
-import { SqliteDriverService } from '../drivers/sqlite';
-import { PostgreSQLDriverService } from '../drivers/postgresql';
-import { YamlConfigService } from '../../../config/yaml-config.service';
+import { SqliteDriverService } from '../modules/sqlite-driver';
+import { PostgreSQLDriverService } from '../modules/postgresql-driver';
+import { YamlConfigService } from '../../../config/modules/yaml-driver/yaml-config.service';
 
 /**
  * Фабрика для создания драйверов баз данных

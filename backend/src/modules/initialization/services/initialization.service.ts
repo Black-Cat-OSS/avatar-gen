@@ -24,10 +24,7 @@ export class InitializationService implements OnModuleInit {
     this.logger.log('Starting application initialization...');
 
     try {
-      // Регистрируем все доступные инициализаторы
       await this.discoverInitializers();
-
-      // Выполняем инициализацию в порядке приоритета
       await this.executeInitialization();
 
       this.logger.log('Application initialization completed successfully');
@@ -86,9 +83,6 @@ export class InitializationService implements OnModuleInit {
    * @returns {Promise<void>}
    */
   private async discoverInitializers(): Promise<void> {
-    // Для начала регистрируем известные инициализаторы вручную
-    // В будущем можно добавить автоматическое обнаружение через reflection
-
     try {
       const directoryInitializer = this.moduleRef.get('DirectoryInitializerService', {
         strict: false,
@@ -110,7 +104,6 @@ export class InitializationService implements OnModuleInit {
    * @returns {Promise<void>}
    */
   private async executeInitialization(): Promise<void> {
-    // Сортируем инициализаторы по приоритету
     const sortedInitializers = Array.from(this.initializers.values()).sort(
       (a, b) => a.getPriority() - b.getPriority(),
     );
@@ -135,29 +128,24 @@ export class InitializationService implements OnModuleInit {
 
     this.logger.log(`Initializing: ${id} (priority: ${status.priority})`);
 
-    // Обновляем статус
     status.status = 'running';
     status.startTime = new Date();
 
     try {
-      // Проверяем готовность (если метод определен)
       if (initializer.isReady && !(await initializer.isReady())) {
         this.logger.warn(`Initializer ${id} not ready, skipping`);
         status.status = 'skipped';
         return;
       }
 
-      // Выполняем инициализацию
       await initializer.initialize();
 
-      // Обновляем статус успеха
       status.status = 'completed';
       status.endTime = new Date();
       status.duration = status.endTime.getTime() - status.startTime.getTime();
 
       this.logger.log(`✓ ${id} completed in ${status.duration}ms`);
     } catch (error) {
-      // Обновляем статус ошибки
       status.status = 'failed';
       status.endTime = new Date();
       status.duration = status.endTime.getTime() - status.startTime.getTime();
@@ -165,7 +153,6 @@ export class InitializationService implements OnModuleInit {
 
       this.logger.error(`✗ ${id} failed in ${status.duration}ms: ${status.error}`, error);
 
-      // Пытаемся выполнить откат (если метод определен)
       if (initializer.rollback) {
         try {
           await initializer.rollback();
@@ -175,7 +162,6 @@ export class InitializationService implements OnModuleInit {
         }
       }
 
-      // Бросаем ошибку дальше, чтобы остановить инициализацию
       throw error;
     }
   }
@@ -188,7 +174,6 @@ export class InitializationService implements OnModuleInit {
   async reinitialize(): Promise<void> {
     this.logger.warn('Forcing re-initialization...');
 
-    // Сбрасываем статус всех инициализаторов
     for (const status of this.status.values()) {
       status.status = 'pending';
       status.startTime = undefined;
@@ -197,7 +182,6 @@ export class InitializationService implements OnModuleInit {
       status.error = undefined;
     }
 
-    // Выполняем инициализацию заново
     await this.executeInitialization();
   }
 }

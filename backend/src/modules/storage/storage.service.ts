@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AvatarObject } from '../../common/interfaces/avatar-object.interface';
 import { IStorageStrategy } from '../../common/interfaces/storage-strategy.interface';
-import { YamlConfigService } from '../../config/yaml-config.service';
-import { LocalStorageService } from './modules/local';
-import { S3StorageService } from './modules/s3';
+import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
+import { LocalStorageService } from './modules/local-driver';
+import { S3StorageService } from './modules/s3-driver';
 
 /**
  * Сервис хранилища аватаров
@@ -28,6 +28,7 @@ export class StorageService {
     const storageConfig = this.configService.getStorageConfig();
     const storageType = storageConfig.type;
 
+    //FIXME: What a hall here?
     if (storageType === 's3') {
       if (!s3StorageService) {
         throw new Error('S3StorageService is not available but configured as storage type');

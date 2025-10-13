@@ -42,6 +42,7 @@ export class GeneratorService {
     const uniqueSeed = seed ? seed + '-' + Date.now() + '-' + Math.random() : uuidv4();
 
     // Generate images for all required sizes (4n to 9n)
+    //todo need refactor here. Make factory methods
     const avatarObject: AvatarObject = {
       meta_data_name: id,
       meta_data_created_at: now,
