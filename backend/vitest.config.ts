@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/__tests__/**/*.spec.ts'],
     setupFiles: ['./test/vitest-setup.ts'],
     coverage: {
       provider: 'v8',
@@ -17,6 +17,8 @@ export default defineConfig({
         '**/index.ts',
       ],
     },
+    mockReset: true,
+    restoreMocks: true,
   },
   resolve: {
     alias: {

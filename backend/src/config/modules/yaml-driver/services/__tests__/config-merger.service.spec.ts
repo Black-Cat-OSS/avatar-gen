@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConfigMergerService } from './config-merger.service';
+import { ConfigMergerService } from '../config-merger.service';
 
 describe('ConfigMergerService', () => {
   let service: ConfigMergerService;

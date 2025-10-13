@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Logger } from '@nestjs/common';
-import { YamlConfigService } from './yaml-config.service';
-import { ConfigurationBuilder } from './builders/configuration.builder';
-import { FileReaderService } from './services/file-reader.service';
-import { ConfigMergerService } from './services/config-merger.service';
-import { YamlFileStrategy } from './strategies/yaml-file.strategy';
-import { findConfigDirectory } from './utils/find-base-config';
+import { YamlConfigService } from '../yaml-config.service';
+import { ConfigurationBuilder } from '../builders/configuration.builder';
+import { FileReaderService } from '../services/file-reader.service';
+import { ConfigMergerService } from '../services/config-merger.service';
+import { YamlFileStrategy } from '../strategies/yaml-file.strategy';
+import { findConfigDirectory } from '../utils/find-base-config';
 import { YamlSettingsFinder } from 'find-settings.lib/yaml';
 
-vi.mock('./utils/find-base-config');
+vi.mock('../utils/find-base-config');
 vi.mock('find-settings.lib/yaml');
 
 describe('YamlConfigService', () => {
@@ -40,7 +40,6 @@ describe('YamlConfigService', () => {
     const strategy = new YamlFileStrategy();
     const builder = new ConfigurationBuilder(fileReader, configMerger);
 
-    // Мокируем YamlSettingsFinder для Strategy
     vi.mocked(YamlSettingsFinder).mockImplementation(() => ({
       find: vi.fn().mockReturnValue(['settings.yaml']),
     }) as any);

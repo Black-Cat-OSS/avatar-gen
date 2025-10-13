@@ -1,16 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
-import { PostgreSQLDriverService } from './postgresql-driver.service';
-import { YamlConfigService } from '../../../../config/yaml-config.service';
+import { PostgreSQLDriverService } from '../postgresql-driver.service';
+import { YamlConfigService } from '../../../../../config/modules/yaml-driver/yaml-config.service';
+import { vi } from 'vitest';
 
 describe('PostgreSQLDriverService', () => {
   let service: PostgreSQLDriverService;
-  let mockYamlConfigService: jest.Mocked<YamlConfigService>;
+  let mockYamlConfigService: any;
 
   beforeEach(async () => {
     const mockYamlConfigServiceValue = {
-      getDatabaseConfig: jest.fn(),
-      getLoggingConfig: jest.fn(),
+      getDatabaseConfig: vi.fn(),
+      getLoggingConfig: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -27,12 +28,12 @@ describe('PostgreSQLDriverService', () => {
     mockYamlConfigService = module.get(YamlConfigService);
 
     // Mock logger to avoid console output during tests
-    jest.spyOn(Logger.prototype, 'debug').mockImplementation();
-    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    vi.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
+    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {

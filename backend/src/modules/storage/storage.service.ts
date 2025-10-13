@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { AvatarObject } from '../../common/interfaces/avatar-object.interface';
 import { IStorageStrategy } from '../../common/interfaces/storage-strategy.interface';
 import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
@@ -22,8 +22,8 @@ export class StorageService {
 
   constructor(
     private readonly configService: YamlConfigService,
-    localStorageService: LocalStorageService,
-    s3StorageService: S3StorageService,
+    @Optional() private readonly localStorageService: LocalStorageService,
+    @Optional() private readonly s3StorageService: S3StorageService,
   ) {
     const storageConfig = this.configService.getStorageConfig();
     const storageType = storageConfig.type;

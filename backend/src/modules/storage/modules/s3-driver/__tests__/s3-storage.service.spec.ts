@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { S3StorageService } from './s3-storage.service';
-import { S3Service } from '../../../s3';
+import { S3StorageService } from '../s3-storage.service';
+import { S3Service } from '../../../../s3';
 import { NotFoundException } from '@nestjs/common';
 import { vi } from 'vitest';
 
@@ -20,6 +20,9 @@ describe('S3StorageService', () => {
   };
 
   beforeEach(async () => {
+    // Reset mocks first
+    vi.clearAllMocks();
+
     const mockS3ServiceProvider = {
       uploadObject: vi.fn(),
       getObject: vi.fn(),
@@ -27,18 +30,13 @@ describe('S3StorageService', () => {
       objectExists: vi.fn(),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        S3StorageService,
-        {
-          provide: S3Service,
-          useValue: mockS3ServiceProvider,
-        },
-      ],
-    }).compile();
-
-    service = module.get<S3StorageService>(S3StorageService);
-    s3Service = module.get(S3Service);
+    // Create service directly with mocked dependencies
+    service = new S3StorageService(mockS3ServiceProvider as any);
+    s3Service = mockS3ServiceProvider;
+    
+    // Ensure s3Service is properly injected
+    expect(s3Service).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   it('should be defined', () => {

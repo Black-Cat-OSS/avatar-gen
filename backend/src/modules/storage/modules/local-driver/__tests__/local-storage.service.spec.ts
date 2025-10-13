@@ -1,16 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LocalStorageService } from './local-storage.service';
-import { YamlConfigService } from '../../../../config/yaml-config.service';
+import { LocalStorageService } from '../local-storage.service';
+import { YamlConfigService } from '../../../../../config/modules/yaml-driver/yaml-config.service';
 import { NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 
-jest.mock('fs');
-const mockedFs = fs as jest.Mocked<typeof fs>;
+vi.mock('fs');
+const mockedFs = fs as any;
 
 describe('LocalStorageService', () => {
   let service: LocalStorageService;
-  let configService: jest.Mocked<YamlConfigService>;
+  let configService: any;
 
   const mockAvatarObject = {
     meta_data_name: 'test-avatar',
@@ -24,10 +25,10 @@ describe('LocalStorageService', () => {
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     const mockConfigService = {
-      getStorageConfig: jest.fn().mockReturnValue({
+      getStorageConfig: vi.fn().mockReturnValue({
         type: 'local',
         local: {
           save_path: './storage/test-avatars',
@@ -35,18 +36,13 @@ describe('LocalStorageService', () => {
       }),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        LocalStorageService,
-        {
-          provide: YamlConfigService,
-          useValue: mockConfigService,
-        },
-      ],
-    }).compile();
-
-    service = module.get<LocalStorageService>(LocalStorageService);
-    configService = module.get(YamlConfigService);
+    // Create service directly with mocked dependencies
+    service = new LocalStorageService(mockConfigService as any);
+    configService = mockConfigService;
+    
+    // Ensure configService is properly injected
+    expect(configService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   it('should be defined', () => {
