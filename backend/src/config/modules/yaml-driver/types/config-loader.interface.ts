@@ -19,4 +19,3 @@ export interface IConfigLoader {
    */
   setNext(loader: IConfigLoader): IConfigLoader;
 }
-

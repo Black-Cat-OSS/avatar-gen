@@ -91,8 +91,8 @@ services:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
-      target: builder
-    image: avatar-gen-test-backend:builder
+      target: test
+    image: avatar-gen-test-backend:test
     container_name: avatar-gen-backend-unit-test
     profiles:
       - unit-tests
@@ -112,8 +112,8 @@ services:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
-      target: builder
-    image: avatar-gen-test-backend:builder
+      target: test
+    image: avatar-gen-test-backend:test
     container_name: avatar-gen-backend-integration-test
     profiles:
       - integration-tests
@@ -215,8 +215,8 @@ services:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
-      target: builder
-    image: avatar-gen-test-backend:builder
+      target: test
+    image: avatar-gen-test-backend:test
     container_name: avatar-gen-e2e-test-runner
     profiles:
       - e2e-tests
@@ -242,8 +242,8 @@ services:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
-      target: builder
-    image: avatar-gen-test-backend:builder
+      target: test
+    image: avatar-gen-test-backend:test
     container_name: avatar-gen-e2e-health-runner
     profiles:
       - e2e-health
@@ -268,8 +268,8 @@ services:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
-      target: builder
-    image: avatar-gen-test-backend:builder
+      target: test
+    image: avatar-gen-test-backend:test
     container_name: avatar-gen-test-runner
     profiles:
       - matrix-tests

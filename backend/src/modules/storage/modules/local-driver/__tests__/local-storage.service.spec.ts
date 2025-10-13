@@ -52,7 +52,7 @@ describe('LocalStorageService', () => {
   describe('saveAvatar', () => {
     it('should save avatar to local storage successfully', async () => {
       mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.writeFileSync.mockImplementation();
+      mockedFs.writeFileSync.mockImplementation(() => {});
 
       const result = await service.saveAvatar(mockAvatarObject);
 
@@ -62,8 +62,8 @@ describe('LocalStorageService', () => {
 
     it('should create directory if it does not exist', async () => {
       mockedFs.existsSync.mockReturnValue(false);
-      mockedFs.mkdirSync.mockImplementation();
-      mockedFs.writeFileSync.mockImplementation();
+      mockedFs.mkdirSync.mockImplementation(() => {});
+      mockedFs.writeFileSync.mockImplementation(() => {});
 
       await service.saveAvatar(mockAvatarObject);
 
@@ -126,7 +126,7 @@ describe('LocalStorageService', () => {
   describe('deleteAvatar', () => {
     it('should delete avatar from local storage successfully', async () => {
       mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.unlinkSync.mockImplementation();
+      mockedFs.unlinkSync.mockImplementation(() => {});
 
       await service.deleteAvatar('test-avatar');
 

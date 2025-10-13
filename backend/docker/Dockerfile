@@ -44,17 +44,35 @@ COPY --from=deps /app/backend ./backend
 COPY backend/src ./backend/src
 COPY backend/tsconfig.json ./backend/
 COPY backend/nest-cli.json ./backend/
+COPY backend/vitest.config.*.ts ./backend/
+COPY backend/test/ ./backend/test/
 
 # Add node_modules/.bin to PATH for access to binaries
 ENV PATH="/app/node_modules/.bin:$PATH"
 
 # Build the backend application
 WORKDIR /app/backend
-RUN pnpm run build && \
-  rm -rf ./node_modules && \
-  rm -rf ./src && \
-  rm ./tsconfig.json && \
-  rm ./nest-cli.json
+RUN pnpm run build
+
+FROM node:20-bullseye AS test
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm@latest
+
+# Copy workspace files
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+
+# Copy all dependencies from builder stage
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/backend ./backend
+
+# Add node_modules/.bin to PATH for access to binaries
+ENV PATH="/app/node_modules/.bin:$PATH"
+
+WORKDIR /app/backend
 
 FROM node:20-bullseye AS production
 WORKDIR /app
