@@ -1,99 +1,38 @@
 FROM node:20-bullseye AS deps
 WORKDIR /app
 
-# Set environment variable to skip husky installation
-ENV HUSKY_SKIP_INSTALL=1
+COPY ../package.json .
 
-# Install pnpm globally
-RUN npm install -g pnpm@latest
-
-# Copy workspace configuration and lock files
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-
-# Copy backend package files for dependencies installation
-COPY backend/package.json ./backend/
-
-# Install dependencies from workspace
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   curl python3 make g++ libvips-dev && \
   rm -rf /var/lib/apt/lists/* && \
-  pnpm install --frozen-lockfile --filter backend...
+  npm install
 
 FROM node:20-bullseye AS builder
 WORKDIR /app
 
-# Set environment variable to skip husky installation
-ENV HUSKY_SKIP_INSTALL=1
+COPY --from=deps /app/node_modules node_modules
+COPY --from=deps /app/package*.json .
+COPY ../src ./src
+COPY ../tsconfig.json .
+COPY ../nest-cli.json .
 
-# Install pnpm globally
-RUN npm install -g pnpm@latest
-
-# Copy workspace files
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-
-# Copy all dependencies from previous stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/backend ./backend
-
-# Copy backend source files
-COPY backend/src ./backend/src
-COPY backend/tsconfig.json ./backend/
-COPY backend/nest-cli.json ./backend/
-COPY backend/vitest.config.*.ts ./backend/
-COPY backend/test/ ./backend/test/
-
-# Add node_modules/.bin to PATH for access to binaries
-ENV PATH="/app/node_modules/.bin:$PATH"
-
-# Build the backend application
-WORKDIR /app/backend
-RUN pnpm run build
-
-FROM node:20-bullseye AS test
-WORKDIR /app
-
-# Install pnpm globally
-RUN npm install -g pnpm@latest
-
-# Copy workspace files
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-
-# Copy all dependencies from builder stage
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/backend ./backend
-
-# Add node_modules/.bin to PATH for access to binaries
-ENV PATH="/app/node_modules/.bin:$PATH"
-
-WORKDIR /app/backend
+RUN npm run build && \
+  rm -rf ./node_modules && \
+  rm -rf ./src && \
+  rm ./tsconfig.json && \
+  rm ./nest-cli.json
 
 FROM node:20-bullseye AS production
 WORKDIR /app
 
-# Install pnpm globally
-RUN npm install -g pnpm@latest
+COPY --from=builder /app/dist dist
+COPY --from=builder /app/package*.json .
+COPY ../start.sh /app/start.sh
 
-COPY --from=builder /app/backend/dist ./backend/dist
-COPY --from=builder /app/backend/package.json ./backend/
-COPY backend/start.sh ./backend/start.sh
-
-# Copy workspace files for pnpm
-COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-
-# Install production dependencies
-RUN pnpm install --frozen-lockfile --filter backend... --prod && \
-  chmod +x ./backend/start.sh
-
-WORKDIR /app/backend
+RUN npm install --production && \
+  chmod +x /app/start.sh
 
 ENV NODE_ENV=production
 EXPOSE 3000

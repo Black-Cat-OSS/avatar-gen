@@ -1,6 +1,9 @@
-name: avatar-gen-test
+name: avatar-gen-test-extended
 
 services:
+  # ===========================================
+  # BUILDERS
+  # ===========================================
   backend-builder:
     build:
       context: ..
@@ -32,6 +35,9 @@ services:
     container_name: avatar-gen-gateway-builder
     command: ['echo', 'Builder image created']
 
+  # ===========================================
+  # INFRASTRUCTURE SERVICES
+  # ===========================================
   minio:
     image: minio/minio:latest
     container_name: avatar-gen-minio-test
@@ -39,6 +45,7 @@ services:
       - s3-storage
       - integration-tests
       - e2e-tests
+      - s3-tests
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -66,6 +73,7 @@ services:
       - postgresql-storage
       - integration-tests
       - e2e-tests
+      - postgres-tests
     environment:
       POSTGRES_DB: avatar_gen_test
       POSTGRES_USER: test_user
@@ -85,6 +93,9 @@ services:
       - test-internal
     restart: 'no'
 
+  # ===========================================
+  # UNIT TESTS
+  # ===========================================
   avatar-backend-unit:
     build:
       context: ..
@@ -94,17 +105,42 @@ services:
     container_name: avatar-gen-backend-unit-test
     profiles:
       - unit-tests
+      - unit-only
     volumes:
-      - ../backend/configs/settings.test.yaml:/app/backend/settings.yaml:ro
+      - ../backend/configs/settings.test.unit.yaml:/app/backend/settings.yaml:ro
       - ../backend/logs:/app/backend/logs
       - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
+      - TEST_LOG_LEVEL=error
     command: ['npm', 'run', 'test:unit']
     networks:
       - test-internal
 
+  gateway-unit:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    image: avatar-gen-test-gateway:latest
+    container_name: avatar-gen-gateway-unit-test
+    profiles:
+      - unit-tests
+      - unit-only
+    depends_on:
+      - avatar-backend-unit
+    ports:
+      - '12747:80'
+    volumes:
+      - ../gateway/configs/nginx.test.unit.conf:/etc/nginx/nginx.conf:ro
+      - ../gateway/configs/static:/usr/share/nginx/html/static:ro
+      - ../gateway/logs:/var/log/nginx
+    networks:
+      - test-internal
+
+  # ===========================================
+  # INTEGRATION TESTS
+  # ===========================================
   avatar-backend-integration:
     build:
       context: ..
@@ -114,6 +150,7 @@ services:
     container_name: avatar-gen-backend-integration-test
     profiles:
       - integration-tests
+      - integration-only
     depends_on:
       postgres-test:
         condition: service_healthy
@@ -139,6 +176,93 @@ services:
     networks:
       - test-internal
 
+  gateway-integration:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    image: avatar-gen-test-gateway:latest
+    container_name: avatar-gen-gateway-integration-test
+    profiles:
+      - integration-tests
+      - integration-only
+    depends_on:
+      - avatar-backend-integration
+    ports:
+      - '12748:80'
+    volumes:
+      - ../gateway/configs/nginx.test.integration.conf:/etc/nginx/nginx.conf:ro
+      - ../gateway/configs/static:/usr/share/nginx/html/static:ro
+      - ../gateway/logs:/var/log/nginx
+    networks:
+      - test-internal
+
+  # ===========================================
+  # POSTGRES-SPECIFIC TESTS
+  # ===========================================
+  avatar-backend-postgres:
+    build:
+      context: ..
+      dockerfile: backend/docker/Dockerfile
+      target: builder
+    image: avatar-gen-test-backend:builder
+    container_name: avatar-gen-backend-postgres-test
+    profiles:
+      - postgres-tests
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    volumes:
+      - ../backend/configs/settings.test.postgres.yaml:/app/backend/settings.yaml:ro
+      - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
+    environment:
+      - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
+      - TEST_DB_DRIVER=postgresql
+      - TEST_DB_HOST=postgres-test
+      - TEST_DB_PORT=5432
+      - TEST_DB_NAME=avatar_gen_test
+      - TEST_DB_USER=test_user
+      - TEST_DB_PASSWORD=test_password
+    command: ['npm', 'run', 'test:integration']
+    networks:
+      - test-internal
+
+  # ===========================================
+  # S3-SPECIFIC TESTS
+  # ===========================================
+  avatar-backend-s3:
+    build:
+      context: ..
+      dockerfile: backend/docker/Dockerfile
+      target: builder
+    image: avatar-gen-test-backend:builder
+    container_name: avatar-gen-backend-s3-test
+    profiles:
+      - s3-tests
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ../backend/configs/settings.test.s3.yaml:/app/backend/settings.yaml:ro
+      - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
+    environment:
+      - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
+      - TEST_STORAGE_TYPE=s3
+      - TEST_S3_ENDPOINT=http://minio:9000
+      - TEST_S3_BUCKET=avatar-gen-test
+      - TEST_S3_ACCESS_KEY=test-access-key
+      - TEST_S3_SECRET_KEY=test-secret-key
+      - TEST_S3_REGION=us-east-1
+    command: ['npm', 'run', 'test:integration']
+    networks:
+      - test-internal
+
+  # ===========================================
+  # E2E TESTS
+  # ===========================================
   avatar-backend-e2e:
     build:
       context: ..
@@ -148,6 +272,7 @@ services:
     container_name: avatar-gen-backend-e2e-test
     profiles:
       - e2e-tests
+      - e2e-only
     depends_on:
       postgres-test:
         condition: service_healthy
@@ -158,6 +283,7 @@ services:
     volumes:
       - ../backend/configs/settings.test.e2e.yaml:/app/backend/settings.yaml:ro
       - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
@@ -173,6 +299,7 @@ services:
     container_name: avatar-gen-frontend-e2e-test
     profiles:
       - e2e-tests
+      - e2e-only
     depends_on:
       - avatar-backend-e2e
     expose:
@@ -193,6 +320,7 @@ services:
     container_name: avatar-gen-gateway-e2e-test
     profiles:
       - e2e-tests
+      - e2e-only
     depends_on:
       - avatar-frontend-e2e
       - avatar-backend-e2e
@@ -205,6 +333,9 @@ services:
     networks:
       - test-internal
 
+  # ===========================================
+  # TEST RUNNERS
+  # ===========================================
   e2e-test-runner:
     build:
       context: ..
@@ -274,6 +405,35 @@ services:
     environment:
       - NODE_ENV=test
     command: ['npm', 'run', 'test:matrix']
+    networks:
+      - test-internal
+
+  # ===========================================
+  # PERFORMANCE TESTS
+  # ===========================================
+  avatar-backend-performance:
+    build:
+      context: ..
+      dockerfile: backend/docker/Dockerfile
+      target: builder
+    image: avatar-gen-test-backend:builder
+    container_name: avatar-gen-backend-performance-test
+    profiles:
+      - performance-tests
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - ../backend/configs/settings.test.yaml:/app/backend/settings.yaml:ro
+      - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
+    environment:
+      - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
+      - TEST_LOG_LEVEL=warn
+    command: ['npm', 'run', 'test:performance']
     networks:
       - test-internal
 
