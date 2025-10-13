@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Logger } from '@nestjs/common';
-import { ConfigurationBuilder } from './configuration.builder';
-import { FileReaderService } from '../services/file-reader.service';
-import { ConfigMergerService } from '../services/config-merger.service';
-import { YamlFileStrategy } from '../strategies/yaml-file.strategy';
+import { ConfigurationBuilder } from '../configuration.builder';
+import { FileReaderService } from '../../services/file-reader.service';
+import { ConfigMergerService } from '../../services/config-merger.service';
+import { YamlFileStrategy } from '../../strategies/yaml-file.strategy';
 import { YamlSettingsFinder } from 'find-settings.lib/yaml';
 
 vi.mock('find-settings.lib/yaml');

@@ -1,30 +1,32 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { vi } from 'vitest';
-import { AvatarController } from './avatar.controller';
-import { AvatarService } from './avatar.service';
+import { vi, describe, beforeEach, it, expect } from 'vitest';
+import { AvatarController } from '../avatar.controller';
+import { AvatarService } from '../avatar.service';
 import {
   GenerateAvatarDto,
   GetAvatarDto,
   ListAvatarsDto,
-} from '../../common/dto/generate-avatar.dto';
-import { FilterType } from '../../common/enums/filter.enum';
+} from '../../../common/dto/generate-avatar.dto';
+import { FilterType } from '../../../common/enums/filter.enum';
 
 describe('AvatarController', () => {
   let controller: AvatarController;
   let service: AvatarService;
-
-  const mockAvatarService = {
-    generateAvatar: vi.fn(),
-    getAvatar: vi.fn(),
-    listAvatars: vi.fn(),
-    deleteAvatar: vi.fn(),
-    healthCheck: vi.fn(),
-    getColorSchemes: vi.fn(),
-  };
+  let mockAvatarService: any;
 
   beforeEach(async () => {
+    // Create fresh mocks for each test
+    mockAvatarService = {
+      generateAvatar: vi.fn(),
+      getAvatar: vi.fn(),
+      listAvatars: vi.fn(),
+      deleteAvatar: vi.fn(),
+      healthCheck: vi.fn(),
+      getColorSchemes: vi.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AvatarController],
       providers: [
@@ -36,14 +38,14 @@ describe('AvatarController', () => {
     }).compile();
 
     controller = module.get<AvatarController>(AvatarController);
-    service = module.get<AvatarService>(AvatarService);
-
-    // Reset mocks
-    vi.clearAllMocks();
+    // Manually inject the mock service into the controller
+    (controller as any).avatarService = mockAvatarService;
+    service = mockAvatarService;
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   describe('POST /api/generate', () => {

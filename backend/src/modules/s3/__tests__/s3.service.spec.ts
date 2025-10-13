@@ -1,9 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { S3Service } from './s3.service';
+import { S3Service } from '../s3.service';
 import { Logger } from '@nestjs/common';
 import { vi } from 'vitest';
 
-vi.mock('@aws-sdk/client-s3');
+// Mock AWS SDK
+vi.mock('@aws-sdk/client-s3', () => ({
+  S3Client: vi.fn(),
+  HeadBucketCommand: vi.fn(),
+  PutObjectCommand: vi.fn(),
+  GetObjectCommand: vi.fn(),
+  DeleteObjectCommand: vi.fn(),
+  HeadObjectCommand: vi.fn(),
+}));
 
 describe('S3Service', () => {
   let service: S3Service;
@@ -37,8 +45,8 @@ describe('S3Service', () => {
       destroy: vi.fn(),
     };
 
-    const { S3Client } = require('@aws-sdk/client-s3');
-    S3Client.mockImplementation(() => mockS3Client);
+    const { S3Client } = await import('@aws-sdk/client-s3');
+    vi.mocked(S3Client).mockImplementation(() => mockS3Client);
 
     service = new S3Service(mockConfig);
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FileReaderService } from './file-reader.service';
+import { FileReaderService } from '../file-reader.service';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import { YamlDotEnv } from 'yaml-dotenv';

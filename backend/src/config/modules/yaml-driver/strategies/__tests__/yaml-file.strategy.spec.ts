@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { YamlFileStrategy } from './yaml-file.strategy';
+import { YamlFileStrategy } from '../yaml-file.strategy';
 import { YamlSettingsFinder } from 'find-settings.lib/yaml';
 
 vi.mock('find-settings.lib/yaml');

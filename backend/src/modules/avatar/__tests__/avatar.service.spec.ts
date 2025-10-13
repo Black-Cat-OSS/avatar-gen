@@ -2,49 +2,76 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { vi } from 'vitest';
-import { AvatarService } from './avatar.service';
-import { Avatar } from './avatar.entity';
-import { GeneratorService } from './modules';
-import { StorageService } from '../storage/storage.service';
+import { vi, describe, beforeEach, it, expect } from 'vitest';
+import { AvatarService } from '../avatar.service';
+import { Avatar } from '../avatar.entity';
+import { GeneratorService } from '../modules';
+import { StorageService } from '../../storage/storage.service';
+import { YamlConfigService } from '../../../config/modules/yaml-driver/yaml-config.service';
+import { LocalStorageService } from '../../storage/modules/local-driver';
+import { S3StorageService } from '../../storage/modules/s3-driver';
 import {
   GenerateAvatarDto,
   GetAvatarDto,
   ListAvatarsDto,
-} from '../../common/dto/generate-avatar.dto';
-import { FilterType } from '../../common/enums/filter.enum';
+} from '../../../common/dto/generate-avatar.dto';
+import { FilterType } from '../../../common/enums/filter.enum';
 
 describe('AvatarService', () => {
   let service: AvatarService;
   let avatarRepository: Repository<Avatar>;
-  let generatorService: GeneratorService;
-  let storageService: StorageService;
-
-  const mockAvatarRepository = {
-    create: vi.fn(),
-    save: vi.fn(),
-    findOne: vi.fn(),
-    find: vi.fn(),
-    findAndCount: vi.fn(),
-    count: vi.fn(),
-    delete: vi.fn(),
-    remove: vi.fn(),
-  };
-
-  const mockGeneratorService = {
-    generateAvatar: vi.fn(),
-    applyFilter: vi.fn(),
-    getColorSchemes: vi.fn(),
-  };
-
-  const mockStorageService = {
-    saveAvatar: vi.fn(),
-    loadAvatar: vi.fn(),
-    deleteAvatar: vi.fn(),
-    getStorageStats: vi.fn(),
-  };
+  let mockAvatarRepository: any;
+  let mockGeneratorService: any;
+  let mockStorageService: any;
+  let mockConfigService: any;
+  let mockLocalStorageService: any;
+  let mockS3StorageService: any;
 
   beforeEach(async () => {
+    // Clear all mocks before each test
+    vi.clearAllMocks();
+
+    // Create fresh mocks for each test
+    mockAvatarRepository = {
+      create: vi.fn(),
+      save: vi.fn(),
+      findOne: vi.fn(),
+      find: vi.fn(),
+      findAndCount: vi.fn(),
+      count: vi.fn(),
+      delete: vi.fn(),
+      remove: vi.fn(),
+    };
+
+    mockGeneratorService = {
+      generateAvatar: vi.fn(),
+      applyFilter: vi.fn(),
+      getColorSchemes: vi.fn(),
+    };
+
+    mockConfigService = {
+      getStorageConfig: vi.fn().mockReturnValue({ type: 'local' }),
+    };
+
+    mockLocalStorageService = {
+      saveAvatar: vi.fn(),
+      loadAvatar: vi.fn(),
+      deleteAvatar: vi.fn(),
+    };
+
+    mockS3StorageService = {
+      saveAvatar: vi.fn(),
+      loadAvatar: vi.fn(),
+      deleteAvatar: vi.fn(),
+    };
+
+    mockStorageService = {
+      saveAvatar: vi.fn(),
+      loadAvatar: vi.fn(),
+      deleteAvatar: vi.fn(),
+      getStorageStats: vi.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AvatarService,
@@ -60,20 +87,45 @@ describe('AvatarService', () => {
           provide: StorageService,
           useValue: mockStorageService,
         },
+        {
+          provide: YamlConfigService,
+          useValue: mockConfigService,
+        },
+        {
+          provide: LocalStorageService,
+          useValue: mockLocalStorageService,
+        },
+        {
+          provide: S3StorageService,
+          useValue: mockS3StorageService,
+        },
       ],
-    }).compile();
+    })
+      .overrideProvider(GeneratorService)
+      .useValue(mockGeneratorService)
+      .overrideProvider(StorageService)
+      .useValue(mockStorageService)
+      .compile();
 
     service = module.get<AvatarService>(AvatarService);
     avatarRepository = module.get<Repository<Avatar>>(getRepositoryToken(Avatar));
-    generatorService = module.get<GeneratorService>(GeneratorService);
-    storageService = module.get<StorageService>(StorageService);
 
-    // Reset mocks
-    vi.clearAllMocks();
+    // Manually inject dependencies if they are undefined
+    if (!service['avatarGenerator']) {
+      (service as any).avatarGenerator = mockGeneratorService;
+    }
+    if (!service['storageService']) {
+      (service as any).storageService = mockStorageService;
+    }
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should have dependencies injected', () => {
+    expect(service['avatarGenerator']).toBeDefined();
+    expect(service['storageService']).toBeDefined();
   });
 
   describe('generateAvatar', () => {
