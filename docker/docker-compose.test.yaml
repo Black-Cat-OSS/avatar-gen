@@ -10,17 +10,18 @@ services:
     profiles:
       - build-only
     container_name: avatar-gen-backend-builder
-    command: ['echo', 'Builder image created']
+    command: ['echo', 'Backend builder image created']
 
   frontend-builder:
     build:
       context: ..
       dockerfile: frontend/docker/Dockerfile
-    image: avatar-gen-test-frontend:latest
+      target: builder
+    image: avatar-gen-test-frontend:builder
     profiles:
       - build-only
     container_name: avatar-gen-frontend-builder
-    command: ['echo', 'Builder image created']
+    command: ['echo', 'Frontend builder image created']
 
   gateway-builder:
     build:
@@ -30,7 +31,7 @@ services:
     profiles:
       - build-only
     container_name: avatar-gen-gateway-builder
-    command: ['echo', 'Builder image created']
+    command: ['echo', 'Gateway image created']
 
   minio:
     image: minio/minio:latest
@@ -39,6 +40,7 @@ services:
       - s3-storage
       - integration-tests
       - e2e-tests
+      - minio-only
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -101,6 +103,7 @@ services:
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
+      - TEST_STORAGE_TYPE=local
     command: ['pnpm', 'run', 'test:unit']
     networks:
       - test-internal
@@ -120,8 +123,9 @@ services:
       minio:
         condition: service_healthy
     volumes:
-      - ../backend/configs/settings.test.yaml:/app/backend/settings.yaml:ro
+      - ../backend/configs/settings.test.minio.yaml:/app/backend/settings.yaml:ro
       - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
@@ -143,8 +147,8 @@ services:
     build:
       context: ..
       dockerfile: backend/docker/Dockerfile
-      target: builder
-    image: avatar-gen-test-backend:builder
+      target: production
+    image: avatar-gen-test-backend:production
     container_name: avatar-gen-backend-e2e-test
     profiles:
       - e2e-tests
@@ -158,6 +162,7 @@ services:
     volumes:
       - ../backend/configs/settings.test.e2e.yaml:/app/backend/settings.yaml:ro
       - ../backend/logs:/app/backend/logs
+      - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
@@ -169,7 +174,8 @@ services:
     build:
       context: ..
       dockerfile: frontend/docker/Dockerfile
-    image: avatar-gen-test-frontend:latest
+      target: production
+    image: avatar-gen-test-frontend:production
     container_name: avatar-gen-frontend-e2e-test
     profiles:
       - e2e-tests
@@ -197,7 +203,7 @@ services:
       - avatar-frontend-e2e
       - avatar-backend-e2e
     ports:
-      - '12746:12745'
+      - '18650:18650'
     volumes:
       - ../gateway/configs/nginx.test.conf:/etc/nginx/nginx.conf:ro
       - ../gateway/configs/static:/usr/share/nginx/html/static:ro
@@ -227,7 +233,7 @@ services:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
       - BACKEND_URL=http://avatar-backend-e2e:3000
-      - GATEWAY_URL=http://gateway-e2e:80
+      - GATEWAY_URL=http://gateway-e2e:18650
     command: ['pnpm', 'run', 'test:e2e', '--verbose']
     networks:
       - test-internal
@@ -253,7 +259,7 @@ services:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
       - BACKEND_URL=http://avatar-backend-e2e:3000
-      - GATEWAY_URL=http://gateway-e2e:80
+      - GATEWAY_URL=http://gateway-e2e:18650
     command: ['pnpm', 'run', 'test:e2e', '--testNamePattern=HealthController', '--verbose']
     networks:
       - test-internal
@@ -273,6 +279,7 @@ services:
       - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
+      - CONFIG_PATH=./settings.yaml
     command: ['pnpm', 'run', 'test:matrix']
     networks:
       - test-internal
