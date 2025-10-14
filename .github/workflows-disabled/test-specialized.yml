@@ -49,7 +49,7 @@ jobs:
       - name: Run PostgreSQL specialized tests
         run: |
           echo "🐘 Запуск PostgreSQL-специфичных тестов..."
-          
+
           # Устанавливаем переменные окружения для PostgreSQL
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
@@ -58,17 +58,17 @@ jobs:
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
           export TEST_STORAGE_TYPE=local
-          
+
           # Запускаем PostgreSQL-специфичные тесты
           docker compose -f docker/docker-compose.test-extended.yaml --profile postgres-tests up --build --abort-on-container-exit avatar-backend-postgres
-          
+
           echo "✅ PostgreSQL тесты завершены"
 
       - name: Collect test results
         if: always()
         run: |
           docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-postgres > postgres-test-results.log
-          
+
           echo "## 🐘 PostgreSQL Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration" >> $GITHUB_STEP_SUMMARY
@@ -100,7 +100,7 @@ jobs:
       - name: Run S3/MinIO specialized tests
         run: |
           echo "☁️ Запуск S3/MinIO-специфичных тестов..."
-          
+
           # Устанавливаем переменные окружения для S3
           export TEST_STORAGE_TYPE=s3
           export TEST_S3_ENDPOINT=http://localhost:9000
@@ -109,17 +109,17 @@ jobs:
           export TEST_S3_BUCKET=avatar-gen-test
           export TEST_S3_REGION=us-east-1
           export TEST_DB_DRIVER=sqlite
-          
+
           # Запускаем S3-специфичные тесты
           docker compose -f docker/docker-compose.test-extended.yaml --profile s3-tests up --build --abort-on-container-exit avatar-backend-s3
-          
+
           echo "✅ S3 тесты завершены"
 
       - name: Collect test results
         if: always()
         run: |
           docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-s3 > s3-test-results.log
-          
+
           echo "## ☁️ S3/MinIO Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration" >> $GITHUB_STEP_SUMMARY
@@ -151,7 +151,7 @@ jobs:
       - name: Run performance tests
         run: |
           echo "⚡ Запуск performance тестов..."
-          
+
           # Устанавливаем переменные окружения для performance тестов
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
@@ -161,17 +161,17 @@ jobs:
           export TEST_DB_PASSWORD=test_password
           export TEST_STORAGE_TYPE=local
           export TEST_LOG_LEVEL=warn
-          
+
           # Запускаем performance тесты
           docker compose -f docker/docker-compose.test-extended.yaml --profile performance-tests up --build --abort-on-container-exit avatar-backend-performance
-          
+
           echo "✅ Performance тесты завершены"
 
       - name: Collect test results
         if: always()
         run: |
           docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-performance > performance-test-results.log
-          
+
           echo "## ⚡ Performance Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration" >> $GITHUB_STEP_SUMMARY
@@ -205,7 +205,7 @@ jobs:
         run: |
           CUSTOM_CONFIG='${{ github.event.inputs.config_custom }}'
           echo "CUSTOM_CONFIG=$CUSTOM_CONFIG" >> $GITHUB_OUTPUT
-          
+
           if [ "$CUSTOM_CONFIG" != "{}" ] && [ "$CUSTOM_CONFIG" != "" ]; then
             echo "Parsing custom configuration: $CUSTOM_CONFIG"
             echo "$CUSTOM_CONFIG" | jq -r 'to_entries[] | "export \(.key)=\(.value)"' > custom_env.sh
@@ -217,28 +217,28 @@ jobs:
       - name: Run custom matrix tests
         run: |
           echo "🔄 Запуск кастомных матричных тестов..."
-          
+
           # Загружаем кастомные переменные если есть
           if [ -n "${{ steps.custom-config.outputs.CUSTOM_ENV_FILE }}" ] && [ -f "${{ steps.custom-config.outputs.CUSTOM_ENV_FILE }}" ]; then
             echo "Loading custom environment variables..."
             source ${{ steps.custom-config.outputs.CUSTOM_ENV_FILE }}
             cat ${{ steps.custom-config.outputs.CUSTOM_ENV_FILE }}
           fi
-          
+
           # Устанавливаем переменные по умолчанию
           export TEST_DB_DRIVER=${TEST_DB_DRIVER:-postgresql}
           export TEST_STORAGE_TYPE=${TEST_STORAGE_TYPE:-local}
-          
+
           # Запускаем кастомные матричные тесты
           docker compose -f docker/docker-compose.test-extended.yaml --profile matrix-tests up --build --abort-on-container-exit test-runner
-          
+
           echo "✅ Кастомные матричные тесты завершены"
 
       - name: Collect test results
         if: always()
         run: |
           docker compose -f docker/docker-compose.test-extended.yaml logs test-runner > matrix-test-results.log
-          
+
           echo "## 🔄 Custom Matrix Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration" >> $GITHUB_STEP_SUMMARY

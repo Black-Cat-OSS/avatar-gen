@@ -107,7 +107,7 @@ jobs:
       - name: Run integration tests
         run: |
           echo "🔗 Запуск Integration тестов..."
-          
+
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
           export TEST_DB_PORT=5433
@@ -115,7 +115,7 @@ jobs:
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
           export TEST_STORAGE_TYPE=local
-          
+
           docker compose -f docker/docker-compose.test-extended.yaml --profile integration-only up --build --abort-on-container-exit avatar-backend-integration
 
       - name: Collect integration test results
@@ -176,7 +176,7 @@ jobs:
       - name: Run E2E tests
         run: |
           echo "🎭 Запуск E2E тестов..."
-          
+
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
           export TEST_DB_PORT=5433
@@ -184,7 +184,7 @@ jobs:
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
           export TEST_STORAGE_TYPE=local
-          
+
           docker compose -f docker/docker-compose.test-extended.yaml --profile e2e-only up --build --abort-on-container-exit e2e-test-runner
 
       - name: Collect E2E test results
@@ -238,7 +238,7 @@ jobs:
       - name: Run PostgreSQL specialized tests
         run: |
           echo "🐘 Запуск PostgreSQL-специфичных тестов..."
-          
+
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
           export TEST_DB_PORT=5433
@@ -246,7 +246,7 @@ jobs:
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
           export TEST_STORAGE_TYPE=local
-          
+
           docker compose -f docker/docker-compose.test-extended.yaml --profile postgres-tests up --build --abort-on-container-exit avatar-backend-postgres
 
       - name: Collect PostgreSQL test results
@@ -281,7 +281,7 @@ jobs:
       - name: Run S3 specialized tests
         run: |
           echo "☁️ Запуск S3-специфичных тестов..."
-          
+
           export TEST_STORAGE_TYPE=s3
           export TEST_S3_ENDPOINT=http://localhost:9000
           export TEST_S3_ACCESS_KEY=test-access-key
@@ -289,7 +289,7 @@ jobs:
           export TEST_S3_BUCKET=avatar-gen-test
           export TEST_S3_REGION=us-east-1
           export TEST_DB_DRIVER=sqlite
-          
+
           docker compose -f docker/docker-compose.test-extended.yaml --profile s3-tests up --build --abort-on-container-exit avatar-backend-s3
 
       - name: Collect S3 test results
@@ -321,7 +321,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Test Suite | Status | Duration |" >> $GITHUB_STEP_SUMMARY
           echo "|------------|--------|----------|" >> $GITHUB_STEP_SUMMARY
-          
+
           # Unit Tests
           if [ "${{ needs.unit-tests.result }}" = "success" ]; then
             echo "| Unit Tests | ✅ Passed | ~30s |" >> $GITHUB_STEP_SUMMARY
@@ -330,7 +330,7 @@ jobs:
           else
             echo "| Unit Tests | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # Integration Tests
           if [ "${{ needs.integration-tests.result }}" = "success" ]; then
             echo "| Integration Tests | ✅ Passed | ~2m |" >> $GITHUB_STEP_SUMMARY
@@ -339,7 +339,7 @@ jobs:
           else
             echo "| Integration Tests | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # E2E Tests
           if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
             echo "| E2E Tests | ✅ Passed | ~5m |" >> $GITHUB_STEP_SUMMARY
@@ -348,7 +348,7 @@ jobs:
           else
             echo "| E2E Tests | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # PostgreSQL Specialized
           if [ "${{ needs.postgres-specialized.result }}" = "success" ]; then
             echo "| PostgreSQL Specialized | ✅ Passed | ~1m |" >> $GITHUB_STEP_SUMMARY
@@ -357,7 +357,7 @@ jobs:
           else
             echo "| PostgreSQL Specialized | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # S3 Specialized
           if [ "${{ needs.s3-specialized.result }}" = "success" ]; then
             echo "| S3 Specialized | ✅ Passed | ~1m |" >> $GITHUB_STEP_SUMMARY
@@ -366,7 +366,7 @@ jobs:
           else
             echo "| S3 Specialized | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🎯 Test Configuration" >> $GITHUB_STEP_SUMMARY
           echo "- **Test Suite**: ${{ github.event.inputs.test_suite || 'all' }}" >> $GITHUB_STEP_SUMMARY
@@ -374,7 +374,7 @@ jobs:
           echo "- **Docker Compose**: docker-compose.test-extended.yaml" >> $GITHUB_STEP_SUMMARY
           echo "- **Configurations**: Monitored via volume mounts" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Overall result
           FAILED_COUNT=0
           if [ "${{ needs.unit-tests.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
@@ -382,13 +382,13 @@ jobs:
           if [ "${{ needs.e2e-tests.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
           if [ "${{ needs.postgres-specialized.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
           if [ "${{ needs.s3-specialized.result }}" = "failure" ]; then ((FAILED_COUNT++)); fi
-          
+
           if [ $FAILED_COUNT -eq 0 ]; then
             echo "### 🎉 Overall Result: ALL TESTS PASSED!" >> $GITHUB_STEP_SUMMARY
           else
             echo "### 💥 Overall Result: $FAILED_COUNT test suite(s) failed!" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📋 Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- Test results are available in the individual job artifacts" >> $GITHUB_STEP_SUMMARY

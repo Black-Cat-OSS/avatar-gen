@@ -53,24 +53,24 @@ jobs:
       - name: Build test images with cache
         run: |
           echo "🏗️ Сборка тестовых образов..."
-          
+
           # Backend test image
           docker build -f backend/docker/Dockerfile --target builder -t avatar-gen-test-backend:builder .
-          
+
           # Frontend test image
           docker build -f frontend/docker/Dockerfile -t avatar-gen-test-frontend:latest .
-          
+
           # Gateway test image
           docker build -f gateway/Dockerfile -t avatar-gen-test-gateway:latest ./gateway
-          
+
           echo "✅ Образы собраны"
 
       - name: Run E2E tests with Docker Compose
         run: |
           TEST_SCOPE="${{ github.event.inputs.test_scope || 'full' }}"
-          
+
           echo "🎭 Запуск E2E тестов с областью: $TEST_SCOPE"
-          
+
           # Устанавливаем переменные окружения для E2E тестов
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
@@ -78,9 +78,9 @@ jobs:
           export TEST_DB_NAME=avatar_gen_test
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
-          
+
           export TEST_STORAGE_TYPE=local
-          
+
           if [ "$TEST_SCOPE" = "health" ]; then
             # Только health check тесты
             docker compose -f docker/docker-compose.test-extended.yaml --profile e2e-health up --build --abort-on-container-exit e2e-health-runner
@@ -88,16 +88,16 @@ jobs:
             # Полные E2E тесты
             docker compose -f docker/docker-compose.test-extended.yaml --profile e2e-only up --build --abort-on-container-exit e2e-test-runner
           fi
-          
+
           echo "✅ E2E тесты завершены"
 
       - name: Collect test results
         if: always()
         run: |
           echo "📊 Сбор результатов E2E тестов..."
-          
+
           TEST_SCOPE="${{ github.event.inputs.test_scope || 'full' }}"
-          
+
           if [ "$TEST_SCOPE" = "health" ]; then
             docker compose -f docker/docker-compose.test-extended.yaml logs e2e-health-runner > e2e-test-results.log
             TEST_RUNNER="e2e-health-runner"
@@ -105,7 +105,7 @@ jobs:
             docker compose -f docker/docker-compose.test-extended.yaml logs e2e-test-runner > e2e-test-results.log
             TEST_RUNNER="e2e-test-runner"
           fi
-          
+
           echo "## 🎭 E2E Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration Used" >> $GITHUB_STEP_SUMMARY
@@ -114,7 +114,7 @@ jobs:
           echo "- Storage: Local filesystem" >> $GITHUB_STEP_SUMMARY
           echo "- Full Stack: Backend + Frontend + Gateway" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f e2e-test-results.log ]; then
             echo "### Test Output" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

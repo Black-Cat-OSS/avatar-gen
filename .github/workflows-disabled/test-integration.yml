@@ -62,15 +62,15 @@ jobs:
           # Определяем конфигурацию для тестов
           DB_TYPE="${{ github.event.inputs.database_type || 'postgresql' }}"
           STORAGE_TYPE="${{ github.event.inputs.storage_type || 'local' }}"
-          
+
           echo "🔗 Запуск integration тестов с конфигурацией:"
           echo "  - Database: $DB_TYPE"
           echo "  - Storage: $STORAGE_TYPE"
-          
+
           # Устанавливаем переменные окружения
           export TEST_DB_DRIVER=$DB_TYPE
           export TEST_STORAGE_TYPE=$STORAGE_TYPE
-          
+
           if [ "$STORAGE_TYPE" = "s3" ]; then
             export TEST_S3_ENDPOINT=http://localhost:9000
             export TEST_S3_ACCESS_KEY=test-access-key
@@ -78,7 +78,7 @@ jobs:
             export TEST_S3_BUCKET=avatar-gen-test
             export TEST_S3_REGION=us-east-1
           fi
-          
+
           if [ "$DB_TYPE" = "postgresql" ]; then
             export TEST_DB_HOST=localhost
             export TEST_DB_PORT=5433
@@ -86,10 +86,10 @@ jobs:
             export TEST_DB_USER=test_user
             export TEST_DB_PASSWORD=test_password
           fi
-          
+
           # Запускаем integration тесты
           docker compose -f docker/docker-compose.test-extended.yaml --profile integration-only up --build --abort-on-container-exit avatar-backend-integration
-          
+
           echo "✅ Integration тесты завершены"
 
       - name: Collect test results
@@ -97,14 +97,14 @@ jobs:
         run: |
           echo "📊 Сбор результатов integration тестов..."
           docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-integration > integration-test-results.log
-          
+
           echo "## 🔗 Integration Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration Used" >> $GITHUB_STEP_SUMMARY
           echo "- Database: ${{ github.event.inputs.database_type || 'postgresql' }}" >> $GITHUB_STEP_SUMMARY
           echo "- Storage: ${{ github.event.inputs.storage_type || 'local' }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f integration-test-results.log ]; then
             echo "### Test Output" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
