@@ -170,7 +170,7 @@ performance-tests:
 ### Структура конфигураций
 
 ```
-backend/configs/
+backend/
 ├── settings.test.unit.yaml      # Unit тесты
 │   ├── SQLite in-memory
 │   ├── Локальное хранилище
@@ -199,18 +199,18 @@ backend/configs/
 # В docker-compose.test-extended.yaml
 avatar-backend-unit:
   volumes:
-    - ../backend/configs/settings.test.unit.yaml:/app/backend/settings.yaml:ro
+    - ../backend/settings.test.unit.yaml:/app/backend/settings.yaml:ro
     - ../backend/logs:/app/backend/logs
     - test_storage:/app/backend/storage
 
 avatar-backend-integration:
   volumes:
-    - ../backend/configs/settings.test.yaml:/app/backend/settings.yaml:ro
+    - ../backend/settings.test.yaml:/app/backend/settings.yaml:ro
     - ../backend/logs:/app/backend/logs
 
 avatar-backend-postgres:
   volumes:
-    - ../backend/configs/settings.test.postgres.yaml:/app/backend/settings.yaml:ro
+    - ../backend/settings.test.postgres.yaml:/app/backend/settings.yaml:ro
     - ../backend/logs:/app/backend/logs
     - test_storage:/app/backend/storage
 ```
@@ -327,10 +327,10 @@ src/modules/health/health.controller.spec.ts ...
 1. **Файлы конфигурации не найдены**
    ```bash
    # Проверить существование файлов
-   ls -la backend/configs/settings.test.*.yaml
+   ls -la backend/settings.test.*.yaml
 
    # Проверить права доступа
-   chmod 644 backend/configs/settings.test.*.yaml
+   chmod 644 backend/settings.test.*.yaml
 ````
 
 2. **Docker Compose профили не работают**

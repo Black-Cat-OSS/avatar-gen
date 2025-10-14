@@ -118,7 +118,7 @@ docker-compose -f docker/docker-compose.test-extended.yaml ps --format "table {{
 
 ```bash
 # 1. Создайте новый файл конфигурации
-cp backend/configs/settings.test.yaml backend/configs/settings.test.custom.yaml
+cp backend/settings.test.yaml backend/settings.test.custom.yaml
 
 # 2. Отредактируйте файл под ваши нужды
 # Например, измените порт или уровень логирования
@@ -126,7 +126,7 @@ cp backend/configs/settings.test.yaml backend/configs/settings.test.custom.yaml
 # 3. Создайте новый сервис в docker-compose или используйте существующий
 # с монтированием вашего файла:
 volumes:
-  - ../backend/configs/settings.test.custom.yaml:/app/backend/settings.yaml:ro
+  - ../backend/settings.test.custom.yaml:/app/backend/settings.yaml:ro
 ```
 
 ### Переопределение переменных окружения

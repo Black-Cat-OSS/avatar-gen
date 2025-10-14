@@ -6,26 +6,26 @@
 
 ```
 src/modules/database/
-├── drivers/            # Драйверы баз данных
-│   ├── postgresql/     # PostgreSQL драйвер
+├── modules/            # Драйверы баз данных
+│   ├── postgresql-driver/  # PostgreSQL драйвер
 │   │   ├── postgresql-driver.service.ts      # Основной сервис
 │   │   ├── postgresql-driver.service.spec.ts # Unit тесты
 │   │   └── index.ts                          # Экспорты
-│   ├── sqlite/         # SQLite драйвер
+│   ├── sqlite-driver/       # SQLite драйвер
 │   │   ├── sqlite-driver.service.ts          # Основной сервис
 │   │   ├── sqlite-driver.service.spec.ts     # Unit тесты
 │   │   └── index.ts                          # Экспорты
 │   └── index.ts        # Экспорты всех драйверов
 ├── interfaces/         # Интерфейсы
 │   ├── driver.ts       # Интерфейс IDataBaseDriver
-│   ├── configs.ts      # Интерфейсы конфигураций
+│   ├── configs.ts      # Интерфейсы конфигураций TypeORM
 │   └── index.ts        # Экспорты интерфейсов
 ├── utils/              # Утилиты
 │   ├── config-factory.ts    # Фабрика конфигураций TypeORM
 │   ├── driver-factory.ts    # Фабрика драйверов
 │   └── index.ts        # Экспорты утилит
-├── database.service.ts # Основной сервис (Facade)
-├── database.module.ts  # Модуль конфигурации
+├── database.service.ts # Основной сервис (TypeORM Repository)
+├── database.module.ts  # TypeORM модуль конфигурации
 └── index.ts           # Главные экспорты
 ```
 
@@ -80,70 +80,66 @@ graph TD
 
 ### Проблема автоматической инициализации
 
-**До исправления:**
+**Текущая архитектура TypeORM:**
 
 ```typescript
-// ❌ НЕПРАВИЛЬНО - оба провайдера инициализируются автоматически
+// ✅ ПРАВИЛЬНО - TypeORM автоматически управляет подключениями
+@Module({
+  imports: [
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: YamlConfigService, driverFactory: DatabaseDriverFactory) => {
+        const driver = driverFactory.createDriver(configService);
+        const typeormConfig = driver.buildConfigs(configService);
+        typeormConfig.entities = [Avatar];
+        return typeormConfig;
+      },
+      inject: [YamlConfigService, DatabaseDriverFactory],
+    }),
+  ],
+})
+export class DatabaseModule {}
+```
+
+**Как это работает:**
+
+1. `DatabaseDriverFactory` создает нужный драйвер на основе YAML конфигурации
+2. TypeORM автоматически подключается к выбранной базе данных
+3. `DatabaseService` работает через TypeORM Repository pattern
+4. Подключение происходит только к выбранной БД
+
+### DatabaseService как TypeORM Repository
+
+**Текущая реализация:**
+
+```typescript
 @Injectable()
-export class SqliteDatabaseService
-  extends PrismaClient
-  implements IDatabaseConnection, OnModuleInit, OnModuleDestroy
-{
-  // NestJS автоматически вызывает onModuleInit() при старте
-  async onModuleInit() {
-    await this.connectWithRetry(); // ❌ Подключается даже если не выбран!
+export class DatabaseService implements OnModuleInit, OnModuleDestroy {
+  constructor(
+    @InjectRepository(Avatar)
+    private readonly avatarRepository: Repository<Avatar>,
+    private readonly dataSource: DataSource,
+    private readonly configService: YamlConfigService,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    if (!this.dataSource.isInitialized) {
+      await this.dataSource.initialize();
+    }
+  }
+
+  // Прямой доступ к репозиторию
+  get avatar() {
+    return this.avatarRepository;
   }
 }
 ```
 
-**Что происходило:**
-
-1. NestJS регистрирует оба провайдера (`SqliteDatabaseService` и `PostgresDatabaseService`)
-2. Оба реализуют `OnModuleInit`
-3. NestJS **автоматически вызывает `onModuleInit()`** для ОБОИХ провайдеров при старте
-4. В результате подключаются ОБЕ базы данных, даже если в конфигурации выбрана только одна
-
-**Логи показывали:**
-
-```
-[SqliteDatabaseService] LOG SQLite database connected successfully on attempt 1
-[PostgresDatabaseService] LOG PostgreSQL database connected successfully on attempt 1
-```
-
-Хотя в `settings.yaml` был выбран только `sqlite`!
-
-### Решение - Factory Provider с ленивым созданием
-
-**После исправления v2 (окончательное решение):**
-
-```typescript
-// ✅ ПРАВИЛЬНО - создается ТОЛЬКО нужный провайдер
-@Module({
-  providers: [
-    {
-      provide: 'DATABASE_PROVIDER_FACTORY',
-      useFactory: (configService: YamlConfigService) => {
-        const driver = configService.getConfig().app.database.driver;
-
-        // Создается ТОЛЬКО выбранный провайдер!
-        if (driver === DatabaseDriver.SQLITE) {
-          return new SqliteDatabaseService(configService);
-        } else {
-          return new PostgresDatabaseService(configService);
-        }
-      },
-      inject: [YamlConfigService],
-    },
-  ],
-})
-```
-
 **Преимущества:**
 
-- ✅ Неиспользуемый провайдер **вообще не создается**
-- ✅ Экономия памяти и ресурсов
-- ✅ Невозможность случайного подключения ко второй БД
-- ✅ Чистые логи - только выбранная БД
+- ✅ Прямая работа с TypeORM Repository
+- ✅ Автоматическое управление подключениями через TypeORM
+- ✅ Нет дублирования подключений
+- ✅ Стандартный NestJS подход
 
 **Как это работает:**
 
@@ -154,49 +150,16 @@ export class SqliteDatabaseService
               │
               ▼
 ┌─────────────────────────────────────────┐
-│     DatabaseService.onModuleInit()      │  ← NestJS вызывает это
-│  ✓ implements OnModuleInit              │
+│     DatabaseModule.onModuleInit()       │  ← TypeORM автоматически
+│  ✓ TypeORM подключение                  │
 └─────────────┬───────────────────────────┘
               │
-              │ Вызывает ТОЛЬКО выбранный провайдер:
-              │
-       ┌──────┴──────┐
-       │             │
-       ▼             ▼
-┌─────────────┐ ┌──────────────┐
-│  sqlite     │ │  postgres    │
-│  (если      │ │  (если       │
-│  выбран)    │ │  выбран)     │
-└─────────────┘ └──────────────┘
-```
-
-**Код DatabaseService:**
-
-```typescript
-@Injectable()
-export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private activeConnection: IDatabaseConnection;
-
-  constructor(
-    private readonly sqliteService: SqliteDatabaseService,
-    private readonly postgresService: PostgresDatabaseService,
-  ) {
-    // Выбираем провайдер на основе конфигурации
-    this.activeConnection = this.selectDatabaseProvider();
-  }
-
-  // NestJS вызывает это автоматически
-  async onModuleInit(): Promise<void> {
-    // Инициализируем ТОЛЬКО выбранный провайдер
-    await this.activeConnection.onModuleInit();
-  }
-
-  // NestJS вызывает это автоматически при shutdown
-  async onModuleDestroy(): Promise<void> {
-    // Отключаем ТОЛЬКО активное подключение
-    await this.activeConnection.onModuleDestroy();
-  }
-}
+              ▼
+┌─────────────────────────────────────────┐
+│     DatabaseService                     │  ← Repository pattern
+│  ✓ Repository<Avatar>                   │
+│  ✓ DataSource                           │
+└─────────────────────────────────────────┘
 ```
 
 ### Принципы архитектуры
