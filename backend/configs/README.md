@@ -13,11 +13,36 @@
 - Local и S3 хранилища
 - Настраиваемые порты и логирование
 
+### settings.test.unit.yaml
+Специализированная конфигурация для unit тестов:
+- SQLite in-memory база данных
+- Локальное файловое хранилище
+- Минимальное логирование
+- Оптимизирована для быстрых тестов
+
+### settings.test.postgres.yaml
+Конфигурация для PostgreSQL-специфичных тестов:
+- PostgreSQL база данных
+- Переменные окружения для гибкой настройки
+- Оптимизирована для интеграционных тестов
+
+### settings.test.s3.yaml
+Конфигурация для S3/MinIO-специфичных тестов:
+- S3-совместимое хранилище (MinIO)
+- SQLite база данных
+- Переменные окружения для S3 настроек
+
 ### settings.test.minio.yaml
 Специализированная конфигурация для тестирования с MinIO:
 - Преднастроена для MinIO S3-совместимого хранилища
 - PostgreSQL база данных
 - Оптимизирована для быстрых тестов
+
+### settings.test.e2e.yaml
+Конфигурация для end-to-end тестов:
+- PostgreSQL база данных
+- Локальное хранилище
+- Полная конфигурация для E2E сценариев
 
 ## Переменные окружения
 
@@ -69,13 +94,22 @@ npm run test:integration
 ### Docker Compose тестирование
 ```bash
 # Unit тесты
-docker-compose -f docker/docker-compose.test.yaml --profile unit-tests up
+docker-compose -f docker/docker-compose.test-extended.yaml --profile unit-only up
 
 # Integration тесты
-docker-compose -f docker/docker-compose.test.yaml --profile integration-tests up
+docker-compose -f docker/docker-compose.test-extended.yaml --profile integration-only up
+
+# PostgreSQL-специфичные тесты
+docker-compose -f docker/docker-compose.test-extended.yaml --profile postgres-tests up
+
+# S3-специфичные тесты
+docker-compose -f docker/docker-compose.test-extended.yaml --profile s3-tests up
 
 # E2E тесты
-docker-compose -f docker/docker-compose.test.yaml --profile e2e-tests up
+docker-compose -f docker/docker-compose.test-extended.yaml --profile e2e-only up
+
+# Все тесты (через скрипты)
+bash scripts/test-all.sh
 ```
 
 ## Примечания

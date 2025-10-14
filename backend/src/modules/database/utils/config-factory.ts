@@ -1,6 +1,6 @@
 import { Avatar } from '../../avatar/avatar.entity';
 import { IDatabaseConfig } from '../interfaces/configs';
-import { Configuration } from '../../../config/configuration';
+import { Configuration } from '../../../config/config.schema';
 
 /**
  * Создает базовую конфигурацию TypeORM
@@ -8,7 +8,7 @@ import { Configuration } from '../../../config/configuration';
 function createBaseConfig() {
   return {
     entities: [Avatar],
-    synchronize: process.env.NODE_ENV !== 'production', // Автосинхронизация только в dev
+    synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
     logger: 'advanced-console' as const,
   };

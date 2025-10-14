@@ -1,5 +1,4 @@
 services:
-  # Nginx Gateway (Reverse Proxy)
   gateway:
     build:
       context: ../gateway
@@ -24,7 +23,6 @@ services:
       - internal
       - external
 
-  # PostgreSQL Database (профиль: postgresql)
   postgres:
     image: postgres:17-alpine
     container_name: avatar-gen-postgres
@@ -49,16 +47,6 @@ services:
     networks:
       - backend-db
 
-  # Avatar Backend Service
-  # По умолчанию: SQLite + Local Storage
-  #
-  # Конфигурация через YAML файлы (settings.yaml, settings.production.yaml)
-  # База данных и хранилище настраиваются в YAML конфигурации
-  #
-  # Примеры:
-  # 1. SQLite + Local: docker-compose up
-  # 2. PostgreSQL (контейнер): docker-compose --profile postgresql up
-  # 3. PostgreSQL (внешняя): Настроить в settings.yaml
   avatar-backend:
     build:
       context: ..
@@ -71,8 +59,6 @@ services:
       - ../backend/settings.yaml:/app/settings.yaml:ro
       - ../backend/settings.production.yaml:/app/settings.production.yaml:ro
       - ../backend/logs:/app/logs
-      # Note: settings.local.yaml and settings.*.local.yaml are NOT mounted
-      # If needed, create them manually and add explicit mount in docker-compose.override.yml
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - CONFIG_PATH=./settings.yaml
@@ -91,7 +77,6 @@ services:
       - internal
       - backend-db
 
-  # Frontend Service
   avatar-frontend:
     build:
       context: ..
@@ -120,18 +105,15 @@ volumes:
     driver: local
 
 networks:
-  # Внешняя сеть для gateway (доступ к интернету)
   external:
     external: true
     name: avatar-gen-external
 
-  # Внутренняя сеть для gateway, backend и frontend
   internal:
     driver: bridge
     internal: false
     name: avatar-gen-internal
 
-  # Внутренняя сеть для backend и базы данных
   backend-db:
     driver: bridge
     internal: true

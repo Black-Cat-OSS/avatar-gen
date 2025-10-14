@@ -14,12 +14,12 @@ import { HealthModule } from '../health';
  */
 @Module({
   imports: [
-    ConfigModule, // ← Конфигурация (должна быть первой)
-    LoggerModule, // ← Логирование
-    InitializationModule, // ← Инициализация директорий
-    DatabaseModule, // ← База данных
-    AvatarModule, // ← Модуль аватаров
-    HealthModule, // ← Модуль проверки здоровья
+    ConfigModule,
+    LoggerModule,
+    InitializationModule,
+    DatabaseModule,
+    AvatarModule,
+    HealthModule,
   ],
 })
 export class AppModule implements OnModuleInit {

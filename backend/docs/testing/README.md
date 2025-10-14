@@ -59,16 +59,19 @@
 
 ```bash
 # Все тесты
-npm test
+pnpm test
 
 # С coverage
-npm run test:cov
+pnpm run test:cov
 
 # Watch режим
-npm run test:watch
+pnpm run test:watch
+
+# UI режим
+pnpm run test:ui
 
 # Конкретный модуль
-npm test avatar
+pnpm test avatar
 ```
 
 ## 📁 Структура тестов
@@ -86,7 +89,7 @@ backend/
 │           └── avatar.service.spec.ts       # Unit тесты
 └── test/
     ├── health.e2e-spec.ts                  # E2E тесты
-    └── jest-setup.ts                        # Setup для моков
+    └── vitest-setup.ts                      # Setup для моков
 ```
 
 ## 🎯 План улучшения
@@ -115,4 +118,5 @@ backend/
 
 ---
 
-**Обновлено:** 2025-10-03
+**Обновлено:** 2025-10-12  
+**Тестовый фреймворк:** Vitest (мигрировано с Jest)

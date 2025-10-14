@@ -1,7 +1,8 @@
 # Backend Testing Documentation
 
-**Дата обновления:** 2025-10-03  
-**Версия:** 1.0
+**Дата обновления:** 2025-10-12  
+**Версия:** 2.0  
+**Тестовый фреймворк:** Vitest
 
 Документация по тестированию backend приложения Avatar Generator.
 
@@ -36,35 +37,38 @@ backend/
 
 ```bash
 # Запустить все тесты
-npm test
+pnpm test
 
 # Запустить тесты в watch режиме
-npm run test:watch
+pnpm run test:watch
 
 # Запустить тесты с coverage
-npm run test:cov
+pnpm run test:cov
+
+# Запустить тесты с UI интерфейсом
+pnpm run test:ui
 ```
 
 ### Конкретные тесты
 
 ```bash
 # Тесты конкретного файла
-npm test health.controller.spec
+pnpm test health.controller.spec
 
 # Тесты конкретного модуля
-npm test avatar
+pnpm test avatar
 
 # E2E тесты
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 ### Debug режим
 
-```bash
-# Запустить тесты в debug режиме
-npm run test:debug
+Vitest поддерживает встроенный debug режим через UI:
 
-# Затем подключиться debugger к порту 9229
+```bash
+# Запустить UI с возможностью debug
+pnpm run test:ui
 ```
 
 ## 📊 Покрытие кода
@@ -82,7 +86,7 @@ npm run test:debug
 
 ```bash
 # Генерация отчета о покрытии
-npm run test:cov
+pnpm run test:cov
 
 # Отчет будет сохранен в backend/coverage/
 # Откройте backend/coverage/lcov-report/index.html в браузере
@@ -165,27 +169,38 @@ npm run test:cov
 
 ## 🔧 Конфигурация тестов
 
-### Jest конфигурация
+### Vitest конфигурация
 
-Конфигурация находится в `backend/jest.config.js`:
+Конфигурация находится в `backend/vitest.config.ts` (для unit тестов) и `backend/vitest.config.e2e.ts` (для e2e тестов):
 
-```javascript
-module.exports = {
-  moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src',
-  testRegex: '.*\\.spec\\.ts$',
-  transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+```typescript
+// backend/vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/**/*.spec.ts'],
+    setupFiles: ['./test/vitest-setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reportsDirectory: './coverage',
+      exclude: [
+        '**/*.interface.ts',
+        '**/*.enum.ts',
+        '**/*.dto.ts',
+        '**/index.ts',
+      ],
+    },
   },
-  collectCoverageFrom: ['**/*.(t|j)s'],
-  coverageDirectory: '../coverage',
-  testEnvironment: 'node',
-  moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/$1',
-    '^uuid$': require.resolve('uuid'),
+  resolve: {
+    alias: {
+      src: resolve(__dirname, './src'),
+    },
   },
-  transformIgnorePatterns: ['node_modules/(?!(uuid|sharp)/)'],
-};
+});
 ```
 
 ### Мокирование зависимостей
@@ -193,13 +208,15 @@ module.exports = {
 #### Мокирование сервисов
 
 ```typescript
+import { vi } from 'vitest';
+
 const mockAvatarService = {
-  generateAvatar: jest.fn(),
-  getAvatar: jest.fn(),
-  listAvatars: jest.fn(),
-  deleteAvatar: jest.fn(),
-  healthCheck: jest.fn(),
-  getColorSchemes: jest.fn(),
+  generateAvatar: vi.fn(),
+  getAvatar: vi.fn(),
+  listAvatars: vi.fn(),
+  deleteAvatar: vi.fn(),
+  healthCheck: vi.fn(),
+  getColorSchemes: vi.fn(),
 };
 
 beforeEach(async () => {
@@ -220,9 +237,11 @@ beforeEach(async () => {
 #### Мокирование Response объекта
 
 ```typescript
+import { vi } from 'vitest';
+
 const mockResponse = {
-  set: jest.fn(),
-  send: jest.fn(),
+  set: vi.fn(),
+  send: vi.fn(),
 } as unknown as Response;
 ```
 
@@ -280,22 +299,28 @@ describe('GET /health', () => {
 
 ### Проблема с ES модулями (uuid, sharp)
 
-**Ошибка:**
-
-```
-SyntaxError: Unexpected token 'export'
-```
-
 **Решение:**
-Добавлено в `jest.config.js`:
+Vitest нативно поддерживает ES модули. Все моки настроены в `test/vitest-setup.ts`:
 
-```javascript
-transformIgnorePatterns: [
-  'node_modules/(?!(uuid|sharp)/)',
-],
-moduleNameMapper: {
-  '^uuid$': require.resolve('uuid'),
-},
+```typescript
+import { vi } from 'vitest';
+
+vi.mock('uuid', () => ({
+  v4: vi.fn(() => 'mocked-uuid-v4'),
+  v1: vi.fn(() => 'mocked-uuid-v1'),
+}));
+
+vi.mock('sharp', () => {
+  const mockSharp = vi.fn(() => ({
+    resize: vi.fn().mockReturnThis(),
+    toBuffer: vi.fn().mockResolvedValue(Buffer.from('mocked-image')),
+    grayscale: vi.fn().mockReturnThis(),
+    negate: vi.fn().mockReturnThis(),
+    modulate: vi.fn().mockReturnThis(),
+  }));
+
+  return { default: mockSharp };
+});
 ```
 
 ### Медленные тесты
@@ -305,11 +330,12 @@ moduleNameMapper: {
 **Решение:**
 
 ```bash
-# Запускать тесты параллельно
-npm test -- --maxWorkers=4
+# Vitest по умолчанию запускает тесты параллельно
+# Использовать watch режим для разработки
+pnpm run test:watch
 
-# Или использовать watch режим для разработки
-npm run test:watch
+# Или UI режим для интерактивной отладки
+pnpm run test:ui
 ```
 
 ### Ошибки таймаута
@@ -328,8 +354,10 @@ it('long running test', async () => {
 ### 1. Изоляция тестов
 
 ```typescript
+import { vi } from 'vitest';
+
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 ```
 
@@ -379,9 +407,10 @@ describe('POST /api/generate', () => {
 
 ## 📚 Дополнительные ресурсы
 
-- [Jest Documentation](https://jestjs.io/docs/getting-started)
+- [Vitest Documentation](https://vitest.dev/)
 - [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)
 - [Testing Best Practices](https://github.com/goldbergyoni/javascript-testing-best-practices)
+- [Migration from Jest to Vitest](https://vitest.dev/guide/migration.html)
 
 ## 📋 TODO
 
@@ -429,4 +458,5 @@ describe('POST /api/generate', () => {
 ---
 
 **Поддержка:** Backend Team  
-**Последнее обновление:** 2025-10-04
+**Последнее обновление:** 2025-10-12  
+**Тестовый фреймворк:** Vitest v2.1.9

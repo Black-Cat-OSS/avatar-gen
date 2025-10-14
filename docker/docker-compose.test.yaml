@@ -1,11 +1,6 @@
 name: avatar-gen-test
 
 services:
-  # ============================================================================
-  # BUILD SERVICES - Собирают образы один раз, не запускаются автоматически
-  # ============================================================================
-
-  # Backend Builder - собирает образ для всех backend тестов
   backend-builder:
     build:
       context: ..
@@ -17,7 +12,6 @@ services:
     container_name: avatar-gen-backend-builder
     command: ['echo', 'Builder image created']
 
-  # Frontend Builder - собирает образ для frontend
   frontend-builder:
     build:
       context: ..
@@ -28,7 +22,6 @@ services:
     container_name: avatar-gen-frontend-builder
     command: ['echo', 'Builder image created']
 
-  # Gateway Builder - собирает образ для gateway
   gateway-builder:
     build:
       context: ../gateway
@@ -39,11 +32,6 @@ services:
     container_name: avatar-gen-gateway-builder
     command: ['echo', 'Builder image created']
 
-  # ============================================================================
-  # INFRASTRUCTURE SERVICES - MinIO, PostgreSQL
-  # ============================================================================
-
-  # MinIO для имитации S3 в тестовой среде
   minio:
     image: minio/minio:latest
     container_name: avatar-gen-minio-test
@@ -70,12 +58,11 @@ services:
     networks:
       - test-internal
 
-  # PostgreSQL для тестов (временный контейнер)
   postgres-test:
     image: postgres:17-alpine
     container_name: avatar-gen-postgres-test
     profiles:
-      - postgres-only # Для standalone запуска PostgreSQL
+      - postgres-only
       - postgresql-storage
       - integration-tests
       - e2e-tests
@@ -85,7 +72,7 @@ services:
       POSTGRES_PASSWORD: test_password
       POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     ports:
-      - '5433:5432' # Другой порт для тестов
+      - '5433:5432'
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
@@ -96,14 +83,8 @@ services:
       start_period: 10s
     networks:
       - test-internal
-    # Автоматическое удаление при остановке
     restart: 'no'
 
-  # ============================================================================
-  # TEST SERVICES - Используют предсобранные образы
-  # ============================================================================
-
-  # Backend для Unit тестов (SQLite + Local Storage)
   avatar-backend-unit:
     build:
       context: ..
@@ -120,11 +101,10 @@ services:
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
-    command: ['pnpm', 'run', 'test:unit']
+    command: ['npm', 'run', 'test:unit']
     networks:
       - test-internal
 
-  # Backend для Integration тестов (PostgreSQL + MinIO)
   avatar-backend-integration:
     build:
       context: ..
@@ -155,11 +135,10 @@ services:
       - TEST_DB_NAME=avatar_gen_test
       - TEST_DB_USER=test_user
       - TEST_DB_PASSWORD=test_password
-    command: ['pnpm', 'run', 'test:integration']
+    command: ['npm', 'run', 'test:integration']
     networks:
       - test-internal
 
-  # Backend для E2E тестов (PostgreSQL + MinIO + Frontend)
   avatar-backend-e2e:
     build:
       context: ..
@@ -182,11 +161,10 @@ services:
     environment:
       - NODE_ENV=test
       - CONFIG_PATH=./settings.yaml
-    command: ['pnpm', 'run', 'start:prod']
+    command: ['npm', 'run', 'start:prod']
     networks:
       - test-internal
 
-  # Frontend для E2E тестов
   avatar-frontend-e2e:
     build:
       context: ..
@@ -207,7 +185,6 @@ services:
     networks:
       - test-internal
 
-  # Gateway для E2E тестов
   gateway-e2e:
     build:
       context: ../gateway
@@ -220,7 +197,7 @@ services:
       - avatar-frontend-e2e
       - avatar-backend-e2e
     ports:
-      - '12746:12745' # Другой порт для тестов
+      - '12746:12745'
     volumes:
       - ../gateway/configs/nginx.test.conf:/etc/nginx/nginx.conf:ro
       - ../gateway/configs/static:/usr/share/nginx/html/static:ro
@@ -228,7 +205,6 @@ services:
     networks:
       - test-internal
 
-  # E2E Test Runner - запускает ВСЕ E2E тесты
   e2e-test-runner:
     build:
       context: ..
@@ -252,11 +228,10 @@ services:
       - CONFIG_PATH=./settings.yaml
       - BACKEND_URL=http://avatar-backend-e2e:3000
       - GATEWAY_URL=http://gateway-e2e:80
-    command: ['pnpm', 'run', 'test:e2e', '--verbose']
+    command: ['npm', 'run', 'test:e2e', '--verbose']
     networks:
       - test-internal
 
-  # E2E Health Tests - только health endpoint тесты
   e2e-health-runner:
     build:
       context: ..
@@ -279,11 +254,10 @@ services:
       - CONFIG_PATH=./settings.yaml
       - BACKEND_URL=http://avatar-backend-e2e:3000
       - GATEWAY_URL=http://gateway-e2e:80
-    command: ['pnpm', 'run', 'test:e2e', '--testNamePattern=HealthController', '--verbose']
+    command: ['npm', 'run', 'test:e2e', '--testNamePattern=HealthController', '--verbose']
     networks:
       - test-internal
 
-  # Test Runner для матричного тестирования
   test-runner:
     build:
       context: ..
@@ -299,7 +273,7 @@ services:
       - test_storage:/app/backend/storage
     environment:
       - NODE_ENV=test
-    command: ['pnpm', 'run', 'test:matrix']
+    command: ['npm', 'run', 'test:matrix']
     networks:
       - test-internal
 

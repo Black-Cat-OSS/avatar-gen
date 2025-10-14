@@ -1,0 +1,34 @@
+app:
+  storage:
+    type: 's3'
+    s3:
+      endpoint: '${TEST_S3_ENDPOINT:-http://minio:9000}'
+      bucket: '${TEST_S3_BUCKET:-avatar-gen-test}'
+      access_key: '${TEST_S3_ACCESS_KEY:-test-access-key}'
+      secret_key: '${TEST_S3_SECRET_KEY:-test-secret-key}'
+      region: '${TEST_S3_REGION:-us-east-1}'
+      force_path_style: true
+      connection:
+        maxRetries: 3
+        retryDelay: 1000
+  server:
+    host: '0.0.0.0'
+    port: ${TEST_SERVER_PORT:-3000}
+  database:
+    driver: '${TEST_DB_DRIVER:-postgresql}'
+    connection:
+      maxRetries: 1
+      retryDelay: 100
+    sqlite_params:
+      url: 'file::memory:'
+    network:
+      host: '${TEST_DB_HOST:-postgres-test}'
+      port: ${TEST_DB_PORT:-5432}
+      database: '${TEST_DB_NAME:-avatar_gen_test}'
+      username: '${TEST_DB_USER:-test_user}'
+      password: '${TEST_DB_PASSWORD:-test_password}'
+      ssl: false
+  logging:
+    level: '${TEST_LOG_LEVEL:-debug}'
+    verbose: true
+    pretty: true

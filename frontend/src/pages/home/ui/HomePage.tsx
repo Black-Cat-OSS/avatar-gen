@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@tanstack/react-router';
 import { useAvatars } from '@/shared/lib';
-import { Button } from '@/shared/ui';
+import { Button, Callout } from '@/shared/ui';
 import { AvatarCard } from '@/widgets';
 import type { Avatar } from '@/shared/api';
 
@@ -17,13 +17,7 @@ export const HomePage = () => {
   // Update accumulated avatars when new data arrives
   useEffect(() => {
     if (data) {
-      if (offset === 0) {
-        // First load or refresh - replace all avatars
-        setAllAvatars(data.avatars);
-      } else {
-        // Load more - append new avatars
-        setAllAvatars(prev => [...prev, ...data.avatars]);
-      }
+      setAllAvatars(prev => [...prev, ...data.avatars]);
       setHasMore(data.pagination.hasMore);
     }
   }, [data, offset]);
@@ -43,12 +37,11 @@ export const HomePage = () => {
 
   return (
     <div className="py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">{t('pages.home.title')}</h1>
           <p className="text-muted-foreground mb-6">{t('pages.home.subtitle')}</p>
 
-          {/* Create Avatar Button */}
           <Link to="/avatar-generator">
             <Button variant="default" size="lg">
               {t('pages.home.generateAvatar')}
@@ -64,12 +57,7 @@ export const HomePage = () => {
           )}
 
           {isError && (
-            <div className="text-center py-8">
-              <p className="text-red-500">
-                {t('pages.home.error')}:{' '}
-                {error instanceof Error ? error.message : t('pages.home.unknownError')}
-              </p>
-            </div>
+            <Callout title={t('pages.home.error')} type='error' subtitle={error.message}/>
           )}
 
           {!isLoading && allAvatars.length === 0 && (
@@ -100,7 +88,6 @@ export const HomePage = () => {
           )}
         </div>
 
-        {/* Load More Button */}
         {showLoadMore && (
           <div className="text-center mt-8">
             <Button onClick={handleLoadMore} variant="outline" disabled={isLoading} size="lg">
