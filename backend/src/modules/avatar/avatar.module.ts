@@ -1,6 +1,10 @@
 import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Avatar } from './avatar.entity';
+import { AvatarController } from './avatar.controller';
+import { AvatarService } from './avatar.service';
+import { GeneratorService } from './modules';
+import { StorageModule } from '../storage/storage.module';
 
 /**
  * Модуль для работы с сущностью Avatar
@@ -23,7 +27,9 @@ import { Avatar } from './avatar.entity';
  */
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([Avatar])],
+  imports: [TypeOrmModule.forFeature([Avatar]), StorageModule.register()],
+  controllers: [AvatarController],
+  providers: [AvatarService, GeneratorService],
   exports: [TypeOrmModule],
 })
 export class AvatarModule {}

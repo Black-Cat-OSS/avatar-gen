@@ -14,26 +14,26 @@
 
 ```
 src/modules/database/
-├── drivers/            # Драйверы баз данных
-│   ├── postgresql/     # PostgreSQL драйвер
+├── modules/            # Драйверы баз данных
+│   ├── postgresql-driver/  # PostgreSQL драйвер
 │   │   ├── postgresql-driver.service.ts
 │   │   ├── postgresql-driver.service.spec.ts
 │   │   └── index.ts
-│   ├── sqlite/         # SQLite драйвер
+│   ├── sqlite-driver/      # SQLite драйвер
 │   │   ├── sqlite-driver.service.ts
 │   │   ├── sqlite-driver.service.spec.ts
 │   │   └── index.ts
 │   └── index.ts
 ├── interfaces/         # Интерфейсы
-│   ├── driver.ts       # Интерфейс драйверов
+│   ├── driver.ts       # Интерфейс IDataBaseDriver
 │   ├── configs.ts      # Конфигурации TypeORM
 │   └── index.ts
 ├── utils/              # Утилиты
-│   ├── config-factory.ts    # Фабрика конфигураций
+│   ├── config-factory.ts    # Фабрика конфигураций TypeORM
 │   ├── driver-factory.ts    # Фабрика драйверов
 │   └── index.ts
-├── database.service.ts # Основной сервис для работы с БД
-├── database.module.ts  # Модуль конфигурации TypeORM
+├── database.service.ts # TypeORM Repository сервис
+├── database.module.ts  # TypeORM модуль конфигурации
 └── index.ts
 ```
 

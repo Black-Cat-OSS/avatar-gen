@@ -15,7 +15,6 @@
 ### Настройка окружения:
 
 - `setup-dev.sh` - Настройка dev окружения (npm install, husky)
-- `setup-branch-protection.sh` - Настройка защиты веток через GitHub CLI
 
 ### Настройка конфигураций:
 

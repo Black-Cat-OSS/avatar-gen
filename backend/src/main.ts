@@ -1,29 +1,29 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './modules/app/app.module';
-import { YamlConfigService } from './config/yaml-config.service';
+import { YamlConfigService } from './config/modules/yaml-driver/yaml-config.service';
 import { LoggerService } from './modules/logger/logger.service';
 
 async function bootstrap() {
+  const bootstrapLogger = new Logger('Bootstrap');
+
   try {
-    console.log('Starting application bootstrap...');
+    bootstrapLogger.log('Starting application bootstrap...');
 
-    console.log('Creating NestJS application instance...');
+    bootstrapLogger.log('Creating NestJS application instance...');
     const app = await NestFactory.create(AppModule);
-    console.log('Application instance created');
+    bootstrapLogger.log('Application instance created');
 
-    // Get configuration and logger services
-    console.log('Getting configuration and logger services...');
+    bootstrapLogger.log('Getting configuration and logger services...');
     const configService = app.get(YamlConfigService);
-    console.log('Config service retrieved');
+    bootstrapLogger.debug('Config service retrieved');
 
     const loggerService = app.get(LoggerService);
-    console.log('Logger service retrieved');
+    bootstrapLogger.debug('Logger service retrieved');
 
-    // Set global logger
     app.useLogger(loggerService);
-    console.log('Global logger configured');
+    bootstrapLogger.log('Global logger configured');
 
     loggerService.log('Application bootstrap completed successfully');
 
@@ -39,6 +39,7 @@ async function bootstrap() {
       }),
     );
 
+    //TODO: separate to CORS-module
     loggerService.debug('Enabling CORS...');
     app.enableCors({
       origin: true,
@@ -46,6 +47,7 @@ async function bootstrap() {
       credentials: true,
     });
 
+    //TODO: separate to OpenAPI-module
     loggerService.debug('Setting up Swagger documentation...');
     const config = new DocumentBuilder()
       .setTitle('Avatar Generation API')
@@ -59,11 +61,9 @@ async function bootstrap() {
       customSiteTitle: 'Avatar Generation API',
     });
 
-    // Get server configuration
     const serverConfig = configService.getServerConfig();
     loggerService.debug(`Server configuration: ${JSON.stringify(serverConfig)}`);
 
-    // Start server
     loggerService.log(`Starting server on ${serverConfig.host}:${serverConfig.port}...`);
     await app.listen(serverConfig.port, serverConfig.host);
 
@@ -74,7 +74,7 @@ async function bootstrap() {
       `Swagger documentation available at: http://${serverConfig.host}:${serverConfig.port}/swagger`,
     );
   } catch (error) {
-    console.error(`Failed to start application: ${error.message}`, error);
+    bootstrapLogger.error(`Failed to start application: ${error.message}`, error.stack);
     process.exit(1);
   }
 }

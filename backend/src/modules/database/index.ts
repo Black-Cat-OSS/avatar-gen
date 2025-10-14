@@ -11,4 +11,4 @@ export { Avatar } from '../avatar/avatar.entity';
 // Interfaces and utilities
 export * from './interfaces';
 export * from './utils';
-export * from './drivers';
+export * from './modules';

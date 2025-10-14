@@ -3,6 +3,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { FilterType } from '../enums/filter.enum';
 
+//TODO separate to files
 export class GenerateAvatarDto {
   @ApiPropertyOptional({ description: 'Primary color for avatar generation' })
   @IsOptional()

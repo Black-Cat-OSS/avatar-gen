@@ -34,7 +34,7 @@ backend/
 1. **Базовая конфигурация** (`settings.yaml`) загружается всегда
 2. **Environment-specific конфигурация** (`settings.{NODE_ENV}.yaml`) загружается на основе `NODE_ENV`
 3. Конфигурации **мержатся** (environment-specific переопределяет базовую)
-4. Скрипт `generate-env.js` генерирует `.env` файл и обновляет `prisma/schema.prisma`
+4. TypeORM автоматически настраивается через `DatabaseModule` и драйверы
 
 ---
 
@@ -112,42 +112,39 @@ app:
 
 ## 🚀 Работа с конфигурацией
 
-### Прямое использование YAML (без .env)
+### TypeORM автоматическая настройка
 
-Backend **не использует .env файлы**. Вся конфигурация хранится только в YAML файлах:
+Backend использует **TypeORM** для работы с базой данных. Вся конфигурация читается из YAML файлов:
 
-1. Приложение читает `settings.yaml` напрямую через `YamlConfigService`
-2. Для Prisma команд используется утилита `prisma-runner.js`, которая:
-   - Читает YAML конфигурацию
-   - Вычисляет `DATABASE_URL`
-   - Устанавливает его в `process.env` перед запуском Prisma
+1. Приложение читает `settings.yaml` через `YamlConfigService`
+2. `DatabaseModule` автоматически настраивает TypeORM через драйверы
+3. `DatabaseDriverFactory` выбирает нужный драйвер (SQLite/PostgreSQL)
+4. TypeORM создает подключение на основе конфигурации
 
-### Использование Prisma команд
-
-Все Prisma команды автоматически читают DATABASE_URL из YAML:
+### Использование TypeORM команд
 
 ```bash
-# Генерация Prisma client (читает settings.yaml)
-npm run prisma:generate
+# Генерация миграций
+npm run typeorm:generate -- -n MigrationName
 
-# Миграции (читает settings.yaml или settings.{NODE_ENV}.yaml)
-npm run prisma:migrate
+# Запуск миграций
+npm run typeorm:run
 
-# Production деплой (с NODE_ENV=production)
-NODE_ENV=production npm run prisma:deploy
+# Откат миграций
+npm run typeorm:revert
 
-# Prisma Studio
-npm run prisma:studio
+# Создание новой миграции
+npm run typeorm:create -- -n MigrationName
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-# Development
-npm run prisma:generate
+# Development - создание миграции
+npm run typeorm:generate -- -n AddNewFeature
 
-# Production
-$env:NODE_ENV="production"; npm run prisma:deploy
+# Production - запуск миграций
+$env:NODE_ENV="production"; npm run typeorm:run
 ```
 
 ---
@@ -157,16 +154,16 @@ $env:NODE_ENV="production"; npm run prisma:deploy
 ### Приложение
 
 ```
-settings.yaml → YamlConfigService → DatabaseService → PrismaClient
+settings.yaml → YamlConfigService → DatabaseModule → TypeORM
 ```
 
-### Prisma CLI
+### TypeORM CLI
 
 ```
-settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
+settings.yaml → YamlConfigService → DatabaseDriverFactory → TypeORM CLI
 ```
 
-Нет промежуточных .env файлов - все читается напрямую из YAML!
+TypeORM автоматически настраивается через NestJS модули!
 
 ---
 
@@ -182,17 +179,10 @@ settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
    $env:NODE_ENV="production"  # Windows PowerShell
    ```
 
-2. **Сгенерируйте конфигурацию**:
+2. **Запустите миграции**:
 
    ```bash
-   cd backend
-   node scripts/generate-env.js
-   ```
-
-3. **Запустите миграции**:
-
-   ```bash
-   npm run prisma:migrate
+   npm run typeorm:run
    ```
 
 4. **Запустите приложение**:
@@ -208,15 +198,9 @@ settings.yaml → prisma-runner.js → process.env.DATABASE_URL → Prisma CLI
    export NODE_ENV=development  # или не устанавливайте
    ```
 
-2. **Сгенерируйте конфигурацию**:
-
+2. **Запустите миграции**:
    ```bash
-   node scripts/generate-env.js
-   ```
-
-3. **Запустите миграции**:
-   ```bash
-   npm run prisma:migrate
+   npm run typeorm:run
    ```
 
 ---
@@ -257,12 +241,9 @@ npm test
 docker-compose up postgres -d
 
 # 2. Запустите миграции с production окружением
-NODE_ENV=production npm run prisma:deploy
+NODE_ENV=production npm run typeorm:run
 
 # 3. Запустите приложение
-npm run prisma:migrate
-
-# 4. Запустите приложение
 npm run start:dev
 ```
 
@@ -283,16 +264,15 @@ cat backend/settings.production.yaml
 # 2. Запустите с правильным окружением
 NODE_ENV=production npm run start
 
-# 3. Для Prisma команд также используйте NODE_ENV
-NODE_ENV=production npm run prisma:migrate
+# 3. Для TypeORM команд также используйте NODE_ENV
+NODE_ENV=production npm run typeorm:run
 ```
 
-### Проблема: Prisma schema использует неправильный provider
+### Проблема: TypeORM использует неправильный драйвер
 
-**Примечание:** Начиная с версии без .env, `prisma/schema.prisma` статичен с `provider = "sqlite"`.
-PostgreSQL поддерживается через runtime конфигурацию в приложении.
+**Примечание:** TypeORM автоматически выбирает драйвер на основе YAML конфигурации через `DatabaseDriverFactory`.
 
-**Решение:** Prisma schema не нужно менять. Приложение автоматически использует правильный провайдер на основе YAML конфигурации.
+**Решение:** Проверьте настройки в `settings.yaml` и убедитесь, что `driver` установлен правильно (`sqlite` или `postgresql`).
 
 ### Проблема: PostgreSQL не запускается в Docker
 
@@ -325,9 +305,9 @@ docker-compose logs postgres
 
 - `backend/settings.yaml` - Базовая конфигурация
 - `backend/settings.production.yaml` - Production конфигурация с PostgreSQL
-- `backend/scripts/prisma-runner.js` - Утилита для Prisma команд с DATABASE_URL из YAML
-- `backend/src/config/yaml-config.service.ts` - Сервис загрузки конфигурации
-- `backend/prisma/schema.prisma` - Prisma схема (статичная, provider="sqlite")
+- `backend/src/config/modules/yaml-driver/yaml-config.service.ts` - Сервис загрузки конфигурации
+- `backend/src/modules/database/database.module.ts` - TypeORM модуль
+- `backend/src/modules/database/utils/driver-factory.ts` - Фабрика драйверов
 
 ---
 

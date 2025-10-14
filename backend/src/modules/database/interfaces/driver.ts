@@ -1,4 +1,4 @@
-import { YamlConfigService } from '../../../config/yaml-config.service';
+import { YamlConfigService } from '../../../config/modules/yaml-driver/yaml-config.service';
 import { IDatabaseConfig } from './configs';
 
 /**

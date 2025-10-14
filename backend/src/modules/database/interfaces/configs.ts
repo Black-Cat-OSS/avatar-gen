@@ -56,6 +56,7 @@ export interface IDatabaseConfig {
   logger: 'advanced-console' | 'simple-console' | 'file' | 'debug';
 
   /** Конфигурация для PostgreSQL (если type === 'postgres') */
+  //FIXME: but, I have MySQL?
   postgres?: IPostgresConfig;
 
   /** Конфигурация для SQLite (если type === 'sqlite') */

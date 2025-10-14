@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import styles from './InputField.module.scss';
 import { cn } from '@/shared/lib/utils';
-import { Input } from '@/components/ui/input';
+import { Input } from './input';
+import styles from './InputField.module.scss';
 
 export type InputStatus = 'default' | 'error' | 'success' | 'warning';
 

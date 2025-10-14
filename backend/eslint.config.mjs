@@ -19,6 +19,8 @@ export default tseslint.config(
       '**/*.spec.ts',
       '**/*.test.ts',
       '**/*.e2e-spec.ts',
+      'vitest.config.ts',
+      'vitest.config.e2e.ts',
       'frontend/**',
       'docs/**',
       'scripts/**',

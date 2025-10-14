@@ -7,15 +7,14 @@ RUN echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/main" > /etc/apk/reposit
     echo "https://mirror.yandex.ru/mirrors/alpine/v3.22/community" >> /etc/apk/repositories || true
 
 RUN for i in 1 2 3; do \
-        apk update && apk add --no-cache certbot certbot-nginx openssl bash && break || \
-        { echo "Retry $i/3 failed, trying default mirrors..."; \
-          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
-          echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
-          apk update; sleep 5; }; \
+    apk update && apk add --no-cache certbot certbot-nginx openssl bash && break || \
+    { echo "Retry $i/3 failed, trying default mirrors..."; \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
+    apk update; sleep 5; }; \
     done && \
-    rm -rf /var/cache/apk/*
-
-RUN mkdir -p /var/www/certbot \
+    rm -rf /var/cache/apk/* && \
+    mkdir -p /var/www/certbot \
     /etc/letsencrypt/live/localhost \
     /usr/share/nginx/html/static \
     /var/log/nginx \
@@ -34,21 +33,13 @@ RUN mkdir -p /var/www/certbot \
     && chmod -R 755 /var/cache/nginx \
     && chmod 1777 /tmp
 
-RUN openssl dhparam -out /etc/ssl/dhparam.pem 2048
-
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+RUN openssl dhparam -out /etc/ssl/dhparam.pem 2048 && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/letsencrypt/live/localhost/privkey.pem \
     -out /etc/letsencrypt/live/localhost/fullchain.pem \
     -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost" \
     && chown -R nginx:nginx /etc/letsencrypt
 
-COPY entrypoint.sh /entrypoint.sh
-RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+EXPOSE 18650
 
-EXPOSE 80 12745
-
-STOPSIGNAL SIGQUIT
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
-
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

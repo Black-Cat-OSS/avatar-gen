@@ -1,8 +1,18 @@
 import { Module, OnModuleInit, Logger } from '@nestjs/common';
-import { YamlConfigService } from './yaml-config.service';
+import { YamlConfigService } from './modules/yaml-driver/yaml-config.service';
+import { ConfigurationBuilder } from './modules/yaml-driver/builders/configuration.builder';
+import { FileReaderService } from './modules/yaml-driver/services/file-reader.service';
+import { ConfigMergerService } from './modules/yaml-driver/services/config-merger.service';
+import { YamlFileStrategy } from './modules/yaml-driver/strategies/yaml-file.strategy';
 
 @Module({
-  providers: [YamlConfigService],
+  providers: [
+    YamlConfigService,
+    ConfigurationBuilder,
+    FileReaderService,
+    ConfigMergerService,
+    YamlFileStrategy,
+  ],
   exports: [YamlConfigService],
 })
 export class ConfigModule implements OnModuleInit {

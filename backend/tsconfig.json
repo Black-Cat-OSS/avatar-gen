@@ -22,6 +22,6 @@
     "assumeChangesOnlyAffectDirectDependencies": true,
     "disableSourceOfProjectReferenceRedirect": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "vitest.config.ts", "vitest.config.integration.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

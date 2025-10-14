@@ -1,6 +1,6 @@
 import { Injectable, LoggerService as NestLoggerService, Inject } from '@nestjs/common';
 import pino from 'pino';
-import { YamlConfigService } from '../../config/yaml-config.service';
+import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
@@ -10,22 +10,16 @@ export class LoggerService implements NestLoggerService {
     @Inject(YamlConfigService)
     private readonly configService: YamlConfigService,
   ) {
-    // LoggerService constructor called - getting logging config
     const loggingConfig = this.configService.getLoggingConfig();
-    // Logging config retrieved
 
     const logLevel = loggingConfig.level;
     const isVerbose = loggingConfig.verbose;
     const isPretty = loggingConfig.pretty;
-
-    // В verbose режиме устанавливаем более детальный уровень логирования
     const effectiveLevel = isVerbose ? 'debug' : logLevel;
 
-    // Определяем транспорт в зависимости от режима
     let transport: pino.TransportTargetOptions | pino.TransportMultiOptions | undefined;
 
     if (isPretty) {
-      // Development: красивые логи в консоль
       transport = {
         target: 'pino-pretty',
         options: {
@@ -39,7 +33,6 @@ export class LoggerService implements NestLoggerService {
         },
       };
     } else {
-      // Production: логи в файл с ротацией + консоль
       transport = {
         targets: [
           {
@@ -59,7 +52,7 @@ export class LoggerService implements NestLoggerService {
             target: 'pino/file',
             level: effectiveLevel,
             options: {
-              destination: 1, // stdout
+              destination: 1,
             },
           },
         ],

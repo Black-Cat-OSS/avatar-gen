@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '../../config/config.module';
-import { YamlConfigService } from '../../config/yaml-config.service';
+import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
 import { S3Service } from './s3.service';
 
 /**
@@ -19,7 +19,6 @@ import { S3Service } from './s3.service';
       useFactory: (configService: YamlConfigService) => {
         const storageConfig = configService.getStorageConfig();
 
-        // Если S3 не настроен, возвращаем null (graceful degradation)
         if (storageConfig.type !== 's3' || !storageConfig.s3) {
           return null;
         }

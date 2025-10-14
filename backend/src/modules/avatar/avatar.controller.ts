@@ -1,5 +1,4 @@
 import {
-  Controller,
   Get,
   Post,
   Delete,
@@ -11,6 +10,7 @@ import {
   HttpException,
   ValidationPipe,
   UsePipes,
+  Controller,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -22,7 +22,7 @@ import {
 } from '../../common/dto/generate-avatar.dto';
 
 @ApiTags('Avatar')
-@Controller('api')
+@Controller()
 export class AvatarController {
   constructor(private readonly avatarService: AvatarService) {}
 
