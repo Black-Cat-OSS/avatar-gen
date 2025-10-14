@@ -54,7 +54,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-
       - name: Run linter
         run: pnpm run lint
 
@@ -138,7 +137,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-
       - name: Run unit tests
         run: pnpm run test:unit
         env:
@@ -189,7 +187,7 @@ jobs:
           export TEST_S3_SECRET_KEY=test-secret-key
           export TEST_S3_BUCKET=avatar-gen-test
           export TEST_S3_REGION=us-east-1
-          
+
           # Устанавливаем переменные для PostgreSQL
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
@@ -197,7 +195,7 @@ jobs:
           export TEST_DB_NAME=avatar_gen_test
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
-          
+
           # Запускаем integration тесты (используя предсобранный образ)
           docker compose -f docker/docker-compose.test-extended.yaml --profile integration-only up --abort-on-container-exit avatar-backend-integration
 
@@ -313,7 +311,7 @@ jobs:
           export TEST_S3_SECRET_KEY=test-secret-key
           export TEST_S3_BUCKET=avatar-gen-test
           export TEST_S3_REGION=us-east-1
-          
+
           # Устанавливаем переменные для PostgreSQL
           export TEST_DB_DRIVER=postgresql
           export TEST_DB_HOST=localhost
@@ -321,7 +319,7 @@ jobs:
           export TEST_DB_NAME=avatar_gen_test
           export TEST_DB_USER=test_user
           export TEST_DB_PASSWORD=test_password
-          
+
           # Запускаем E2E тесты через test runner
           docker compose -f docker/docker-compose.test-extended.yaml --profile e2e-only up --abort-on-container-exit --exit-code-from e2e-test-runner
 

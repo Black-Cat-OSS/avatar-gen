@@ -57,12 +57,12 @@ jobs:
           else
             CONFIG_FILE="settings.test.yaml"
           fi
-          
+
           echo "🧪 Запуск unit тестов с конфигурацией: $CONFIG_FILE"
-          
+
           # Запускаем unit тесты с монтированием нужной конфигурации
           docker compose -f docker/docker-compose.test-extended.yaml --profile unit-only up --build --abort-on-container-exit avatar-backend-unit
-          
+
           echo "✅ Unit тесты завершены"
 
       - name: Collect test results
@@ -70,7 +70,7 @@ jobs:
         run: |
           echo "📊 Сбор результатов unit тестов..."
           docker compose -f docker/docker-compose.test-extended.yaml logs avatar-backend-unit > unit-test-results.log
-          
+
           echo "## 🧪 Unit Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration Used" >> $GITHUB_STEP_SUMMARY
@@ -78,7 +78,7 @@ jobs:
           echo "- Database: SQLite (in-memory)" >> $GITHUB_STEP_SUMMARY
           echo "- Storage: Local filesystem" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f unit-test-results.log ]; then
             echo "### Test Output" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
