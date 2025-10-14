@@ -1,7 +1,7 @@
 import { IsOptional, IsString, MaxLength, IsEnum, IsNumber, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { FilterType } from '../enums/filter.enum';
+import { FilterType } from '../../../common/enums/filter.enum';
 
 //TODO separate to files
 export class GenerateAvatarDto {
@@ -19,6 +19,14 @@ export class GenerateAvatarDto {
   @IsOptional()
   @IsString()
   colorScheme?: string;
+
+  @ApiPropertyOptional({
+    description: 'Generation type (pixelize, wave, etc.)',
+    example: 'pixelize',
+  })
+  @IsOptional()
+  @IsString()
+  type?: string;
 
   @ApiPropertyOptional({
     description: 'Seed for avatar generation (max 32 characters)',

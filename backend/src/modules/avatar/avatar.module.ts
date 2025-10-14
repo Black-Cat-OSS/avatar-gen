@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Avatar } from './avatar.entity';
 import { AvatarController } from './avatar.controller';
 import { AvatarService } from './avatar.service';
-import { GeneratorService } from './modules';
+import { GeneratorModule } from './modules/generator';
 import { StorageModule } from '../storage/storage.module';
 
 /**
@@ -27,9 +27,13 @@ import { StorageModule } from '../storage/storage.module';
  */
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([Avatar]), StorageModule.register()],
+  imports: [
+    TypeOrmModule.forFeature([Avatar]), 
+    StorageModule.register(),
+    GeneratorModule.register(),
+  ],
   controllers: [AvatarController],
-  providers: [AvatarService, GeneratorService],
+  providers: [AvatarService],
   exports: [TypeOrmModule],
 })
 export class AvatarModule {}

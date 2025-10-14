@@ -191,7 +191,14 @@
       },
       "randomPalette": "Случайная палитра",
       "generateSeed": "Сгенерировать фразу",
-      "currentPalette": "Текущая палитра"
+      "currentPalette": "Текущая палитра",
+      "generatorType": "Тип генератора",
+      "generatorTypes": {
+        "pixelize": "Пиксельный",
+        "pixelizeDescription": "Классический пиксельный узор",
+        "wave": "Волновой",
+        "waveDescription": "Плавный волновой узор"
+      }
     }
   },
   "login": {

@@ -5,7 +5,7 @@ COPY ../package.json .
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-  curl python3 make g++ libvips-dev && \
+  curl libvips-dev && \
   rm -rf /var/lib/apt/lists/* && \
   npm install
 

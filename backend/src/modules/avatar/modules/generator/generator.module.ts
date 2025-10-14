@@ -1,23 +1,33 @@
-import { Module, OnModuleInit, Logger } from '@nestjs/common';
+import { Module, DynamicModule } from '@nestjs/common';
+import { PixelizeGeneratorModule } from '../pixelize-driver';
+import { WaveGeneratorModule } from '../wave-driver';
 import { GeneratorService } from './generator.service';
 
-@Module({
-  providers: [GeneratorService],
-  exports: [GeneratorService],
-})
-export class GeneratorModule implements OnModuleInit {
-  private readonly logger = new Logger(GeneratorModule.name);
-
-  async onModuleInit(): Promise<void> {
-    try {
-      this.logger.log('GeneratorModule initialized - Avatar generation engine ready');
-    } catch (error) {
-      this.logger.error(
-        `GeneratorModule initialization failed: ${error.message}`,
-        error.stack,
-        'GeneratorModule',
-      );
-      throw error;
-    }
+/**
+ * Главный модуль генераторов аватаров
+ *
+ * Динамически подключает все доступные драйверы генераторов.
+ * Использует паттерн Strategy для поддержки различных типов генерации.
+ *
+ * @module GeneratorModule
+ */
+@Module({})
+export class GeneratorModule {
+  /**
+   * Регистрация модуля с подключением всех драйверов генераторов
+   *
+   * @static
+   * @returns {DynamicModule} Динамический модуль
+   */
+  static register(): DynamicModule {
+    return {
+      module: GeneratorModule,
+      providers: [
+        GeneratorService,
+        PixelizeGeneratorModule,
+        WaveGeneratorModule,
+      ],
+      exports: [GeneratorService],
+    };
   }
 }
