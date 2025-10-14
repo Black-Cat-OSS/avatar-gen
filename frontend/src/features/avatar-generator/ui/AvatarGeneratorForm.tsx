@@ -167,6 +167,7 @@ export const AvatarGeneratorForm = () => {
       foreignColor: formData.foreignColor || undefined,
       colorScheme: formData.colorScheme !== 'default' ? formData.colorScheme : undefined,
       seed: formData.seed || undefined,
+      generatorType: formData.type || 'pixelize',
     };
 
     generateAvatar.mutate(params);
@@ -432,7 +433,7 @@ export const AvatarGeneratorForm = () => {
             onChange={e => handleInputChange('seed', e.target.value)}
             placeholder={t('features.avatarGenerator.seedPlaceholder')}
             maxLength={32}
-            label={t('features.avatarGenerator.seed')}
+            label=""
           />
           <p className="text-xs text-muted-foreground">
             {t('features.avatarGenerator.seedDescription')}

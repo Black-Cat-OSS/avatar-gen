@@ -32,7 +32,7 @@ export interface GenerateAvatarParams {
   foreignColor?: string;
   colorScheme?: string;
   seed?: string;
-  type?: string;
+  generatorType?: string;
 }
 
 export interface GenerateAvatarResponse {
