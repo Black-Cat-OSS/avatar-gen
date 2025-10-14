@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [0.0.3] - 2025-01-XX
+
 ### Major Changes
 
 - **Migration from Prisma to TypeORM**
@@ -32,6 +34,21 @@
   - Improved health check functionality
   - Better error handling and logging
 
+- **Configuration System Improvements**
+  - Added comprehensive YAML configuration unit tests
+  - Implemented network schema separation for better configuration management
+  - Enhanced configuration validation and error handling
+
+- **Frontend UI Enhancements**
+  - Replaced error messages with modern Callout components
+  - Refactored Input component to InputField for better reusability
+  - Improved user experience with better component organization
+
+- **Development Infrastructure**
+  - Added development-specific Docker Compose configuration
+  - Implemented comprehensive E2E testing profiles
+  - Enhanced testing system with improved Jest configuration
+
 - **New Scripts**
   - `typeorm:generate` - Generate database migrations
   - `typeorm:run` - Run pending migrations
@@ -54,6 +71,11 @@
   - Cleaned up .gitignore from .env file references
   - Simplified Docker Compose environment configurations
 
+- **Workflow Simplification**
+  - Removed all GitHub workflows with migration to new system
+  - Cleaned up unused Docker configurations
+  - Removed deprecated settings and docker-compose files
+
 ### Changed
 
 - **Database Configuration**
@@ -66,12 +88,33 @@
   - TypeORM handles database initialization automatically
   - Faster application startup time
 
+- **Docker Configuration**
+  - Streamlined Dockerfile for backend services
+  - Optimized Docker configurations for better performance
+  - Improved container build process
+
+- **Testing Infrastructure**
+  - Updated Jest CLI options to use testPathPatterns
+  - Enhanced testing configuration for better coverage
+  - Improved integration test setup
+
 ### Fixed
 
 - **PostgreSQL DATABASE_URL Issue Resolution**
   - Fixed Prisma schema provider mismatch (changed from sqlite to postgresql)
   - Resolved "Environment variable not found: DATABASE_URL" error
   - Eliminated dependency on .env files for database configuration
+
+- **Configuration and Build Issues**
+  - Added proper type casting for TypeORM configuration
+  - Resolved linter and lockfile compatibility issues
+  - Fixed integration configuration in TypeScript config
+  - Restored original Dockerfile functionality
+
+- **Development Environment**
+  - Fixed start.sh script compatibility with Prisma runner
+  - Resolved Docker configuration conflicts
+  - Improved development environment stability
 
 ### Documentation
 
@@ -80,6 +123,7 @@
   - Updated main README with new tech stack
   - Added TypeORM migration documentation
   - Updated API examples for new database service
+  - Added E2E test profiles and comprehensive testing reports
 
 ## [0.0.2] - 2025-10-07
 
