@@ -191,7 +191,14 @@
       },
       "randomPalette": "Random palette",
       "generateSeed": "Generate phrase",
-      "currentPalette": "Current Palette"
+      "currentPalette": "Current Palette",
+      "generatorType": "Generator Type",
+      "generatorTypes": {
+        "pixelize": "Pixelize",
+        "pixelizeDescription": "Classic pixel-based pattern",
+        "wave": "Wave",
+        "waveDescription": "Smooth wave-based pattern"
+      }
     }
   },
   "login": {

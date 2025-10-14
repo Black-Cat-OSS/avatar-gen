@@ -1,4 +1,4 @@
-import { networkSchema } from 'src/common/schemes';
+import { networkSchema } from '../common/schemes';
 import { z } from 'zod/v4';
 
 const configSchema = z

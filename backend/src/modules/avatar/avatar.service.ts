@@ -2,12 +2,12 @@ import { Injectable, Logger, BadRequestException, NotFoundException } from '@nes
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StorageService } from '../storage/storage.service';
-import { GeneratorService } from './modules';
+import { GeneratorService } from './modules/generator/generator.service';
 import {
   GenerateAvatarDto,
   GetAvatarDto,
   ListAvatarsDto,
-} from '../../common/dto/generate-avatar.dto';
+} from './dto/generate-avatar.dto';
 import { Avatar } from './avatar.entity';
 
 @Injectable()
@@ -36,6 +36,7 @@ export class AvatarService {
         dto.foreignColor,
         dto.colorScheme,
         dto.seed,
+        dto.type || 'pixelize',
       );
 
       // Save to file system
@@ -50,6 +51,7 @@ export class AvatarService {
         foreignColor: dto.foreignColor,
         colorScheme: dto.colorScheme,
         seed: dto.seed,
+        generatorType: dto.type || 'pixelize',
       });
 
       const savedAvatar = await this.avatarRepository.save(avatar);

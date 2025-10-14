@@ -146,6 +146,7 @@ export const AvatarGeneratorForm = () => {
     foreignColor: '#ef4444',
     colorScheme: 'default',
     seed: '',
+    type: 'pixelize',
   });
 
   // Generate initial seed on component mount
@@ -363,6 +364,51 @@ export const AvatarGeneratorForm = () => {
             </div>
           </div>
         )}
+
+        {/* Generator Type Selection */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-foreground">
+            {t('features.avatarGenerator.generatorType')}
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleInputChange('type', 'pixelize')}
+              className={`p-3 rounded-lg border-2 transition-all ${
+                formData.type === 'pixelize'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="text-center">
+                <div className="text-sm font-medium text-foreground mb-1">
+                  {t('features.avatarGenerator.generatorTypes.pixelize')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('features.avatarGenerator.generatorTypes.pixelizeDescription')}
+                </div>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleInputChange('type', 'wave')}
+              className={`p-3 rounded-lg border-2 transition-all ${
+                formData.type === 'wave'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="text-center">
+                <div className="text-sm font-medium text-foreground mb-1">
+                  {t('features.avatarGenerator.generatorTypes.wave')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('features.avatarGenerator.generatorTypes.waveDescription')}
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
 
         {/* Seed Generation */}
         <div className="space-y-2">

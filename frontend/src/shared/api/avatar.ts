@@ -9,6 +9,7 @@ export interface Avatar {
   foreignColor?: string;
   colorScheme?: string;
   seed?: string;
+  generatorType?: string;
 }
 
 export interface ListAvatarsResponse {
@@ -31,6 +32,7 @@ export interface GenerateAvatarParams {
   foreignColor?: string;
   colorScheme?: string;
   seed?: string;
+  type?: string;
 }
 
 export interface GenerateAvatarResponse {
@@ -43,6 +45,7 @@ export interface GenerateAvatarResponse {
   foreignColor?: string;
   colorScheme?: string;
   seed?: string;
+  generatorType?: string;
 }
 
 export const avatarApi = {
@@ -59,7 +62,7 @@ export const avatarApi = {
   },
 
   generate: async (params: GenerateAvatarParams): Promise<GenerateAvatarResponse> => {
-    const response = await apiClient.post<GenerateAvatarResponse>('/api/generate', params);
+    const response = await apiClient.post<GenerateAvatarResponse>('/api/v1/generate', params);
     return response.data;
   },
 

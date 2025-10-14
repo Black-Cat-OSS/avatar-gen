@@ -72,4 +72,11 @@ export class Avatar {
    */
   @Column({ type: 'varchar', length: 255, nullable: true })
   seed?: string;
+
+  /**
+   * Тип генератора аватара
+   * По умолчанию "pixelize"
+   */
+  @Column({ type: 'varchar', length: 50, default: 'pixelize' })
+  generatorType?: string;
 }

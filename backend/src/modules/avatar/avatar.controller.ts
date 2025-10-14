@@ -19,19 +19,19 @@ import {
   GenerateAvatarDto,
   GetAvatarDto,
   ListAvatarsDto,
-} from '../../common/dto/generate-avatar.dto';
+} from './dto/generate-avatar.dto';
 
 @ApiTags('Avatar')
 @Controller()
 export class AvatarController {
   constructor(private readonly avatarService: AvatarService) {}
 
-  @Post('generate')
-  @ApiOperation({ summary: 'Generate a new avatar' })
+  @Post('v1/generate')
+  @ApiOperation({ summary: 'Generate a new avatar (API v1)' })
   @ApiResponse({ status: 201, description: 'Avatar generated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid parameters' })
   @UsePipes(new ValidationPipe({ transform: true }))
-  async generateAvatar(@Body() dto: GenerateAvatarDto) {
+  async generateAvatarV1(@Body() dto: GenerateAvatarDto) {
     try {
       const result = await this.avatarService.generateAvatar(dto);
       return {

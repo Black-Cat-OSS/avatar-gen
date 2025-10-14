@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Migration } from 'typeorm';
 import { Avatar } from '../avatar/avatar.entity';
 import { YamlConfigService } from '../../config/modules/yaml-driver/yaml-config.service';
 
@@ -111,6 +111,87 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.logger.log('Database reconnected successfully');
     } catch (error) {
       this.logger.error(`Database reconnection failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Запуск всех ожидающих миграций
+   * @returns массив примененных миграций
+   */
+  async runMigrations(): Promise<Migration[]> {
+    try {
+      this.logger.log('Running database migrations...');
+      const migrations = await this.dataSource.runMigrations();
+      
+      if (migrations.length === 0) {
+        this.logger.log('No pending migrations found');
+      } else {
+        this.logger.log(`Applied ${migrations.length} migrations:`);
+        migrations.forEach(migration => {
+          this.logger.log(`  - ${migration.name}`);
+        });
+      }
+      
+      return migrations;
+    } catch (error) {
+      this.logger.error(`Migration execution failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Откат последней миграции
+   */
+  async revertLastMigration(): Promise<void> {
+    try {
+      this.logger.log('Reverting last migration...');
+      await this.dataSource.undoLastMigration();
+      this.logger.log('Last migration reverted successfully');
+    } catch (error) {
+      this.logger.error(`Migration revert failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Получение статуса миграций
+   * @returns информация о выполненных и ожидающих миграциях
+   */
+  async getMigrationStatus(): Promise<{
+    executed: unknown[];
+    pending: boolean;
+  }> {
+    try {
+      const executedMigrations = await this.dataSource.query(
+        'SELECT * FROM migrations ORDER BY timestamp'
+      );
+      
+      const pendingMigrations = await this.dataSource.showMigrations();
+      
+      return {
+        executed: executedMigrations,
+        pending: pendingMigrations,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get migration status: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Генерация новой миграции
+   * @param name имя миграции
+   * @returns путь к созданному файлу миграции
+   */
+  async generateMigration(name: string): Promise<string> {
+    try {
+      this.logger.log(`Generating migration: ${name}`);
+      // Используем TypeORM CLI для генерации миграции
+      // Этот метод будет реализован позже, когда понадобится
+      throw new Error('Migration generation not implemented yet');
+    } catch (error) {
+      this.logger.error(`Migration generation failed: ${error.message}`);
       throw error;
     }
   }
