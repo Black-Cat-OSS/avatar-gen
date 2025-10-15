@@ -5,6 +5,7 @@ import { DatabaseModule } from '../database';
 import { InitializationModule } from '../initialization';
 import { AvatarModule } from '../avatar/avatar.module';
 import { HealthModule } from '../health';
+import { CorsMiddlewareModule } from '../../middleware';
 
 /**
  * Корневой модуль приложения
@@ -20,6 +21,7 @@ import { HealthModule } from '../health';
     DatabaseModule,
     AvatarModule,
     HealthModule,
+    CorsMiddlewareModule,
   ],
 })
 export class AppModule implements OnModuleInit {

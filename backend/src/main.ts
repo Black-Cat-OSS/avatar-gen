@@ -39,14 +39,6 @@ async function bootstrap() {
       }),
     );
 
-    //TODO: separate to CORS-module
-    loggerService.debug('Enabling CORS...');
-    app.enableCors({
-      origin: true,
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      credentials: true,
-    });
-
     //TODO: separate to OpenAPI-module
     loggerService.debug('Setting up Swagger documentation...');
     const config = new DocumentBuilder()
