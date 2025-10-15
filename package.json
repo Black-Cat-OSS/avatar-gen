@@ -1,6 +1,6 @@
 {
   "name": "avatar-gen",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "description": "Avatar Generator API with frontend and backend",
   "private": true,
   "workspaces": [
@@ -23,7 +23,15 @@
     "lint:backend": "eslint \"backend/**/*.{ts,js}\" --config backend/eslint.config.mjs",
     "lint:backend:fix": "eslint \"backend/**/*.{ts,js}\" --config backend/eslint.config.mjs --fix",
     "format:backend": "prettier --write \"backend/**/*.{ts,js,json,md,yml,yaml}\"",
-    "format:backend:check": "prettier --check \"backend/**/*.{ts,js,json,md,yml,yaml}\""
+    "format:backend:check": "prettier --check \"backend/**/*.{ts,js,json,md,yml,yaml}\"",
+    "changelog": "npx conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0",
+    "changelog:all": "npx conventional-changelog -p conventionalcommits -i CHANGELOG.md -s",
+    "changelog:unreleased": "node scripts/update-unreleased.js",
+    "changelog:version": "npx conventional-changelog -p conventionalcommits -i CHANGELOG.md -s --release-count 1",
+    "release": "node scripts/release-simple.js patch",
+    "release:patch": "node scripts/release-simple.js patch",
+    "release:minor": "node scripts/release-simple.js minor",
+    "release:major": "node scripts/release-simple.js major"
   },
   "keywords": [
     "avatar",
@@ -46,6 +54,7 @@
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "commitizen": "^4.3.1",
+    "conventional-changelog-cli": "^5.0.0",
     "cross-env": "^7.0.3",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^9.36.0",
