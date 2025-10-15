@@ -60,6 +60,8 @@ const configSchema = z
           verbose: false,
           pretty: true,
         }),
+      cors: z.boolean().default(false).optional(),
+      corsEnabled: z.array(z.string()).optional(),
     }),
   })
   .superRefine((data, ctx) => {
@@ -76,6 +78,15 @@ const configSchema = z
         code: 'custom',
         message: `Storage configuration for type "s3" is required`,
         path: ['app', 'storage', 's3'],
+      });
+    }
+
+    // CORS validation
+    if (data.app.cors === true && data.app.corsEnabled === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'You have enabled CORS but not configure \'corsEnabled\' parameter',
+        path: ['app', 'corsEnabled'],
       });
     }
   });

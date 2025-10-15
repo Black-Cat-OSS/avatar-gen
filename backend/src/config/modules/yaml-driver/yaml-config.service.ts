@@ -90,4 +90,11 @@ export class YamlConfigService implements OnModuleDestroy {
   getLoggingConfig() {
     return this.config.app.logging;
   }
+
+  getCorsConfig() {
+    return {
+      enabled: this.config.app.cors || false,
+      origins: this.config.app.corsEnabled || [],
+    };
+  }
 }
