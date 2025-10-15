@@ -159,7 +159,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    * @returns информация о выполненных и ожидающих миграциях
    */
   async getMigrationStatus(): Promise<{
-    executed: unknown[];
+    executed: Array<{ name: string; timestamp: number }>;
     pending: boolean;
   }> {
     try {

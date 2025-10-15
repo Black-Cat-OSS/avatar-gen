@@ -128,6 +128,30 @@ export class AvatarController {
     }
   }
 
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete avatar by ID' })
+  @ApiParam({ name: 'id', description: 'Avatar ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'Avatar deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Avatar not found' })
+  async deleteAvatar(@Param('id') id: string) {
+    try {
+      const result = await this.avatarService.deleteAvatar(id);
+      return {
+        statusCode: HttpStatus.OK,
+        message: result.message,
+      };
+    } catch (error) {
+      const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      throw new HttpException(
+        {
+          statusCode: status,
+          message: error.message,
+        },
+        status,
+      );
+    }
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get avatar by ID' })
   @ApiParam({ name: 'id', description: 'Avatar ID (UUID)' })
@@ -154,30 +178,6 @@ export class AvatarController {
       });
 
       res.send(result.image);
-    } catch (error) {
-      const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
-      throw new HttpException(
-        {
-          statusCode: status,
-          message: error.message,
-        },
-        status,
-      );
-    }
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete avatar by ID' })
-  @ApiParam({ name: 'id', description: 'Avatar ID (UUID)' })
-  @ApiResponse({ status: 200, description: 'Avatar deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Avatar not found' })
-  async deleteAvatar(@Param('id') id: string) {
-    try {
-      const result = await this.avatarService.deleteAvatar(id);
-      return {
-        statusCode: HttpStatus.OK,
-        message: result.message,
-      };
     } catch (error) {
       const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
       throw new HttpException(

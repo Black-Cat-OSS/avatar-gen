@@ -30,6 +30,20 @@ async function bootstrap() {
     loggerService.debug('Setting global API prefix...');
     app.setGlobalPrefix('api');
 
+    //TODO: separate to OpenAPI-module
+    loggerService.debug('Setting up Swagger documentation...');
+    const config = new DocumentBuilder()
+      .setTitle('Avatar Generation API')
+      .setDescription('API for generating and managing avatars similar to GitHub/GitLab')
+      .setVersion('0.0.1')
+      .addTag('Avatar', 'Avatar generation and management endpoints')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('swagger', app, document, {
+      customSiteTitle: 'Avatar Generation API',
+    });
+
     loggerService.debug('Setting up global validation pipe...');
     app.useGlobalPipes(
       new ValidationPipe({
@@ -45,20 +59,6 @@ async function bootstrap() {
       origin: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
-    });
-
-    //TODO: separate to OpenAPI-module
-    loggerService.debug('Setting up Swagger documentation...');
-    const config = new DocumentBuilder()
-      .setTitle('Avatar Generation API')
-      .setDescription('API for generating and managing avatars similar to GitHub/GitLab')
-      .setVersion('0.0.1')
-      .addTag('Avatar', 'Avatar generation and management endpoints')
-      .build();
-
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('swagger', app, document, {
-      customSiteTitle: 'Avatar Generation API',
     });
 
     const serverConfig = configService.getServerConfig();
