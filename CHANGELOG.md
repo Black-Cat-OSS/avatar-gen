@@ -8,6 +8,23 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Color scheme synchronization between frontend and backend**
+  - Added all 8 frontend color palettes to backend generator
+  - Fixed 400 error for 'forest' and other color schemes
+  - Unified field naming: frontend sends 'type', backend saves to
+    'generatorType'
+  - Removed duplicate generatorType field from DTO
+  - Updated API interfaces for consistency
+
+### Changed
+
+- **Field naming standardization**
+  - Frontend now sends 'type' instead of 'generatorType'
+  - Backend receives 'type' and saves to 'generatorType' in database
+  - Cleaner architecture without duplicate fields
+
 ## [0.0.3] - 2025-01-XX
 
 ### Major Changes
