@@ -34,6 +34,7 @@ services:
       - i-am-fullstack
       - i-am-frontender
       - backend-dev
+      - only-cloud
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -52,6 +53,7 @@ services:
       start_period: 10s
     networks:
       - internal
+      - external
 
   postgres:
     image: postgres:17-alpine
@@ -60,6 +62,7 @@ services:
       - i-am-frontender
       - backend-dev
       - i-am-fullstack
+      - only-cloud
     environment:
       POSTGRES_DB: avatar_gen
       POSTGRES_USER: postgres
@@ -78,6 +81,7 @@ services:
       start_period: 30s
     networks:
       - backend-db
+      - external
 
   avatar-backend:
     profiles:
