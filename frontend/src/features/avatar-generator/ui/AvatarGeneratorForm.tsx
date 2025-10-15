@@ -167,7 +167,7 @@ export const AvatarGeneratorForm = () => {
       foreignColor: formData.foreignColor || undefined,
       colorScheme: formData.colorScheme !== 'default' ? formData.colorScheme : undefined,
       seed: formData.seed || undefined,
-      generatorType: formData.type || 'pixelize',
+      type: formData.type || 'pixelize',
     };
 
     generateAvatar.mutate(params);
@@ -245,16 +245,21 @@ export const AvatarGeneratorForm = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {colorSchemes.map(scheme => {
               const palette = colorPalettes[scheme.value as keyof typeof colorPalettes];
+              const isSelected = formData.colorScheme === scheme.value;
               return (
                 <button
                   key={scheme.value}
                   type="button"
                   onClick={() => handlePaletteChange(scheme.value)}
                   className={`p-3 rounded-lg border-2 transition-all ${
-                    formData.colorScheme === scheme.value
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/50'
+                    isSelected
+                      ? 'shadow-lg ring-2 ring-offset-2 ring-primary/20'
+                      : 'border-border hover:border-primary/50 hover:shadow-md'
                   }`}
+                  style={{
+                    borderColor: isSelected ? palette.primaryColor : undefined,
+                    backgroundColor: isSelected ? `${palette.primaryColor}15` : undefined,
+                  }}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <div
@@ -377,9 +382,13 @@ export const AvatarGeneratorForm = () => {
               onClick={() => handleInputChange('type', 'pixelize')}
               className={`p-3 rounded-lg border-2 transition-all ${
                 formData.type === 'pixelize'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border hover:border-primary/50'
+                  ? 'shadow-lg ring-2 ring-offset-2 ring-primary/20'
+                  : 'border-border hover:border-primary/50 hover:shadow-md'
               }`}
+              style={{
+                borderColor: formData.type === 'pixelize' ? formData.primaryColor : undefined,
+                backgroundColor: formData.type === 'pixelize' ? `${formData.primaryColor}15` : undefined,
+              }}
             >
               <div className="text-center">
                 <div className="text-sm font-medium text-foreground mb-1">
@@ -395,9 +404,13 @@ export const AvatarGeneratorForm = () => {
               onClick={() => handleInputChange('type', 'wave')}
               className={`p-3 rounded-lg border-2 transition-all ${
                 formData.type === 'wave'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border hover:border-primary/50'
+                  ? 'shadow-lg ring-2 ring-offset-2 ring-primary/20'
+                  : 'border-border hover:border-primary/50 hover:shadow-md'
               }`}
+              style={{
+                borderColor: formData.type === 'wave' ? formData.primaryColor : undefined,
+                backgroundColor: formData.type === 'wave' ? `${formData.primaryColor}15` : undefined,
+              }}
             >
               <div className="text-center">
                 <div className="text-sm font-medium text-foreground mb-1">

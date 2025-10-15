@@ -9,6 +9,7 @@ export class PixelizeGeneratorModule implements IGeneratorStrategy {
   private readonly logger = new Logger(PixelizeGeneratorModule.name);
 
   private readonly colorSchemes: ColorScheme[] = [
+    // Basic color schemes
     { name: 'green', primaryColor: 'green', foreignColor: 'lightgreen' },
     { name: 'blue', primaryColor: 'blue', foreignColor: 'lightblue' },
     { name: 'red', primaryColor: 'red', foreignColor: 'pink' },
@@ -18,6 +19,15 @@ export class PixelizeGeneratorModule implements IGeneratorStrategy {
     { name: 'indigo', primaryColor: 'indigo', foreignColor: 'blue' },
     { name: 'pink', primaryColor: 'pink', foreignColor: 'rose' },
     { name: 'emerald', primaryColor: 'emerald', foreignColor: 'green' },
+    // Frontend color palettes
+    { name: 'default', primaryColor: '#3b82f6', foreignColor: '#ef4444' },
+    { name: 'monochrome', primaryColor: '#333333', foreignColor: '#666666' },
+    { name: 'vibrant', primaryColor: '#FF6B35', foreignColor: '#F7931E' },
+    { name: 'pastel', primaryColor: '#FFB3BA', foreignColor: '#FFDFBA' },
+    { name: 'ocean', primaryColor: '#0077BE', foreignColor: '#00A8CC' },
+    { name: 'sunset', primaryColor: '#FF8C42', foreignColor: '#FF6B35' },
+    { name: 'forest', primaryColor: '#2E8B57', foreignColor: '#32CD32' },
+    { name: 'royal', primaryColor: '#6A0DAD', foreignColor: '#8A2BE2' },
   ];
 
   async generateAvatar(
