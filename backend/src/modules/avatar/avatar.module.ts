@@ -5,6 +5,7 @@ import { AvatarController } from './avatar.controller';
 import { AvatarService } from './avatar.service';
 import { GeneratorModule } from './modules/generator';
 import { StorageModule } from '../storage/storage.module';
+import { FilterModule } from './pipelines/filters/filter.module';
 
 /**
  * Модуль для работы с сущностью Avatar
@@ -31,6 +32,7 @@ import { StorageModule } from '../storage/storage.module';
     TypeOrmModule.forFeature([Avatar]), 
     StorageModule.register(),
     GeneratorModule.register(),
+    FilterModule,
   ],
   controllers: [AvatarController],
   providers: [AvatarService],

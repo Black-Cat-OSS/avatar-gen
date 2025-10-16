@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StorageService } from '../storage/storage.service';
 import { GeneratorService } from './modules/generator/generator.service';
+import { FilterService } from './pipelines/filters/filter.service';
 import {
   GenerateAvatarDto,
   GetAvatarDto,
@@ -19,6 +20,7 @@ export class AvatarService {
     private readonly avatarRepository: Repository<Avatar>,
     private readonly avatarGenerator: GeneratorService,
     private readonly storageService: StorageService,
+    private readonly filterService: FilterService,
   ) {}
 
   async generateAvatar(dto: GenerateAvatarDto) {
@@ -97,7 +99,7 @@ export class AvatarService {
       // Apply filter if specified
       if (dto.filter) {
         this.logger.log(`Applying filter: ${dto.filter}, original image size: ${imageBuffer.length} bytes`);
-        imageBuffer = await this.avatarGenerator.applyFilter(imageBuffer, dto.filter);
+        imageBuffer = await this.filterService.applyFilter(imageBuffer, dto.filter);
         this.logger.log(`Filter applied, new image size: ${imageBuffer.length} bytes`);
       } else {
         this.logger.log('No filter specified, returning original image');
