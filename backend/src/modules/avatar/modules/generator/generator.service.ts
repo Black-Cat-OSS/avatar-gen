@@ -36,7 +36,9 @@ export class GeneratorService {
     return await generator.generateAvatar(primaryColor, foreignColor, colorScheme, seed);
   }
 
-  getColorSchemes(type: string = 'pixelize'): Array<{ name: string; primaryColor: string; foreignColor: string }> {
+  getColorSchemes(
+    type: string = 'pixelize',
+  ): Array<{ name: string; primaryColor: string; foreignColor: string }> {
     const generator = this.getGenerator(type);
     return generator.getColorSchemes();
   }
@@ -55,25 +57,41 @@ export class GeneratorService {
   async applyFilter(imageBuffer: Buffer, filter: FilterType): Promise<Buffer> {
     this.logger.log(`Applying filter: ${filter}`);
 
-    switch (filter) {
-      case FilterType.GRAYSCALE:
-        return await sharp(imageBuffer).grayscale().png().toBuffer();
+    try {
+      switch (filter) {
+        case FilterType.GRAYSCALE:
+          return await sharp(imageBuffer).grayscale().png().toBuffer();
 
-      case FilterType.SEPIA:
-        return await sharp(imageBuffer)
-          .modulate({
-            brightness: 1.1,
-            saturation: 0.8,
-            hue: 30,
-          })
-          .png()
-          .toBuffer();
+        case FilterType.SEPIA:
+          return await sharp(imageBuffer)
+            .modulate({
+              brightness: 1.1,
+              saturation: 0.8,
+              hue: 30,
+            })
+            .png()
+            .toBuffer();
 
-      case FilterType.NEGATIVE:
-        return await sharp(imageBuffer).negate().png().toBuffer();
+        case FilterType.NEGATIVE: {
+          this.logger.log('Applying negative filter');
+          // Решаем проблему с альфа-каналом через удаление альфа-канала с белым фоном
+          const result = await sharp(imageBuffer)
+            .flatten({ background: { r: 255, g: 255, b: 255 } }) // Заменяем прозрачность на белый фон
+            .negate() // Инвертируем цвета (белый станет черным)
+            .png()
+            .toBuffer();
+          this.logger.log(
+            `Negative filter applied (with white background), result size: ${result.length} bytes`,
+          );
+          return result;
+        }
 
-      default:
-        return imageBuffer;
+        default:
+          return imageBuffer;
+      }
+    } catch (error) {
+      this.logger.error(`Failed to apply filter ${filter}: ${error.message}`, error);
+      throw error;
     }
   }
 }

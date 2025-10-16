@@ -96,7 +96,11 @@ export class AvatarService {
 
       // Apply filter if specified
       if (dto.filter) {
+        this.logger.log(`Applying filter: ${dto.filter}, original image size: ${imageBuffer.length} bytes`);
         imageBuffer = await this.avatarGenerator.applyFilter(imageBuffer, dto.filter);
+        this.logger.log(`Filter applied, new image size: ${imageBuffer.length} bytes`);
+      } else {
+        this.logger.log('No filter specified, returning original image');
       }
 
       this.logger.log(`Avatar retrieved successfully: ${id}`);

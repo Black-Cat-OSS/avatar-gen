@@ -232,8 +232,12 @@ export const AvatarViewerPage = () => {
                       className="w-full h-full object-cover"
                       onError={e => {
                         const target = e.target as HTMLImageElement;
+                        console.error(`Failed to load main image with filter: ${filter}`, target.src);
                         target.src =
                           'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+                      }}
+                      onLoad={() => {
+                        console.log(`Successfully loaded main image with filter: ${filter}`);
                       }}
                     />
                   </div>
@@ -303,8 +307,12 @@ export const AvatarViewerPage = () => {
                             className="w-full h-full object-cover"
                             onError={e => {
                               const target = e.target as HTMLImageElement;
+                              console.error(`Failed to load image for filter: ${filterOption.value}`, target.src);
                               target.src =
                                 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+                            }}
+                            onLoad={() => {
+                              console.log(`Successfully loaded image for filter: ${filterOption.value}`);
                             }}
                           />
                         </div>

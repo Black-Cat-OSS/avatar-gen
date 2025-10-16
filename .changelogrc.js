@@ -43,5 +43,5 @@ module.exports = {
   groupBy: 'type',
   commitGroupsSort: 'title',
   commitsSort: ['scope', 'subject'],
-  noteGroupsSort: 'title'
+  noteGroupsSort: 'title',
 };
