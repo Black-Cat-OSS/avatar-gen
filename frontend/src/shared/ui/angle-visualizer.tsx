@@ -67,24 +67,16 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
     updateVisualElements(angle);
   }, [angle]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDraggingRef.current = true;
-    if (svgRef.current) {
-      svgRef.current.style.cursor = 'grabbing';
-    }
-    
-    // Handle initial click
-    handleMouseMove(e);
-  };
+  // Cleanup global event listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, []);
 
-  const handleMouseUp = () => {
-    isDraggingRef.current = false;
-    if (svgRef.current) {
-      svgRef.current.style.cursor = 'grab';
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
+  // Global mouse event handlers for continuous dragging
+  const handleGlobalMouseMove = (e: MouseEvent) => {
     if (!isDraggingRef.current || !svgRef.current) return;
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -104,11 +96,42 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
     onChange(Math.round(normalizedAngle));
   };
 
-  const handleMouseLeave = () => {
+  const handleGlobalMouseUp = () => {
     isDraggingRef.current = false;
     if (svgRef.current) {
       svgRef.current.style.cursor = 'grab';
     }
+    
+    // Remove global event listeners
+    document.removeEventListener('mousemove', handleGlobalMouseMove);
+    document.removeEventListener('mouseup', handleGlobalMouseUp);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isDraggingRef.current = true;
+    if (svgRef.current) {
+      svgRef.current.style.cursor = 'grabbing';
+    }
+    
+    // Add global event listeners for continuous dragging
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    
+    // Handle initial click
+    handleGlobalMouseMove(e.nativeEvent);
+  };
+
+  const handleMouseUp = () => {
+    handleGlobalMouseUp();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current) return;
+    handleGlobalMouseMove(e.nativeEvent);
+  };
+
+  const handleMouseLeave = () => {
+    // Don't stop dragging when mouse leaves SVG - continue globally
   };
 
   return (
