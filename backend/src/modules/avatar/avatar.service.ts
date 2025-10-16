@@ -9,6 +9,7 @@ import {
   GetAvatarDto,
   ListAvatarsDto,
 } from './dto/generate-avatar.dto';
+import { GenerateAvatarV2Dto } from './dto/generate-avatar-v2.dto';
 import { Avatar } from './avatar.entity';
 
 @Injectable()
@@ -67,6 +68,50 @@ export class AvatarService {
       };
     } catch (error) {
       this.logger.error(`Failed to generate avatar: ${error.message}`, error);
+      throw error;
+    }
+  }
+
+  async generateAvatarV2(dto: GenerateAvatarV2Dto) {
+    this.logger.log('Generating new gradient avatar (v2)');
+
+    try {
+      // Generate avatar object with gradient type and angle
+      const avatarObject = await this.avatarGenerator.generateAvatar(
+        dto.primaryColor,
+        dto.foreignColor,
+        dto.colorScheme,
+        dto.seed,
+        'gradient',
+        dto.angle,
+      );
+
+      // Save to file system
+      const filePath = await this.storageService.saveAvatar(avatarObject);
+
+      // Save metadata to database using TypeORM
+      const avatar = this.avatarRepository.create({
+        id: avatarObject.meta_data_name,
+        name: avatarObject.meta_data_name,
+        filePath,
+        primaryColor: dto.primaryColor,
+        foreignColor: dto.foreignColor,
+        colorScheme: dto.colorScheme,
+        seed: dto.seed,
+        generatorType: 'gradient',
+      });
+
+      const savedAvatar = await this.avatarRepository.save(avatar);
+
+      this.logger.log(`Gradient avatar generated successfully with ID: ${savedAvatar.id}`);
+
+      return {
+        id: savedAvatar.id,
+        createdAt: savedAvatar.createdAt,
+        version: savedAvatar.version,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to generate gradient avatar: ${error.message}`, error);
       throw error;
     }
   }

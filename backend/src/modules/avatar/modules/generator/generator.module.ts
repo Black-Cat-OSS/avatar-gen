@@ -1,6 +1,7 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { PixelizeGeneratorModule } from '../pixelize-driver';
 import { WaveGeneratorModule } from '../wave-driver';
+import { GradientGeneratorModule } from '../gradient-driver/gradient-generator.module';
 import { GeneratorService } from './generator.service';
 
 /**
@@ -26,6 +27,7 @@ export class GeneratorModule {
         GeneratorService,
         PixelizeGeneratorModule,
         WaveGeneratorModule,
+        GradientGeneratorModule,
       ],
       exports: [GeneratorService],
     };

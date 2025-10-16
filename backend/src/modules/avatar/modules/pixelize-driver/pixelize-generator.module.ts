@@ -35,6 +35,7 @@ export class PixelizeGeneratorModule implements IGeneratorStrategy {
     foreignColor?: string,
     colorScheme?: string,
     seed?: string,
+    _angle?: number,
   ): Promise<AvatarObject> {
     this.logger.log('Generating new pixelize avatar');
 

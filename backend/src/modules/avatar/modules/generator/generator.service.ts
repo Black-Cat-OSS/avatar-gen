@@ -3,6 +3,7 @@ import { AvatarObject } from '../../../../common/interfaces/avatar-object.interf
 import { IGeneratorStrategy } from '../../../../common/interfaces/generator-strategy.interface';
 import { PixelizeGeneratorModule } from '../pixelize-driver';
 import { WaveGeneratorModule } from '../wave-driver';
+import { GradientGeneratorModule } from '../gradient-driver/gradient-generator.module';
 
 /**
  * Главный сервис генерации аватаров
@@ -19,6 +20,7 @@ export class GeneratorService {
   constructor(
     private readonly pixelizeGenerator: PixelizeGeneratorModule,
     private readonly waveGenerator: WaveGeneratorModule,
+    private readonly gradientGenerator: GradientGeneratorModule,
   ) {}
 
   async generateAvatar(
@@ -27,11 +29,12 @@ export class GeneratorService {
     colorScheme?: string,
     seed?: string,
     type: string = 'pixelize',
+    angle?: number,
   ): Promise<AvatarObject> {
     this.logger.log(`Generating avatar with type: ${type}`);
 
     const generator = this.getGenerator(type);
-    return await generator.generateAvatar(primaryColor, foreignColor, colorScheme, seed);
+    return await generator.generateAvatar(primaryColor, foreignColor, colorScheme, seed, angle);
   }
 
   getColorSchemes(
@@ -47,6 +50,8 @@ export class GeneratorService {
         return this.pixelizeGenerator;
       case 'wave':
         return this.waveGenerator;
+      case 'gradient':
+        return this.gradientGenerator;
       default:
         throw new BadRequestException(`Unsupported generator type: ${type}`);
     }

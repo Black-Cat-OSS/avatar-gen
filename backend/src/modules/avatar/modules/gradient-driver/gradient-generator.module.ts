@@ -4,11 +4,20 @@ import sharp from 'sharp';
 import { AvatarObject, ColorScheme } from '../../../../common/interfaces/avatar-object.interface';
 import { IGeneratorStrategy } from '../../../../common/interfaces/generator-strategy.interface';
 
+/**
+ * Генератор градиентных аватаров
+ *
+ * Создает аватары с линейным градиентом от одного цвета к другому
+ * с возможностью настройки угла поворота градиента.
+ *
+ * @class GradientGeneratorModule
+ */
 @Injectable()
-export class WaveGeneratorModule implements IGeneratorStrategy {
-  private readonly logger = new Logger(WaveGeneratorModule.name);
+export class GradientGeneratorModule implements IGeneratorStrategy {
+  private readonly logger = new Logger(GradientGeneratorModule.name);
 
   private readonly colorSchemes: ColorScheme[] = [
+    // Basic color schemes
     { name: 'green', primaryColor: 'green', foreignColor: 'lightgreen' },
     { name: 'blue', primaryColor: 'blue', foreignColor: 'lightblue' },
     { name: 'red', primaryColor: 'red', foreignColor: 'pink' },
@@ -18,6 +27,15 @@ export class WaveGeneratorModule implements IGeneratorStrategy {
     { name: 'indigo', primaryColor: 'indigo', foreignColor: 'blue' },
     { name: 'pink', primaryColor: 'pink', foreignColor: 'rose' },
     { name: 'emerald', primaryColor: 'emerald', foreignColor: 'green' },
+    // Frontend color palettes
+    { name: 'default', primaryColor: '#3b82f6', foreignColor: '#ef4444' },
+    { name: 'monochrome', primaryColor: '#333333', foreignColor: '#666666' },
+    { name: 'vibrant', primaryColor: '#FF6B35', foreignColor: '#F7931E' },
+    { name: 'pastel', primaryColor: '#FFB3BA', foreignColor: '#FFDFBA' },
+    { name: 'ocean', primaryColor: '#0077BE', foreignColor: '#00A8CC' },
+    { name: 'sunset', primaryColor: '#FF8C42', foreignColor: '#FF6B35' },
+    { name: 'forest', primaryColor: '#2E8B57', foreignColor: '#32CD32' },
+    { name: 'royal', primaryColor: '#6A0DAD', foreignColor: '#8A2BE2' },
   ];
 
   async generateAvatar(
@@ -25,9 +43,9 @@ export class WaveGeneratorModule implements IGeneratorStrategy {
     foreignColor?: string,
     colorScheme?: string,
     seed?: string,
-    _angle?: number,
+    angle?: number,
   ): Promise<AvatarObject> {
-    this.logger.log('Generating new wave avatar');
+    this.logger.log('Generating new gradient avatar');
 
     const id = uuidv4();
     const now = new Date();
@@ -55,40 +73,46 @@ export class WaveGeneratorModule implements IGeneratorStrategy {
         finalPrimaryColor,
         finalForeignColor,
         uniqueSeed,
+        angle,
       ), // 2^4 = 16
       image_5n: await this.generateImageForSize(
         32,
         finalPrimaryColor,
         finalForeignColor,
         uniqueSeed,
+        angle,
       ), // 2^5 = 32
       image_6n: await this.generateImageForSize(
         64,
         finalPrimaryColor,
         finalForeignColor,
         uniqueSeed,
+        angle,
       ), // 2^6 = 64
       image_7n: await this.generateImageForSize(
         128,
         finalPrimaryColor,
         finalForeignColor,
         uniqueSeed,
+        angle,
       ), // 2^7 = 128
       image_8n: await this.generateImageForSize(
         256,
         finalPrimaryColor,
         finalForeignColor,
         uniqueSeed,
+        angle,
       ), // 2^8 = 256
       image_9n: await this.generateImageForSize(
         512,
         finalPrimaryColor,
         finalForeignColor,
         uniqueSeed,
+        angle,
       ), // 2^9 = 512
     };
 
-    this.logger.log(`Wave avatar generated with ID: ${id}`);
+    this.logger.log(`Gradient avatar generated with ID: ${id}`);
     return avatarObject;
   }
 
@@ -97,53 +121,42 @@ export class WaveGeneratorModule implements IGeneratorStrategy {
     primaryColor?: string,
     foreignColor?: string,
     seed?: string,
+    angle?: number,
   ): Promise<Buffer> {
     const canvas = Buffer.alloc(size * size * 4);
 
     const randomSeed = seed ? this.seedToNumber(seed) : Math.random();
     const rng = this.createSeededRandom(randomSeed);
 
-    // Generate wave parameters
-    const frequency1 = 0.1 + rng() * 0.2; // 0.1 to 0.3
-    const frequency2 = 0.15 + rng() * 0.25; // 0.15 to 0.4
-    const amplitude1 = 0.3 + rng() * 0.4; // 0.3 to 0.7
-    const amplitude2 = 0.2 + rng() * 0.3; // 0.2 to 0.5
-    const phase1 = rng() * Math.PI * 2;
-    const phase2 = rng() * Math.PI * 2;
+    // Use provided angle or generate from seed
+    const gradientAngle = angle !== undefined ? angle : rng() * 360;
 
     const primaryRgb = this.hexToRgb(primaryColor || '#3B82F6');
     const foreignRgb = this.hexToRgb(foreignColor || '#60A5FA');
+
+    // Convert angle to radians
+    const angleRad = (gradientAngle * Math.PI) / 180;
 
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const index = (y * size + x) * 4;
 
-        // Normalize coordinates to 0-1
-        const nx = x / size;
-        const ny = y / size;
+        // Normalize coordinates to [-1, 1]
+        const nx = (x / (size - 1)) * 2 - 1;
+        const ny = (y / (size - 1)) * 2 - 1;
 
-        // Create wave pattern
-        const wave1 = Math.sin(nx * frequency1 * Math.PI * 2 + phase1) * amplitude1;
-        const wave2 = Math.sin(ny * frequency2 * Math.PI * 2 + phase2) * amplitude2;
-        const combinedWave = (wave1 + wave2) / 2;
+        // Calculate position along gradient direction
+        const t = (nx * Math.cos(angleRad) + ny * Math.sin(angleRad) + 1) / 2;
+        const clampedT = Math.max(0, Math.min(1, t));
 
-        // Create radial pattern
-        const centerX = 0.5;
-        const centerY = 0.5;
-        const distance = Math.sqrt((nx - centerX) ** 2 + (ny - centerY) ** 2);
-        const radialPattern = Math.sin(distance * Math.PI * 4) * 0.3;
+        // Interpolate between colors
+        const r = Math.round(primaryRgb.r + (foreignRgb.r - primaryRgb.r) * clampedT);
+        const g = Math.round(primaryRgb.g + (foreignRgb.g - primaryRgb.g) * clampedT);
+        const b = Math.round(primaryRgb.b + (foreignRgb.b - primaryRgb.b) * clampedT);
 
-        // Combine patterns
-        const pattern = combinedWave + radialPattern;
-
-        // Determine if pixel should be primary or foreign color
-        const isPrimary = pattern > 0;
-
-        const color = isPrimary ? primaryRgb : foreignRgb;
-
-        canvas[index] = color.r;
-        canvas[index + 1] = color.g;
-        canvas[index + 2] = color.b;
+        canvas[index] = r;
+        canvas[index + 1] = g;
+        canvas[index + 2] = b;
         canvas[index + 3] = 255;
       }
     }

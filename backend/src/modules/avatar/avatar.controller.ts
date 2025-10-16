@@ -20,6 +20,7 @@ import {
   GetAvatarDto,
   ListAvatarsDto,
 } from './dto/generate-avatar.dto';
+import { GenerateAvatarV2Dto } from './dto/generate-avatar-v2.dto';
 
 @ApiTags('Avatar')
 @Controller()
@@ -37,6 +38,30 @@ export class AvatarController {
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Avatar generated successfully',
+        data: result,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Post('v2/generate')
+  @ApiOperation({ summary: 'Generate gradient avatar (API v2)' })
+  @ApiResponse({ status: 201, description: 'Gradient avatar generated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid parameters' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async generateAvatarV2(@Body() dto: GenerateAvatarV2Dto) {
+    try {
+      const result = await this.avatarService.generateAvatarV2(dto);
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Gradient avatar generated successfully',
         data: result,
       };
     } catch (error) {
