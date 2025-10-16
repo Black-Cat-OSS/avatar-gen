@@ -456,7 +456,7 @@ export const AvatarGeneratorForm = () => {
               {t('features.avatarGenerator.angle')}
             </label>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
               {/* Angle presets */}
               <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-2 gap-2">
@@ -486,14 +486,14 @@ export const AvatarGeneratorForm = () => {
               </div>
               
               {/* Interactive angle visualizer */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-full">
                 <AngleVisualizer
                   angle={formData.angle}
                   onChange={(angle) => handleInputChange('angle', angle)}
-                  size={156}
+                  size={230}
                 />
                 <p className="text-xs text-muted-foreground text-center mt-2">
-                  {t('features.avatarGenerator.angleDescription')}
+                  Drag to rotate • {t('features.avatarGenerator.angleDescription')}
                 </p>
               </div>
             </div>

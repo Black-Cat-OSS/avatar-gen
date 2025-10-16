@@ -263,11 +263,6 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
         </text>
       </svg>
 
-      {!readonly && (
-        <p className="text-xs text-muted-foreground text-center">
-          Drag to rotate
-        </p>
-      )}
     </div>
   );
 };
