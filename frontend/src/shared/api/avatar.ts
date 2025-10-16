@@ -63,7 +63,15 @@ export const avatarApi = {
   },
 
   generate: async (params: GenerateAvatarParams): Promise<GenerateAvatarResponse> => {
-    const response = await apiClient.post<GenerateAvatarResponse>('/api/v1/generate', params);
+    // Use v2 endpoint for gradient generator, v1 for others
+    const endpoint = params.type === 'gradient' ? '/api/v2/generate' : '/api/v1/generate';
+    
+    // Remove angle parameter for v1 requests
+    const requestParams = params.type === 'gradient' 
+      ? params 
+      : { ...params, angle: undefined };
+    
+    const response = await apiClient.post<GenerateAvatarResponse>(endpoint, requestParams);
     return response.data;
   },
 
