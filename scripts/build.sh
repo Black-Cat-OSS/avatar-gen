@@ -1,21 +1,46 @@
 #!/bin/bash
 
 # Build script for Docker images
-# Usage: ./build.sh [profile]
+# Usage: ./build.sh [options] [profile]
 # profile: sqlite (default) | postgresql
+# options: --cache (use cache for faster build)
 
 set -e
 
-PROFILE="${1:-sqlite}"
+PROFILE="sqlite"
+USE_CACHE=""
+
+# Parse options
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --cache)
+            USE_CACHE="true"
+            shift
+            ;;
+        sqlite|postgresql)
+            PROFILE="$1"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo ""
+            echo "Usage: ./build.sh [options] [profile]"
+            echo ""
+            echo "Options:"
+            echo "  --cache     Use cache for faster build"
+            echo ""
+            echo "Profiles:"
+            echo "  sqlite      SQLite database (default)"
+            echo "  postgresql  PostgreSQL database"
+            exit 1
+            ;;
+    esac
+done
 
 echo "🚀 Building Docker images..."
 echo "📦 Profile: $PROFILE"
-
-# Validate profile
-if [ "$PROFILE" != "sqlite" ] && [ "$PROFILE" != "postgresql" ]; then
-    echo "❌ Invalid profile: $PROFILE"
-    echo "Valid profiles: sqlite, postgresql"
-    exit 1
+if [ "$USE_CACHE" = "true" ]; then
+    echo "⚡ Using cache for faster build..."
 fi
 
 # Change to project root
@@ -31,13 +56,19 @@ fi
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
+# Set cache options
+CACHE_FLAG=""
+if [ "$USE_CACHE" != "true" ]; then
+    CACHE_FLAG="--no-cache"
+fi
+
 # Build with docker-compose in parallel
 if [ "$PROFILE" = "sqlite" ]; then
     echo "🔨 Building with default profile (SQLite + local storage)..."
-    docker-compose -f docker/docker-compose.yml build --parallel
+    docker-compose -f docker/docker-compose.yml build --parallel $CACHE_FLAG
 elif [ "$PROFILE" = "postgresql" ]; then
     echo "🔨 Building with PostgreSQL profile..."
-    docker-compose -f docker/docker-compose.yml --profile postgresql build --parallel
+    docker-compose -f docker/docker-compose.yml --profile postgresql build --parallel $CACHE_FLAG
 fi
 
 # Show image sizes

@@ -8,6 +8,8 @@
 #   --db TYPE           Database type: sqlite (default) | postgresql | postgresql-external
 #   --storage TYPE      Storage type: local (default) | s3
 #   --build | -b        Rebuild images before starting
+#   --dev | -d          Start in development mode (detached)
+#   --logs              Show logs after starting
 #
 # Examples:
 #   ./start.sh                                      # SQLite + local storage
@@ -16,6 +18,8 @@
 #   ./start.sh --storage s3                         # SQLite + S3 storage
 #   ./start.sh --db postgresql --storage s3         # PostgreSQL + S3 storage
 #   ./start.sh --db postgresql --storage s3 -b      # PostgreSQL + S3 + rebuild
+#   ./start.sh --dev                                # Development mode (detached)
+#   ./start.sh --dev --logs                         # Dev mode + show logs
 #
 # Note: For postgresql-external, set DATABASE_URL environment variable first:
 #   export DATABASE_URL=postgresql://user:password@host:5432/dbname
@@ -26,6 +30,8 @@ set -e
 DB_TYPE="sqlite"
 BUILD_FLAG=""
 STORAGE_TYPE="local"
+DEV_MODE=""
+SHOW_LOGS=""
 
 # Parse options
 while [ $# -gt 0 ]; do
@@ -42,6 +48,14 @@ while [ $# -gt 0 ]; do
             BUILD_FLAG="--build"
             shift
             ;;
+        --dev|-d)
+            DEV_MODE="true"
+            shift
+            ;;
+        --logs)
+            SHOW_LOGS="true"
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             echo ""
@@ -51,6 +65,8 @@ while [ $# -gt 0 ]; do
             echo "  --db TYPE        Database type: sqlite (default) | postgresql | postgresql-external"
             echo "  --storage TYPE   Storage type: local (default) | s3"
             echo "  --build | -b     Rebuild images before starting"
+            echo "  --dev | -d       Start in development mode (detached)"
+            echo "  --logs           Show logs after starting"
             echo ""
             echo "Note: For postgresql-external, set DATABASE_URL first:"
             echo "  export DATABASE_URL=postgresql://user:password@host:5432/dbname"
@@ -62,6 +78,9 @@ done
 echo "🚀 Starting Avatar Generator..."
 echo "📦 Database: $DB_TYPE"
 echo "💾 Storage: $STORAGE_TYPE"
+if [ "$DEV_MODE" = "true" ]; then
+    echo "🔧 Development mode: detached"
+fi
 
 # Validate database type
 if [ "$DB_TYPE" != "sqlite" ] && [ "$DB_TYPE" != "postgresql" ] && [ "$DB_TYPE" != "postgresql-external" ]; then
@@ -150,7 +169,13 @@ echo "   DATABASE_URL=$DATABASE_URL"
 echo "   STORAGE_TYPE=$STORAGE_TYPE"
 echo ""
 
-docker-compose -f docker/docker-compose.yml $PROFILE_FLAG up $BUILD_FLAG
+# Determine startup mode
+START_MODE=""
+if [ "$DEV_MODE" = "true" ]; then
+    START_MODE="-d"
+fi
+
+docker-compose -f docker/docker-compose.yml $PROFILE_FLAG up $BUILD_FLAG $START_MODE
 
 echo ""
 echo "✅ Services started!"
@@ -160,3 +185,10 @@ echo "🌐 Frontend: https://localhost:12745/"
 echo "🌐 Backend API: https://localhost:12745/api"
 echo "📚 Swagger docs: https://localhost:12745/api/swagger"
 echo "📊 Health check: https://localhost:12745/api/health"
+
+# Show logs if requested
+if [ "$SHOW_LOGS" = "true" ]; then
+    echo ""
+    echo "📋 Showing logs..."
+    docker-compose -f docker/docker-compose.yml $PROFILE_FLAG logs -f --timestamps
+fi
