@@ -1,18 +1,18 @@
-## [0.0.5](https://github.com/letnull19A/avatar-gen/compare/v0.0.4...v0.0.5) (2025-10-15)
+## [0.0.7](https://github.com/letnull19A/avatar-gen/compare/v0.0.4...v0.0.7) (2025-10-16)
 
 ### Features
 
-- Add automatic changelog generation
-  ([d7f7245](https://github.com/letnull19A/avatar-gen/commit/d7f724555ae0e8e6ff9720f23ab30f5a816eb4cd))
+- Added automatic changelog generation
+  ([7a6e45a](https://github.com/letnull19A/avatar-gen/commit/7a6e45a3e8414d3b158ea96ccc66e96392c6f420))
 - Added third test file for unreleased changelog
   ([3f35f81](https://github.com/letnull19A/avatar-gen/commit/3f35f81972f079f63541fff63dcb4b1fdf784fe0))
 
 ### Bug Fixes
 
-- Fix duplicate version sections in changelog
-  ([addc506](https://github.com/letnull19A/avatar-gen/commit/addc506810bb093537eaff67561356a0ab75010a))
-- Simplify changelog update script
-  ([91ae04a](https://github.com/letnull19A/avatar-gen/commit/91ae04abc4f79281571ba70dcc1438f6b410def9))
+- **ci:** Fixed warning deprecation message
+  ([4b48fa0](https://github.com/letnull19A/avatar-gen/commit/4b48fa0d27174acc2abab9e70da646c2be661134))
+- **config:** Added scripts scope
+  ([b5d9bd3](https://github.com/letnull19A/avatar-gen/commit/b5d9bd3d97957dc4330b5e662efe0d4ed425a84c))
 
 ## [0.0.4](https://github.com/letnull19A/avatar-gen/compare/v0.0.3...v0.0.4) (2025-10-15)
 
