@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 interface AngleVisualizerProps {
   /**
@@ -13,6 +13,10 @@ interface AngleVisualizerProps {
    * Size of the visualizer in pixels
    */
   size?: number;
+  /**
+   * If true, component is read-only (no interaction)
+   */
+  readonly?: boolean;
 }
 
 /**
@@ -26,6 +30,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   angle,
   onChange,
   size = 120,
+  readonly = false,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const lineRef = useRef<SVGLineElement>(null);
@@ -43,10 +48,9 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   useEffect(() => {
     const checkTheme = () => {
       const hasDarkClass = document.documentElement.classList.contains('dark');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       // Only use class-based detection, ignore system preference
       const isDarkTheme = hasDarkClass;
-      console.log('Theme check:', { hasDarkClass, prefersDark, isDarkTheme });
+      // console.log('Theme check:', { hasDarkClass, isDarkTheme });
       setIsDark(isDarkTheme);
     };
 
@@ -69,7 +73,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   }, []);
 
   // Update visual elements directly in DOM without React re-render
-  const updateVisualElements = (newAngle: number) => {
+  const updateVisualElements = useCallback((newAngle: number) => {
     const angleRad = ((newAngle - 90) * Math.PI) / 180;
     const x1 = centerX + radius * Math.cos(angleRad);
     const y1 = centerY + radius * Math.sin(angleRad);
@@ -111,23 +115,10 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
     if (textRef.current) {
       textRef.current.setAttribute('fill', isDark ? 'black' : 'white');
     }
-  };
-
-  // Update visuals when prop changes
-  useEffect(() => {
-    updateVisualElements(angle);
-  }, [angle, isDark]);
-
-  // Cleanup global event listeners on unmount
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-    };
-  }, []);
+  }, [isDark, centerX, centerY, radius]);
 
   // Global mouse event handlers for continuous dragging
-  const handleGlobalMouseMove = (e: MouseEvent) => {
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
     if (!isDraggingRef.current || !svgRef.current) return;
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -145,9 +136,9 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
     
     // Notify parent component
     onChange(Math.round(normalizedAngle));
-  };
+  }, [updateVisualElements, onChange]);
 
-  const handleGlobalMouseUp = () => {
+  const handleGlobalMouseUp = useCallback(() => {
     isDraggingRef.current = false;
     if (svgRef.current) {
       svgRef.current.style.cursor = 'grab';
@@ -156,9 +147,24 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
     // Remove global event listeners
     document.removeEventListener('mousemove', handleGlobalMouseMove);
     document.removeEventListener('mouseup', handleGlobalMouseUp);
-  };
+  }, [handleGlobalMouseMove]);
+
+  // Update visuals when prop changes
+  useEffect(() => {
+    updateVisualElements(angle);
+  }, [angle, isDark, updateVisualElements]);
+
+  // Cleanup global event listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [handleGlobalMouseMove, handleGlobalMouseUp]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (readonly) return;
+    
     isDraggingRef.current = true;
     if (svgRef.current) {
       svgRef.current.style.cursor = 'grabbing';
@@ -173,11 +179,12 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   };
 
   const handleMouseUp = () => {
+    if (readonly) return;
     handleGlobalMouseUp();
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current) return;
+    if (readonly || !isDraggingRef.current) return;
     handleGlobalMouseMove(e.nativeEvent);
   };
 
@@ -195,7 +202,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onMouseMove={handleMouseMove}
-        className="cursor-grab select-none"
+        className={`select-none ${readonly ? 'cursor-default' : 'cursor-grab'}`}
       >
         {/* Circle border */}
         <circle
@@ -228,7 +235,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           cy={centerY}
           r="8"
           fill="currentColor"
-          className="text-primary hover:r-10"
+          className={`text-primary ${readonly ? '' : 'hover:r-10'}`}
         />
 
         {/* Background rectangle for text */}
@@ -256,9 +263,11 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
         </text>
       </svg>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Drag to rotate
-      </p>
+      {!readonly && (
+        <p className="text-xs text-muted-foreground text-center">
+          Drag to rotate
+        </p>
+      )}
     </div>
   );
 };

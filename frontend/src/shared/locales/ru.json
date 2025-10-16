@@ -201,8 +201,9 @@
         "gradient": "Градиент",
         "gradientDescription": "Линейный градиентный узор"
       },
-      "angle": "Угол поворота",
-      "angleDescription": "Направление градиента (0-360°)"
+          "angle": "Угол поворота",
+          "angleDescription": "Направление градиента (0-360°)",
+          "anglePresets": "Быстрые пресеты"
     }
   },
   "login": {

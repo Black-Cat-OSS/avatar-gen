@@ -456,18 +456,47 @@ export const AvatarGeneratorForm = () => {
               {t('features.avatarGenerator.angle')}
             </label>
             
-            {/* Interactive angle visualizer */}
-            <div className="flex justify-center">
-              <AngleVisualizer
-                angle={formData.angle}
-                onChange={(angle) => handleInputChange('angle', angle)}
-                size={120}
-              />
+            <div className="flex items-center gap-4">
+              {/* Angle presets */}
+              <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((presetAngle) => (
+                    <button
+                      key={presetAngle}
+                      type="button"
+                      onClick={() => handleInputChange('angle', presetAngle)}
+                      className={`p-2 rounded border transition-all ${
+                        formData.angle === presetAngle
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <AngleVisualizer
+                        angle={presetAngle}
+                        onChange={() => {}} // Readonly
+                        size={60}
+                        readonly={true}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  {t('features.avatarGenerator.anglePresets')}
+                </p>
+              </div>
+              
+              {/* Interactive angle visualizer */}
+              <div className="flex flex-col items-center">
+                <AngleVisualizer
+                  angle={formData.angle}
+                  onChange={(angle) => handleInputChange('angle', angle)}
+                  size={120}
+                />
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  {t('features.avatarGenerator.angleDescription')}
+                </p>
+              </div>
             </div>
-            
-            <p className="text-xs text-muted-foreground text-center">
-              {t('features.avatarGenerator.angleDescription')}
-            </p>
           </div>
         )}
 

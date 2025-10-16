@@ -201,8 +201,9 @@
         "gradient": "Gradient",
         "gradientDescription": "Linear gradient pattern"
       },
-      "angle": "Rotation angle",
-      "angleDescription": "Gradient direction (0-360°)"
+          "angle": "Rotation angle",
+          "angleDescription": "Gradient direction (0-360°)",
+          "anglePresets": "Quick presets"
     }
   },
   "login": {
