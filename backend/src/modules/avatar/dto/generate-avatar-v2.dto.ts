@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength, IsNumber, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -25,14 +25,6 @@ export class GenerateAvatarV2Dto {
   @IsString()
   colorScheme?: string;
 
-  @ApiPropertyOptional({
-    description: 'Seed for avatar generation (max 32 characters)',
-    maxLength: 32,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(32, { message: 'Seed must not exceed 32 characters' })
-  seed?: string;
 
   @ApiProperty({
     description: 'Gradient rotation angle in degrees (0-360)',

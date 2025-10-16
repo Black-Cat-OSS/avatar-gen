@@ -62,7 +62,8 @@ export class GradientGeneratorModule implements IGeneratorStrategy {
       }
     }
 
-    const uniqueSeed = seed ? seed + '-' + Date.now() + '-' + Math.random() : uuidv4();
+    // Gradient generator doesn't use seed for reproducibility
+    const uniqueSeed = uuidv4();
 
     // Generate images for all required sizes (4n to 9n)
     const avatarObject: AvatarObject = {
@@ -125,11 +126,8 @@ export class GradientGeneratorModule implements IGeneratorStrategy {
   ): Promise<Buffer> {
     const canvas = Buffer.alloc(size * size * 4);
 
-    const randomSeed = seed ? this.seedToNumber(seed) : Math.random();
-    const rng = this.createSeededRandom(randomSeed);
-
-    // Use provided angle or generate from seed
-    const gradientAngle = angle !== undefined ? angle : rng() * 360;
+    // Use provided angle directly (gradient doesn't use random generation)
+    const gradientAngle = angle !== undefined ? angle : 90; // Default to 90° if no angle provided
 
     const primaryRgb = this.hexToRgb(primaryColor || '#3B82F6');
     const foreignRgb = this.hexToRgb(foreignColor || '#60A5FA');

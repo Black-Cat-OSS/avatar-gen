@@ -81,7 +81,7 @@ export class AvatarService {
         dto.primaryColor,
         dto.foreignColor,
         dto.colorScheme,
-        dto.seed,
+        undefined, // Gradient generator doesn't use seed
         'gradient',
         dto.angle,
       );
@@ -97,7 +97,7 @@ export class AvatarService {
         primaryColor: dto.primaryColor,
         foreignColor: dto.foreignColor,
         colorScheme: dto.colorScheme,
-        seed: dto.seed,
+        seed: undefined, // Gradient generator doesn't use seed
         generatorType: 'gradient',
       });
 
