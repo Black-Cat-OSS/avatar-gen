@@ -165,9 +165,9 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           cy={centerY}
           r={radius}
           fill="none"
-          stroke="hsl(var(--muted-foreground))"
+          stroke="currentColor"
           strokeWidth="2"
-          className="opacity-30"
+          className="text-muted-foreground/30"
         />
 
         {/* Rotating diameter line */}
@@ -177,9 +177,10 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           y1={centerY}
           x2={centerX - radius}
           y2={centerY}
-          stroke="hsl(var(--primary))"
+          stroke="currentColor"
           strokeWidth="3"
           strokeLinecap="round"
+          className="text-primary"
         />
 
         {/* Draggable handle on end */}
@@ -188,8 +189,8 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           cx={centerX + radius}
           cy={centerY}
           r="8"
-          fill="hsl(var(--primary))"
-          className="hover:r-10"
+          fill="currentColor"
+          className="text-primary hover:r-10"
         />
 
         {/* Background rectangle for text */}
@@ -200,10 +201,8 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           width="40"
           height="16"
           rx="4"
-          fill="hsl(var(--background))"
-          stroke="hsl(var(--border))"
-          strokeWidth="1"
-          className="opacity-95"
+          fill="currentColor"
+          className="text-background/95"
         />
 
         {/* Angle text in center */}
@@ -213,7 +212,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           y={centerY + 4}
           textAnchor="middle"
           className="text-xs font-bold"
-          style={{ fill: 'hsl(var(--foreground))' }}
+          fill="hsl(var(--foreground))"
         >
           {angle}°
         </text>
