@@ -1,18 +1,19 @@
 # Docker Compose Configuration
 
-Конфигурация Docker Compose для полного запуска проекта Avatar Generation.
+Конфигурация Docker Compose для запуска Avatar Generator.
 
 ## 🏗️ Архитектура
 
 ```
 ┌─────────────────────────────────────────────────┐
-│           avatar-gen-network (bridge)           │
+│           Gateway (Nginx SSL/TLS)               │
+│           Port: 80 (HTTP), 12745 (HTTPS)        │
 ├─────────────────────────────────────────────────┤
 │                                                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌───────┐│
 │  │   Frontend   │  │   Backend    │  │Postgre││
 │  │   (Nginx)    │→ │   (NestJS)   │→ │  SQL  ││
-│  │   :80, :443  │  │    :3000     │  │ :5432 ││
+│  │   :8080      │  │    :3000     │  │ :5432 ││
 │  └──────────────┘  └──────────────┘  └───────┘│
 │                                                 │
 └─────────────────────────────────────────────────┘
@@ -22,7 +23,7 @@
 
 ### 1. PostgreSQL (`postgres`)
 
-**Образ:** `postgres:15-alpine`  
+**Образ:** `postgres:17-alpine`  
 **Порт:** `5432`  
 **Назначение:** База данных (опциональная, можно использовать SQLite)
 
@@ -89,7 +90,7 @@ start_period: 40s
 
 **Build Context:** `../frontend`  
 **Dockerfile:** `frontend/docker/Dockerfile` (относительно context)  
-**Порты:** `80`, `443`  
+**Порты:** `8080`  
 **Назначение:** Nginx веб-сервер с React SPA
 
 **Volumes:**
@@ -110,75 +111,81 @@ start_period: 10s
 
 ### Профили конфигурации
 
-Проект поддерживает два профиля для разных баз данных:
+Проект поддерживает профили для разных сценариев использования:
 
-#### Профиль SQLite (по умолчанию)
+#### SQLite (по умолчанию)
 
-Используется для разработки и простых сценариев без PostgreSQL.
+Используется для разработки и простых сценариев.
 
 ```bash
-# Запустить с профилем SQLite
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml up -d
-
-# Или используйте скрипты
-./scripts/start.sh sqlite
+# Запустить с SQLite
+docker compose -f docker/docker-compose.yml up -d
 ```
 
-#### Профиль PostgreSQL
+#### PostgreSQL
 
-Используется для production окружения с полноценной PostgreSQL базой данных.
+Используется для production окружения.
 
 ```bash
-# Запустить с профилем PostgreSQL
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.postgresql.yml --profile postgresql up -d
+# Запустить с PostgreSQL
+docker compose -f docker/docker-compose.yml --profile postgresql up -d
+```
 
-# Или используйте скрипты
-./scripts/start.sh postgresql
+#### Development
+
+Используется для разработки с дополнительными сервисами.
+
+```bash
+# Полный стек для разработки
+docker compose -f docker/docker-compose.dev.yml --profile i-am-fullstack up -d
+
+# Только frontend разработка
+docker compose -f docker/docker-compose.dev.yml --profile i-am-frontender up -d
 ```
 
 ### Быстрый старт
 
 ```bash
-# Запустить все сервисы (профиль sqlite по умолчанию)
-docker-compose up -d
+# Запустить все сервисы (SQLite по умолчанию)
+docker compose -f docker/docker-compose.yml up -d
 
 # Просмотр логов
-docker-compose logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # Остановить все сервисы
-docker-compose down
+docker compose -f docker/docker-compose.yml down
 
 # Остановить и удалить volumes
-docker-compose down -v
+docker compose -f docker/docker-compose.yml down -v
 ```
 
 ### Запуск отдельных сервисов
 
 ```bash
 # Только backend с SQLite
-docker-compose --profile sqlite up avatar-backend
+docker compose -f docker/docker-compose.yml up avatar-backend
 
 # Только backend с PostgreSQL
-docker-compose --profile postgresql up avatar-backend
+docker compose -f docker/docker-compose.yml --profile postgresql up avatar-backend
 
 # Только frontend
-docker-compose up avatar-frontend
+docker compose -f docker/docker-compose.yml up avatar-frontend
 
 # PostgreSQL отдельно (только для профиля postgresql)
-docker-compose --profile postgresql up postgres
+docker compose -f docker/docker-compose.yml --profile postgresql up postgres
 ```
 
 ### Пересборка образов
 
 ```bash
 # Пересобрать все сервисы
-docker-compose build
+docker compose -f docker/docker-compose.yml build
 
 # Пересобрать конкретный сервис
-docker-compose build avatar-backend
+docker compose -f docker/docker-compose.yml build avatar-backend
 
 # Пересобрать и запустить
-docker-compose up --build
+docker compose -f docker/docker-compose.yml up --build
 ```
 
 ## ⚙️ Конфигурация
@@ -225,10 +232,10 @@ app:
 
 ```bash
 # Использовать SQLite (по умолчанию)
-docker-compose --profile sqlite up -d
+docker compose -f docker/docker-compose.yml up -d
 
 # Использовать PostgreSQL
-docker-compose --profile postgresql up -d
+docker compose -f docker/docker-compose.yml --profile postgresql up -d
 ```
 
 ### Миграции базы данных
@@ -237,10 +244,10 @@ docker-compose --profile postgresql up -d
 
 ```bash
 # Миграция для SQLite
-docker-compose --profile sqlite run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run prisma:migrate
 
 # Миграция для PostgreSQL
-docker-compose --profile postgresql run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml --profile postgresql run --rm avatar-backend npm run prisma:migrate
 ```
 
 ### Изменение портов
@@ -248,14 +255,14 @@ docker-compose --profile postgresql run --rm avatar-backend npm run prisma:migra
 ```yaml
 # В docker-compose.yml
 services:
-  avatar-backend:
+  gateway:
     ports:
-      - '8080:3000' # Host:Container
+      - '80:80' # HTTP
+      - '12745:12745' # HTTPS
 
   avatar-frontend:
     ports:
-      - '8000:80' # HTTP
-      - '8443:443' # HTTPS
+      - '8080:8080' # Frontend direct access
 ```
 
 ### Настройка ресурсов
@@ -291,10 +298,10 @@ docker volume inspect avatar-gen_postgres_data
 
 ```bash
 # Создать backup
-docker-compose exec postgres pg_dump -U postgres avatar_gen > backup.sql
+docker compose -f docker/docker-compose.yml exec postgres pg_dump -U postgres avatar_gen > backup.sql
 
 # Восстановить backup
-docker-compose exec -T postgres psql -U postgres avatar_gen < backup.sql
+docker compose -f docker/docker-compose.yml exec -T postgres psql -U postgres avatar_gen < backup.sql
 ```
 
 ### Backup SQLite
@@ -310,13 +317,13 @@ cp backend/storage/database/database.sqlite backend/backups/database_$(date +%Y%
 
 ```bash
 # Просмотр логов
-docker-compose logs avatar-backend
+docker compose -f docker/docker-compose.yml logs avatar-backend
 
 # Проверка статуса
-docker-compose ps
+docker compose -f docker/docker-compose.yml ps
 
 # Рестарт сервиса
-docker-compose restart avatar-backend
+docker compose -f docker/docker-compose.yml restart avatar-backend
 ```
 
 ### Проблема: Backend не может подключиться к PostgreSQL
@@ -332,19 +339,19 @@ Error: Can't reach database server at postgres:5432
 1. Проверьте, что PostgreSQL запущен:
 
 ```bash
-docker-compose ps postgres
+docker compose -f docker/docker-compose.yml ps postgres
 ```
 
 2. Проверьте health check:
 
 ```bash
-docker-compose exec postgres pg_isready -U postgres
+docker compose -f docker/docker-compose.yml exec postgres pg_isready -U postgres
 ```
 
 3. Проверьте переменные окружения:
 
 ```bash
-docker-compose config | grep -A 5 -B 5 "environment:"
+docker compose -f docker/docker-compose.yml config | grep -A 5 -B 5 "environment:"
 ```
 
 ### Проблема: Порты заняты
@@ -381,9 +388,9 @@ ports:
 docker inspect avatar-gen-backend | grep -A 10 Health
 
 # Отключите restart для отладки
-docker-compose up --no-start
-docker-compose start avatar-backend
-docker-compose logs -f avatar-backend
+docker compose -f docker/docker-compose.yml up --no-start
+docker compose -f docker/docker-compose.yml start avatar-backend
+docker compose -f docker/docker-compose.yml logs -f avatar-backend
 ```
 
 ### Проблема: Нет доступа к volumes
@@ -401,7 +408,7 @@ Error: EACCES: permission denied
 sudo chown -R $USER:$USER backend/storage backend/prisma/storage
 
 # Или запустить контейнер от текущего пользователя
-docker-compose run --user $(id -u):$(id -g) avatar-backend
+docker compose -f docker/docker-compose.yml run --user $(id -u):$(id -g) avatar-backend
 ```
 
 ## 🔒 Security
@@ -437,16 +444,16 @@ secrets:
 
 ```bash
 # Все сервисы
-docker-compose logs
+docker compose -f docker/docker-compose.yml logs
 
 # С отслеживанием
-docker-compose logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # Конкретный сервис
-docker-compose logs -f avatar-backend
+docker compose -f docker/docker-compose.yml logs -f avatar-backend
 
 # Последние 100 строк
-docker-compose logs --tail=100
+docker compose -f docker/docker-compose.yml logs --tail=100
 ```
 
 ### Статистика ресурсов
@@ -456,14 +463,14 @@ docker-compose logs --tail=100
 docker stats
 
 # Или через docker-compose
-docker-compose top
+docker compose -f docker/docker-compose.yml top
 ```
 
 ### Health Check Status
 
 ```bash
 # Статус всех контейнеров
-docker-compose ps
+docker compose -f docker/docker-compose.yml ps
 
 # Детальная информация о health check
 docker inspect --format='{{json .State.Health}}' avatar-gen-backend | jq
@@ -589,40 +596,38 @@ services:
 
 ```bash
 # Проверка конфигурации
-docker-compose config
+docker compose -f docker/docker-compose.yml config
 
 # Валидация файла
-docker-compose config --quiet
+docker compose -f docker/docker-compose.yml config --quiet
 
 # Список запущенных контейнеров
-docker-compose ps
+docker compose -f docker/docker-compose.yml ps
 
 # Список всех контейнеров (включая остановленные)
-docker-compose ps -a
+docker compose -f docker/docker-compose.yml ps -a
 
 # Выполнить команду в контейнере
-docker-compose exec avatar-backend sh
+docker compose -f docker/docker-compose.yml exec avatar-backend sh
 
 # Создать новый контейнер для выполнения команды
-docker-compose run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run prisma:migrate
 
 # Пересоздать контейнеры
-docker-compose up --force-recreate
+docker compose -f docker/docker-compose.yml up --force-recreate
 
 # Удалить все (контейнеры, сети, volumes)
-docker-compose down -v --remove-orphans
+docker compose -f docker/docker-compose.yml down -v --remove-orphans
 ```
 
 ## 🔗 Связанные документы
 
-- [Backend Dockerfile](../../backend/docker/README.md)
 - [Docker README](../../docker/README.md)
-- [Docker Build Fixes](../../docker/DOCKER_BUILD_FIXES.md)
-- [Scripts Documentation](./SCRIPTS.md)
+- [Docker Guide](README.md)
 - [Backend README](../../backend/README.md)
 - [Frontend README](../../frontend/README.md)
 
 ---
 
-**Последнее обновление:** 2025-10-03  
-**Версия:** 2.0 (обновлены пути после реорганизации)
+**Последнее обновление:** 2025-01-15  
+**Версия:** 3.1 (добавлена поддержка S3 Storage и Gateway)

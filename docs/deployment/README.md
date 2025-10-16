@@ -1,168 +1,230 @@
-# Руководство по развертыванию
+# Docker Guide
 
-Документация по развертыванию Avatar Generator в различных окружениях.
+## 🎯 Обзор
 
-## 📚 Содержание
+Руководство по использованию Docker для Avatar Generator.
 
-### Docker
+## 🚀 Быстрый старт
 
-- **[Docker Compose Configuration](./DOCKER_COMPOSE.md)** ✅  
-  Детальное руководство по docker-compose конфигурации
-
-- **[Docker README](../../docker/README.md)** ✅  
-  Основная документация Docker (compose файлы, структура)
-
-- **[Docker Build Fixes](../../docker/DOCKER_BUILD_FIXES.md)** ✅  
-  Решение проблем при сборке образов
-
-### Скрипты управления
-
-- **[Scripts Documentation](./SCRIPTS.md)** ✅  
-  Полная документация всех скриптов управления
-
-### Production развертывание
-
-- **[Deployment Guide](./DEPLOYMENT_GUIDE.md)** ✅  
-  Полное руководство по развертыванию в различных окружениях
-
-- **[Production Guide](./production.md)** 🟡 Создается  
-  Рекомендации для production развертывания
-
-## 🚀 Быстрое развертывание
-
-### Локальное развертывание (Docker)
+### Docker (рекомендуется)
 
 ```bash
-# SQLite (рекомендуется для разработки)
-./scripts/build.sh sqlite
-./scripts/start.sh sqlite
+# Клонируйте репозиторий
+git clone https://github.com/letnull19A/avatar-gen.git
+cd avatar-gen
 
-# PostgreSQL (рекомендуется для production)
-./scripts/build.sh postgresql
-./scripts/start.sh postgresql
+# Запустите все сервисы
+docker compose -f docker/docker-compose.yml up -d
+
+# Откройте в браузере
+open https://localhost:12745
 ```
 
-### Автоматическая генерация конфигурации
-
-При запуске приложения автоматически выполняется:
-
-1. **Генерация `.env` файла** - создается на основе YAML конфигурации
-2. **Выбор правильной схемы Prisma** - автоматически переключается между
-   SQLite/PostgreSQL
-3. **Генерация Prisma Client** - с правильным провайдером базы данных
-4. **Синхронизация схемы БД** - выполняется `prisma db push`
-
-**Важно:** `.env` файл генерируется автоматически и не должен попадать в
-исходный код.
-
-### Доступ к сервисам
-
-После запуска сервисы будут доступны:
-
-- **Frontend:** http://localhost
-- **Backend API:** http://localhost:3000
-- **Swagger:** http://localhost:3000/swagger
-- **Health Check:** http://localhost:3000/api/health
-
-## 📦 Профили развертывания
-
-### SQLite профиль
-
-**Когда использовать:**
-
-- Разработка и тестирование
-- Небольшие развертывания
-- Прототипирование
-
-**Запуск:**
+### Локальная установка
 
 ```bash
-./scripts/start.sh sqlite
+# Установите зависимости
+pnpm install
+
+# Запустите в dev режиме
+pnpm run dev
+
+# Откройте в браузере
+open http://localhost:5173
 ```
 
-### PostgreSQL профиль
+## 🐳 Docker Compose конфигурации
 
-**Когда использовать:**
+### Базовая конфигурация
 
-- Production окружение
-- Высокие нагрузки
-- Требуется масштабирование
+```yaml
+# docker/docker-compose.yml
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - '12745:12745' # HTTPS
+    depends_on:
+      - avatar-frontend
+      - avatar-backend
+    volumes:
+      - ./gateway/configs:/etc/nginx/conf.d
 
-**Запуск:**
+  avatar-backend:
+    build: ./backend
+    expose:
+      - '3000'
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/settings.yaml:/app/settings.yaml:ro
 
-```bash
-./scripts/start.sh postgresql
+  avatar-frontend:
+    build: ./frontend
+    expose:
+      - '8080'
+    depends_on:
+      - avatar-backend
+
+  postgres:
+    image: postgres:17-alpine
+    profiles:
+      - postgresql
+    environment:
+      POSTGRES_DB: avatar_gen
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
 ```
 
-## 🐳 Docker команды
+### Профили конфигурации
 
-### Управление через скрипты
+#### SQLite (по умолчанию)
 
 ```bash
-./scripts/build.sh [profile]        # Сборка образов
-./scripts/build-fast.sh [profile]   # Быстрая сборка (с кэшем)
-./scripts/start.sh [profile]        # Запуск сервисов
-./scripts/dev.sh [profile]          # Dev режим (фоновый)
-./scripts/stop.sh [--volumes]       # Остановка
-./scripts/logs.sh [service]         # Просмотр логов
-./scripts/clean.sh                  # Очистка Docker
+# Запуск с SQLite (без PostgreSQL)
+docker compose -f docker/docker-compose.yml up -d
 ```
 
-### Прямые Docker команды
+**Особенности:**
+
+- ✅ Быстрый запуск
+- ✅ Не требует внешних сервисов
+- ✅ Данные сохраняются в файле
+- ❌ Не подходит для production
+
+#### PostgreSQL
 
 ```bash
-# SQLite
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.sqlite.yml up
+# Запуск с PostgreSQL
+docker compose -f docker/docker-compose.yml --profile postgresql up -d
+```
 
-# PostgreSQL
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.postgresql.yml --profile postgresql up
+**Особенности:**
+
+- ✅ Полноценная БД
+- ✅ Подходит для production
+- ✅ Масштабируемость
+- ❌ Требует больше ресурсов
+
+## 🛠️ Development конфигурации
+
+### Development (docker-compose.dev.yml)
+
+```bash
+# Запуск в режиме разработки
+docker compose -f docker/docker-compose.dev.yml up -d
+```
+
+**Профили:**
+
+- `i-am-fullstack` - полный стек (backend + frontend + gateway)
+- `i-am-frontender` - только frontend разработка
+- `backend-dev` - только backend разработка
+- `only-cloud` - только облачные сервисы (PostgreSQL + MinIO)
+
+**Дополнительные сервисы:**
+
+- **MinIO** - S3-совместимое хранилище для тестирования
+- **PostgreSQL** - база данных для разработки
+
+### Production (docker-compose.prod.yaml)
+
+```bash
+# Запуск в production режиме
+docker compose -f docker/docker-compose.prod.yaml up -d
+```
+
+**Особенности:**
+
+- Только необходимые сервисы
+- Внешняя PostgreSQL (не в контейнере)
+- S3 хранилище (не MinIO)
+- Оптимизированные настройки
+
+## 🚀 Использование
+
+### Базовые команды
+
+```bash
+# Запуск всех сервисов
+docker compose -f docker/docker-compose.yml up -d
+
+# Запуск с PostgreSQL
+docker compose -f docker/docker-compose.yml --profile postgresql up -d
+
+# Просмотр логов
+docker compose -f docker/docker-compose.yml logs -f
+
+# Остановка
+docker compose -f docker/docker-compose.yml down
+
+# Остановка с удалением volumes
+docker compose -f docker/docker-compose.yml down -v
+```
+
+### Development команды
+
+```bash
+# Полный стек для разработки
+docker compose -f docker/docker-compose.dev.yml --profile i-am-fullstack up -d
+
+# Только frontend разработка
+docker compose -f docker/docker-compose.dev.yml --profile i-am-frontender up -d
+
+# Только backend разработка
+docker compose -f docker/docker-compose.dev.yml --profile backend-dev up -d
+
+# Только облачные сервисы
+docker compose -f docker/docker-compose.dev.yml --profile only-cloud up -d
+```
+
+### Production команды
+
+```bash
+# Production развертывание
+docker compose -f docker/docker-compose.prod.yaml up -d
+
+# С пересборкой образов
+docker compose -f docker/docker-compose.prod.yaml up -d --build
 ```
 
 ## 🔧 Конфигурация
 
-### Backend настройки
-
-Основная конфигурация в `backend/settings.yaml`:
+### Volumes
 
 ```yaml
-app:
-  save_path: './storage/avatars'
-  server:
-    host: '0.0.0.0'
-    port: 3000
-  database:
-    driver: 'sqlite' # или "postgresql"
-    sqlite_params:
-      url: 'file:./storage/database/database.sqlite'
+volumes:
+  postgres_data: # PostgreSQL данные
+  certbot_data: # SSL сертификаты
+  certbot_www: # Let's Encrypt веб-корень
+  minio_data: # MinIO данные (dev)
 ```
 
-### Переменные окружения
+### Networks
 
-**Автоматическая генерация:** Все переменные окружения генерируются
-автоматически из YAML конфигурации при запуске контейнера.
+```yaml
+networks:
+  external: # Внешняя сеть (доступ извне)
+  internal: # Внутренняя сеть (между сервисами)
+  backend-db: # Сеть backend ↔ database
+```
 
-**Ручная настройка (опционально):**
+### Environment Variables
 
 ```bash
-# Backend (генерируются автоматически)
+# Основные настройки
 NODE_ENV=production
-DATABASE_PROVIDER=sqlite|postgresql
-DATABASE_URL=<connection string>
 CONFIG_PATH=./settings.yaml
 
-# PostgreSQL (для внешней БД)
+# PostgreSQL (для профиля postgresql)
 POSTGRES_DB=avatar_gen
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
-```
-
-**Генерация `.env` файла:**
-
-```bash
-# .env файл создается автоматически в start.sh
-# Содержимое:
-DATABASE_URL="postgresql://postgres:password@postgres:5432/avatar_gen?sslmode=disable"
-NODE_ENV=development
 ```
 
 ## 📊 Мониторинг
@@ -170,56 +232,125 @@ NODE_ENV=development
 ### Health Checks
 
 ```bash
-# Backend health
-curl http://localhost:3000/api/health
+# Проверка состояния всех сервисов
+docker compose -f docker/docker-compose.yml ps
 
-# Frontend health (через Nginx)
-curl http://localhost/
-
-# PostgreSQL (если используется)
-docker-compose exec postgres pg_isready
+# Проверка health check конкретного сервиса
+docker inspect avatar-gen-backend | grep -A 10 Health
 ```
 
 ### Логи
 
 ```bash
 # Все сервисы
-docker-compose -f docker/docker-compose.yml logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # Конкретный сервис
-docker-compose -f docker/docker-compose.yml logs -f avatar-backend
+docker compose -f docker/docker-compose.yml logs -f avatar-backend
 
-# Backend логи (host)
-tail -f backend/logs/*.log
+# Последние 100 строк
+docker compose -f docker/docker-compose.yml logs --tail=100
+```
 
-# Frontend логи (host)
-tail -f frontend/logs/*.log
+### Статистика ресурсов
+
+```bash
+# Использование CPU и памяти
+docker stats
+
+# Или через docker-compose
+docker compose -f docker/docker-compose.yml top
+```
+
+## 🔧 Troubleshooting
+
+### Проблема: Порты заняты
+
+```bash
+# Найдите процессы использующие порты
+netstat -ano | findstr "3000"  # Windows
+lsof -i :3000                   # Linux/Mac
+
+# Остановите существующие контейнеры
+docker compose -f docker/docker-compose.yml down
+```
+
+### Проблема: Контейнеры не запускаются
+
+```bash
+# Проверьте логи
+docker compose -f docker/docker-compose.yml logs
+
+# Проверьте статус
+docker compose -f docker/docker-compose.yml ps
+
+# Пересоздайте контейнеры
+docker compose -f docker/docker-compose.yml up -d --force-recreate
+```
+
+### Проблема: Нет доступа к volumes
+
+```bash
+# Дайте права на директории (Linux)
+sudo chown -R $USER:$USER backend/storage backend/logs
+
+# Или запустите с правильными правами
+docker compose -f docker/docker-compose.yml run --user $(id -u):$(id -g) avatar-backend
 ```
 
 ## 🔒 Security
 
 ### Production Checklist
 
-- [ ] Изменить пароли БД
-- [ ] Настроить HTTPS
-- [ ] Настроить firewall
-- [ ] Использовать Docker secrets
-- [ ] Регулярно обновлять образы
-- [ ] Настроить backup стратегию
+- [ ] Изменить пароль PostgreSQL
+- [ ] Использовать Docker secrets для паролей
+- [ ] Настроить HTTPS для gateway
+- [ ] Ограничить доступ к портам (firewall)
+- [ ] Использовать non-root пользователя в контейнерах
+- [ ] Регулярно обновлять базовые образы
 
-## 📚 Детальная документация
+### Docker Secrets
 
-- [Docker Compose Configuration](./DOCKER_COMPOSE.md) - Детальная конфигурация
-- [Docker README](../../docker/README.md) - Структура и использование
-- [Scripts Documentation](./SCRIPTS.md) - Все скрипты
-- [Production Guide](./production.md) - Production рекомендации
+```yaml
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
 
-## 🔗 Связанные разделы
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+```
 
-- [Development Guide](../development/README.md) - Разработка
-- [Getting Started](../getting-started/README.md) - Быстрый старт
-- [Troubleshooting](../development/TROUBLESHOOTING.md) - Решение проблем
+## 📝 Полезные команды
+
+```bash
+# Проверка конфигурации
+docker compose -f docker/docker-compose.yml config
+
+# Валидация файла
+docker compose -f docker/docker-compose.yml config --quiet
+
+# Выполнить команду в контейнере
+docker compose -f docker/docker-compose.yml exec avatar-backend sh
+
+# Создать новый контейнер для выполнения команды
+docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run prisma:migrate
+
+# Удалить все (контейнеры, сети, volumes)
+docker compose -f docker/docker-compose.yml down -v --remove-orphans
+```
+
+## 🔗 Связанные документы
+
+- [Docker Compose Configuration](DOCKER_COMPOSE.md)
+- [Gateway Configuration](GATEWAY.md)
+- [Scripts Documentation](SCRIPTS.md)
 
 ---
 
-**Обновлено:** 2025-10-03
+**Версия:** 3.1  
+**Последнее обновление:** 2025-01-15  
+**Автор:** Avatar Generator Team

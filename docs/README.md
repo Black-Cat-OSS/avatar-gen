@@ -1,448 +1,194 @@
 # Avatar Generator - Документация
 
-**Версия:** 3.0  
-**Дата обновления:** 2025-10-03  
-**Статус:** ✅ Актуально
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Build Status](https://github.com/letnull19A/avatar-gen/workflows/CI/badge.svg)](https://github.com/letnull19A/avatar-gen/actions)
 
-Добро пожаловать в документацию Avatar Generator - полнофункционального
-приложения для генерации аватаров в стиле GitHub/GitLab.
+> Генератор аватаров в стиле GitHub/GitLab с открытым исходным кодом
 
 ## 🚀 Быстрый старт
 
-### За 5 минут с Docker
-
 ```bash
-git clone <repository-url>
+# Запуск с Docker
+git clone https://github.com/letnull19A/avatar-gen.git
 cd avatar-gen
-./scripts/build.sh sqlite
-./scripts/start.sh sqlite
+./scripts/start.sh --db sqlite --storage local
+
+# Открыть в браузере
+open https://localhost:12745
 ```
 
-→ Откройте http://localhost
+## 📚 Документация по ролям
 
-### Локальная разработка
+### 👤 [Пользователи](modules/01-users/)
 
-```bash
-pnpm install
-cd backend && npm run env:generate && npm run prisma:migrate
-cd .. && pnpm run dev
-```
+**Для тех, кто хочет использовать Avatar Generator**
 
-→ Backend: http://localhost:3000 | Frontend: http://localhost:5173
+- [Что это такое](modules/01-users/01-what-is-this.md) - обзор проекта
+- [Быстрый старт](modules/01-users/02-quick-start.md) - запуск за 5 минут
+- [Установка](modules/01-users/03-installation.md) - различные способы установки
+- [Основное использование](modules/01-users/04-basic-usage.md) - как
+  генерировать аватары
+- [Примеры](modules/01-users/05-examples.md) - практические примеры
+- [Решение проблем](modules/01-users/06-troubleshooting.md) - частые проблемы
+- [FAQ](modules/01-users/07-faq.md) - часто задаваемые вопросы
 
----
+### 🛠️ [Разработчики](modules/02-developers/)
 
-## 📚 Документация по разделам
+**Для тех, кто хочет модифицировать и расширять проект**
 
-### [🚀 Getting Started](./getting-started/)
+- [Настройка разработки](modules/02-developers/01-development-setup.md) -
+  окружение разработки
+- [Структура проекта](modules/02-developers/02-project-structure.md) -
+  архитектура кода
+- [Backend разработка](modules/02-developers/03-backend-development.md) -
+  NestJS, API
+- [Frontend разработка](modules/02-developers/04-frontend-development.md) -
+  React, UI
+- [Добавление функций](modules/02-developers/05-adding-features.md) - новые
+  возможности
+- [Кастомизация](modules/02-developers/06-customization.md) - настройка под свои
+  нужды
+- [Тестирование](modules/02-developers/07-testing.md) - тесты и отладка
 
-**Быстрый старт и установка**
+### 🤝 [Контрибьюторы](modules/03-contributors/)
 
-- Запуск за 5 минут
-- Детальная установка
-- Требования и проверка
+**Для тех, кто хочет внести вклад в проект**
 
-→ [Перейти к разделу](./getting-started/README.md)
+- [Начало работы](modules/03-contributors/01-getting-started.md) - первые шаги
+- [Стандарты кода](modules/03-contributors/02-code-style.md) - правила написания
+  кода
+- [Процесс контрибуции](modules/03-contributors/03-contribution-workflow.md) -
+  как вносить изменения
+- [Pull Requests](modules/03-contributors/04-pull-requests.md) - создание PR
+- [Сообщения об ошибках](modules/03-contributors/05-issue-reporting.md) - как
+  сообщать о багах
+- [Документация](modules/03-contributors/06-documentation.md) - улучшение
+  документации
+- [Правила сообщества](modules/03-contributors/07-community-guidelines.md) -
+  кодекс поведения
 
-### [🛠️ Development](./development/)
+### 👑 [Мейнтейнеры](modules/04-maintainers/)
 
-**Руководство для разработчиков**
+**Для тех, кто управляет проектом**
 
-- [Database Setup](./development/DATABASE.md) - Настройка БД (SQLite/PostgreSQL)
-- [Frontend-Backend Integration](./development/INTEGRATION.md) - Интеграция
-- [Troubleshooting](./development/TROUBLESHOOTING.md) - Решение проблем
+- [Управление проектом](modules/04-maintainers/01-project-governance.md) -
+  процессы и решения
+- [Релизы](modules/04-maintainers/02-release-process.md) - процесс выпуска
+  версий
+- [Ревью кода](modules/04-maintainers/03-code-review.md) - стандарты ревью
+- [Управление сообществом](modules/04-maintainers/04-community-management.md) -
+  работа с сообществом
+- [Безопасность](modules/04-maintainers/05-security.md) - политики безопасности
+- [Инфраструктура](modules/04-maintainers/06-infrastructure.md) - CI/CD, хостинг
+- [Планирование](modules/04-maintainers/07-roadmap.md) - развитие проекта
 
-→ [Перейти к разделу](./development/README.md)
+## 📖 Справочники
 
-### [🐳 Deployment](./deployment/)
+### 🌟 [Getting Started](getting-started/)
 
-**Развертывание и production**
+- [Установка](getting-started/installation.md) - подробная установка
+- [Быстрый старт](getting-started/quick-start.md) - 5-минутное руководство
+- [Примеры](getting-started/examples.md) - базовые примеры
+- [Сообщество](getting-started/community.md) - где получить помощь
 
-- [Docker Compose Configuration](./deployment/DOCKER_COMPOSE.md) - Полная
-  конфигурация
-- [Docker README](../docker/README.md) - Основная документация Docker
-- [Scripts Documentation](./deployment/SCRIPTS.md) - Скрипты управления
+### 🤝 [Contributing](contributing/)
 
-→ [Перейти к разделу](./deployment/README.md)
+- [Руководство контрибьютора](contributing/contributing-guide.md)
+- [Кодекс поведения](contributing/code-of-conduct.md)
+- [Настройка разработки](contributing/development-setup.md)
+- [Шаблоны](contributing/templates/) - PR и issues
 
-### [📡 API](./api/)
+### 📡 [API Reference](api/)
 
-**API документация и примеры**
+- [Обзор API](api/README.md) - введение в API
+- [Endpoints](api/endpoints.md) - все доступные endpoints
+- [Аутентификация](api/authentication.md) - методы аутентификации
+- [Ошибки](api/errors.md) - коды ошибок и их обработка
 
-- [Swagger UI](http://localhost:3000/swagger) - Интерактивная документация
-- 8 endpoints с примерами использования
-- Коды ошибок и параметры
+### 🚀 [Deployment](deployment/)
 
-→ [Перейти к разделу](./api/README.md)
+- [Обзор развертывания](deployment/README.md)
+- [Docker](deployment/docker.md) - контейнерное развертывание
+- [Облако](deployment/cloud.md) - облачные платформы
+- [Production](deployment/production.md) - production настройки
 
-### [🧪 Testing](./testing/)
+## 🆘 Получение помощи
 
-**Тестирование проекта**
+### 💬 Обсуждения
 
-- 50 тестов, 100% coverage критических endpoints
-- [Testing Guide](../backend/docs/TESTING.md)
-- [Test Results](../backend/docs/TEST_RESULTS.md)
+- [GitHub Discussions](https://github.com/letnull19A/avatar-gen/discussions) -
+  общие вопросы
+- [Issues](https://github.com/letnull19A/avatar-gen/issues) - баги и предложения
 
-→ [Перейти к разделу](./testing/README.md)
+### 🔒 Безопасность
 
-### [🏗️ Architecture](./architecture/)
+- [Security Issues](mailto:security@avatar-gen.com) - проблемы безопасности
 
-**Архитектура проекта**
-
-- Общий обзор системы
-- Backend: NestJS, Prisma, Sharp
-- Frontend: React, Vite, Tailwind
-
-→ [Перейти к разделу](./architecture/README.md)
-
-### [🤝 Contributing](./contributing/)
-
-**Правила контрибуции**
-
-- [Contributing Guidelines](../CONTRIBUTING.md)
-- Стандарты кода
-- Правила коммитов
-
-→ [Перейти к разделу](./contributing/README.md)
-
-### [📦 Archive](./archive/)
-
-**Архив устаревших документов**
-
-- Первоначальное ТЗ
-- История миграций
-
-→ [Перейти к разделу](./archive/README.md)
-
----
-
-## 📖 Навигация по задачам
+## 🎯 Выбор правильного раздела
 
 <table>
 <tr>
-<td width="50%">
+<td width="33%">
 
-**Я хочу начать работу**
+**Я хочу использовать проект**
 
-- [Quick Start](./getting-started/README.md)
-- [Installation](./getting-started/README.md#требования)
-- [First Steps](./getting-started/README.md#следующие-шаги)
+→ [Модуль 1: Пользователи](modules/01-users/)
 
-**Я разработчик**
-
-- [Development Setup](./development/README.md)
-- [Database](./development/DATABASE.md)
-- [Troubleshooting](./development/TROUBLESHOOTING.md)
-
-**Мне нужна API документация**
-
-- [API Overview](./api/README.md)
-- [Swagger](http://localhost:3000/swagger)
-- [All Endpoints](./api/README.md#endpoints)
+- Установка и настройка
+- Базовое использование
+- Примеры и рецепты
+- Решение проблем
 
 </td>
-<td width="50%">
+<td width="33%">
 
-**Я хочу развернуть проект**
+**Я хочу модифицировать проект**
 
-- [Docker Deploy](./deployment/README.md)
-- [Docker Compose](./deployment/DOCKER_COMPOSE.md)
-- [Scripts](./deployment/SCRIPTS.md)
+→ [Модуль 2: Разработчики](modules/02-developers/)
 
-**Мне нужна информация об архитектуре**
+- Настройка разработки
+- Архитектура проекта
+- Backend и Frontend
+- Добавление функций
 
-- [Architecture Overview](./architecture/README.md)
-- [Backend Docs](../backend/docs/README.md)
-- [Frontend Docs](../frontend/docs/README.md)
+</td>
+<td width="33%">
 
 **Я хочу внести вклад**
 
-- [Contributing](./contributing/README.md)
-- [Code Style](./contributing/README.md#стандарты-кода)
-- [Commit Rules](./contributing/README.md#правила-оформления-коммитов)
+→ [Модуль 3: Контрибьюторы](modules/03-contributors/)
+
+- Процесс контрибуции
+- Стандарты кода
+- Pull Requests
+- Сообщество
 
 </td>
 </tr>
 </table>
 
----
+## 🔄 Миграция из старой документации
 
-## 🔧 Технологический стек
+Старая документация перемещена в [archive-old/](archive-old/) для справки:
 
-<table>
-<tr>
-<td width="33%">
+- [Архитектура](archive-old/architecture/)
+- [Разработка](archive-old/development/)
+- [Тестирование](archive-old/testing/)
 
-### Backend
+## 📊 Статус документации
 
-- NestJS 11
-- TypeScript 5.9
-- Prisma 6.16
-- Sharp 0.34
-- Pino (logging)
-- Zod (validation)
+| Модуль           | Статус          | Описание                     |
+| ---------------- | --------------- | ---------------------------- |
+| 👤 Пользователи  | 🟡 В разработке | Базовая документация готова  |
+| 🛠️ Разработчики  | 🟡 В разработке | Объединение backend/frontend |
+| 🤝 Контрибьюторы | 🟡 В разработке | Процессы и стандарты         |
+| 👑 Мейнтейнеры   | ⏳ Планируется  | Управление проектом          |
 
-</td>
-<td width="33%">
-
-### Frontend
-
-- React 18
-- TypeScript 5.9
-- Vite 6
-- Tailwind CSS
-- Redux Toolkit
-- React Router 7
-- i18next
-
-</td>
-<td width="33%">
-
-### DevOps
-
-- Docker + Compose
-- Nginx
-- pnpm
-- ESLint + Prettier
-- Husky + lint-staged
-- Commitlint
-
-</td>
-</tr>
-</table>
+**Легенда:** ✅ Готово | 🟡 В разработке | ⏳ Планируется
 
 ---
 
-## 🎯 Основные endpoints
-
-| Endpoint             | Method | Описание                     |
-| -------------------- | ------ | ---------------------------- |
-| `/health`            | GET    | Проверка здоровья приложения |
-| `/health/detailed`   | GET    | Детальная информация         |
-| `/api/generate`      | POST   | Генерация нового аватара     |
-| `/api/list`          | GET    | Список аватаров (пагинация)  |
-| `/api/color-schemes` | GET    | Доступные цветовые схемы     |
-| `/api/:id`           | GET    | Получить аватар по ID        |
-| `/api/:id`           | DELETE | Удалить аватар               |
-
-**Подробнее:** [API Documentation](./api/README.md) |
-[Swagger UI](http://localhost:3000/swagger)
-
----
-
-## 📊 Статус тестирования
-
-```
-✅ Test Suites: 4 passed, 4 total
-✅ Tests:       50 passed, 50 total
-⏱️  Time:        ~5s
-```
-
-**Покрытие:**
-
-- HealthController: 100%
-- AvatarController: 97.61%
-- AvatarService: 90.9%
-
-**Подробнее:** [Testing Guide](./testing/README.md)
-
----
-
-## 📋 Быстрые команды
-
-### Docker
-
-```bash
-./scripts/build.sh [sqlite|postgresql]   # Сборка образов
-./scripts/start.sh [sqlite|postgresql]   # Запуск сервисов
-./scripts/dev.sh [sqlite|postgresql]     # Dev режим (фоновый)
-./scripts/stop.sh [--volumes]            # Остановка
-```
-
-### Backend
-
-```bash
-cd backend
-npm run start:dev    # Dev сервер с hot reload
-npm test             # Запуск тестов
-npm run test:cov     # Тесты с coverage
-npm run build        # Production сборка
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm run dev          # Dev сервер с HMR
-npm run build        # Production сборка
-npm run storybook    # Storybook UI
-```
-
----
-
-## 📖 Документация модулей
-
-### Backend модули
-
-- [Database Module](../backend/docs/modules/database/README.md) - Работа с БД
-- [Initialization Module](../backend/src/modules/initialization/README.md) -
-  Инициализация
-- [Config Module](../backend/src/config/README.md) - Конфигурация
-
-### Документация по проекту
-
-- [Backend Docs](../backend/docs/README.md) - Полная документация backend
-- [Frontend Docs](../frontend/docs/README.md) - Полная документация frontend
-- [Docker Docs](../docker/README.md) - Docker конфигурация
-- [Scripts Docs](./deployment/SCRIPTS.md) - Все скрипты
-
----
-
-## 🔍 Полный индекс документации
-
-### По категориям
-
-<details>
-<summary><b>Getting Started (Быстрый старт)</b></summary>
-
-- [Getting Started Hub](./getting-started/README.md)
-- Quick Start Guide 🟡 (в разработке)
-- Installation Guide 🟡 (в разработке)
-
-</details>
-
-<details>
-<summary><b>Development (Разработка)</b></summary>
-
-- [Development Hub](./development/README.md)
-- [Database Setup](./development/DATABASE.md) ✅
-- [Integration Guide](./development/INTEGRATION.md) ✅
-- [Troubleshooting](./development/TROUBLESHOOTING.md) ✅
-- Setup Guide 🟡 (в разработке)
-
-</details>
-
-<details>
-<summary><b>Deployment (Развертывание)</b></summary>
-
-- [Deployment Hub](./deployment/README.md)
-- [Docker Compose Configuration](./deployment/DOCKER_COMPOSE.md) ✅
-- [Docker README](../docker/README.md) ✅
-- [Docker Build Fixes](../docker/DOCKER_BUILD_FIXES.md) ✅
-- [Scripts Documentation](./deployment/SCRIPTS.md) ✅
-- Production Guide 🟡 (в разработке)
-
-</details>
-
-<details>
-<summary><b>API Documentation (API)</b></summary>
-
-- [API Hub](./api/README.md) ✅
-- [Swagger UI](http://localhost:3000/swagger) ✅
-- Endpoints Reference 🟡 (в разработке)
-- Examples 🟡 (в разработке)
-
-</details>
-
-<details>
-<summary><b>Testing (Тестирование)</b></summary>
-
-- [Testing Hub](./testing/README.md) ✅
-- [Testing Guide](../backend/docs/TESTING.md) ✅
-- [Test Results](../backend/docs/TEST_RESULTS.md) ✅
-
-</details>
-
-<details>
-<summary><b>Architecture (Архитектура)</b></summary>
-
-- [Architecture Hub](./architecture/README.md) ✅
-- [Backend Architecture](../backend/docs/README.md) ✅
-- [Frontend Architecture](../frontend/docs/README.md) ✅
-- [Database Architecture](../backend/docs/modules/database/ARCHITECTURE.md) ✅
-- Overview 🟡 (в разработке)
-
-</details>
-
-<details>
-<summary><b>Contributing (Контрибуция)</b></summary>
-
-- [Contributing Hub](./contributing/README.md) ✅
-- [Contributing Guidelines](../CONTRIBUTING.md) ✅
-- [Commit Messages](../frontend/docs/COMMIT_MESSAGES.md) ✅
-- Code Style Guide 🟡 (в разработке)
-- PR Guidelines 🟡 (в разработке)
-
-</details>
-
-<details>
-<summary><b>Archive (Архив)</b></summary>
-
-- [Archive Hub](./archive/README.md)
-- [Backend Task (Original)](./archive/backend_task.md)
-- [Docker Migration](./archive/MIGRATION_DOCKER_STRUCTURE.md)
-- [Reorganization Plan](./archive/REORGANIZATION_PLAN.md)
-- [Reorganization Summary](./archive/REORGANIZATION_SUMMARY.md)
-
-</details>
-
----
-
-## 🔗 Внешние ресурсы
-
-- [NestJS Documentation](https://docs.nestjs.com/)
-- [React Documentation](https://react.dev/)
-- [Docker Documentation](https://docs.docker.com/)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Vite Documentation](https://vitejs.dev/)
-
----
-
-## 🆘 Помощь и поддержка
-
-**Не нашли что искали?**
-
-1. Используйте навигацию выше по категориям
-2. Проверьте [Troubleshooting](./development/TROUBLESHOOTING.md)
-3. Посмотрите [Backend Docs](../backend/docs/README.md)
-4. Создайте issue на GitHub
-
-**Нашли ошибку в документации?**
-
-- Создайте issue с меткой `documentation`
-- Или отправьте PR с исправлением
-
----
-
-## 📝 Статус документации
-
-| Раздел          | Документов | Статус          | Обновлено  |
-| --------------- | ---------- | --------------- | ---------- |
-| Getting Started | 1          | 🟡 В разработке | 2025-10-03 |
-| Development     | 4          | ✅ Актуально    | 2025-10-03 |
-| Deployment      | 2          | ✅ Актуально    | 2025-10-03 |
-| API             | 1          | ✅ Актуально    | 2025-10-03 |
-| Testing         | 1          | ✅ Актуально    | 2025-10-03 |
-| Architecture    | 1          | ✅ Актуально    | 2025-10-03 |
-| Contributing    | 1          | ✅ Актуально    | 2025-10-03 |
-| Archive         | 5          | 📦 Архив        | 2025-10-03 |
-
-**Легенда:** ✅ Актуально | 🟡 В разработке | 📦 Архив
-
----
-
-## 🎉 Что нового в v3.0
-
-- ✅ Реорганизация по 8 тематическим директориям
-- ✅ README хабы для каждой категории
-- ✅ Устранено дублирование документации
-- ✅ Обновлены все пути (storage/database/)
-- ✅ Архивированы устаревшие документы
-- ✅ 50 unit тестов с высоким покрытием
-- ✅ Централизованная навигация
-
----
-
-**License:** MIT  
-**Поддержка документации:** All Contributors  
-**Последнее обновление:** 2025-10-03
+**Версия документации:** 4.0 (OSS структура)  
+**Последнее обновление:** 2025-01-15  
+**Лицензия:** MIT
