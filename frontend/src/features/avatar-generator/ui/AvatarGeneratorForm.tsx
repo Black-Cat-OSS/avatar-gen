@@ -493,7 +493,10 @@ export const AvatarGeneratorForm = () => {
                   size={230}
                 />
                 <p className="text-xs text-muted-foreground text-center mt-2">
-                  Drag to rotate • {t('features.avatarGenerator.angleDescription')}
+                  {t('features.avatarGenerator.dragToRotate')}
+                </p>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  {t('features.avatarGenerator.angleDescription')}
                 </p>
               </div>
             </div>

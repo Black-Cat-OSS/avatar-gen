@@ -203,7 +203,8 @@
       },
           "angle": "Rotation angle",
           "angleDescription": "Gradient direction (0-360°)",
-          "anglePresets": "Quick presets"
+          "anglePresets": "Quick presets",
+          "dragToRotate": "Drag to rotate"
     }
   },
   "login": {
