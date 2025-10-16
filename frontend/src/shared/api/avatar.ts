@@ -66,10 +66,19 @@ export const avatarApi = {
     // Use v2 endpoint for gradient generator, v1 for others
     const endpoint = params.type === 'gradient' ? '/api/v2/generate' : '/api/v1/generate';
     
-    // Remove angle parameter for v1 requests
-    const requestParams = params.type === 'gradient' 
-      ? params 
-      : { ...params, angle: undefined };
+    // Prepare request parameters based on endpoint
+    let requestParams: Omit<GenerateAvatarParams, 'type'> | Omit<GenerateAvatarParams, 'angle'>;
+    if (params.type === 'gradient') {
+      // For v2: remove type, keep angle
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { type: _type, ...v2Params } = params;
+      requestParams = v2Params;
+    } else {
+      // For v1: remove angle, keep type
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { angle: _angle, ...v1Params } = params;
+      requestParams = v1Params;
+    }
     
     const response = await apiClient.post<GenerateAvatarResponse>(endpoint, requestParams);
     return response.data;
