@@ -465,38 +465,14 @@ export const AvatarGeneratorForm = () => {
               />
             </div>
             
-            {/* Slider for precise control */}
-            <div className="space-y-2">
-              <input
-                type="range"
-                min="0"
-                max="360"
-                value={formData.angle}
-                onChange={(e) => handleInputChange('angle', parseInt(e.target.value))}
-                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
-              />
-              
-              {/* Number input for exact value */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={formData.angle}
-                  onChange={(e) => handleInputChange('angle', parseInt(e.target.value) || 0)}
-                  className="w-20 px-2 py-1 text-sm border border-border rounded bg-background text-foreground"
-                />
-                <span className="text-sm text-muted-foreground">°</span>
-              </div>
-            </div>
-            
             <p className="text-xs text-muted-foreground text-center">
               {t('features.avatarGenerator.angleDescription')}
             </p>
           </div>
         )}
 
-        {/* Seed Generation */}
+        {/* Seed Generation - hidden for gradient */}
+        {formData.type !== 'gradient' && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-foreground">
@@ -524,6 +500,7 @@ export const AvatarGeneratorForm = () => {
             {t('features.avatarGenerator.seedDescription')}
           </p>
         </div>
+        )}
 
         {/* Submit Button */}
         <div className="flex justify-center">
