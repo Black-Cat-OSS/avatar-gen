@@ -474,7 +474,7 @@ export const AvatarGeneratorForm = () => {
                       <AngleVisualizer
                         angle={presetAngle}
                         onChange={() => {}} // Readonly
-                        size={60}
+                        size={78}
                         readonly={true}
                       />
                     </button>
@@ -490,7 +490,7 @@ export const AvatarGeneratorForm = () => {
                 <AngleVisualizer
                   angle={formData.angle}
                   onChange={(angle) => handleInputChange('angle', angle)}
-                  size={120}
+                  size={156}
                 />
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   {t('features.avatarGenerator.angleDescription')}
