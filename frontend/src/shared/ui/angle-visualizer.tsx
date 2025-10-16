@@ -44,7 +44,8 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
     const checkTheme = () => {
       const hasDarkClass = document.documentElement.classList.contains('dark');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDarkTheme = hasDarkClass || prefersDark;
+      // Only use class-based detection, ignore system preference
+      const isDarkTheme = hasDarkClass;
       console.log('Theme check:', { hasDarkClass, prefersDark, isDarkTheme });
       setIsDark(isDarkTheme);
     };
