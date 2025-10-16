@@ -31,6 +31,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   const lineRef = useRef<SVGLineElement>(null);
   const handleRef = useRef<SVGCircleElement>(null);
   const textRef = useRef<SVGTextElement>(null);
+  const rectRef = useRef<SVGRectElement>(null);
   const isDraggingRef = useRef(false);
 
   const radius = size / 2 - 10;
@@ -59,6 +60,18 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
 
     if (textRef.current) {
       textRef.current.textContent = `${newAngle}°`;
+    }
+
+    // Update background rectangle for better text visibility
+    if (rectRef.current) {
+      const textWidth = `${newAngle}°`.length * 8 + 8; // Approximate text width + padding
+      const rectX = centerX - textWidth / 2;
+      const rectY = centerY - 8;
+      
+      rectRef.current.setAttribute('x', rectX.toString());
+      rectRef.current.setAttribute('y', rectY.toString());
+      rectRef.current.setAttribute('width', textWidth.toString());
+      rectRef.current.setAttribute('height', '16');
     }
   };
 
@@ -178,6 +191,18 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           r="8"
           fill="currentColor"
           className="text-primary hover:r-10"
+        />
+
+        {/* Background rectangle for text */}
+        <rect
+          ref={rectRef}
+          x={centerX - 20}
+          y={centerY - 8}
+          width="40"
+          height="16"
+          rx="4"
+          fill="currentColor"
+          className="text-background/90"
         />
 
         {/* Angle text in center */}
