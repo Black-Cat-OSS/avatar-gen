@@ -54,6 +54,7 @@ module.exports = {
         'entities', // сущности
         'shared', // общие модули
         'changelog', // changelog
+        "scripts", // скрипты
       ],
     ],
 
