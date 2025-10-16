@@ -47,14 +47,14 @@ npm install
 # Перейдите в папку backend
 cd backend
 
-# Сгенерируйте .env файл из settings.yaml
-npm run env:generate
+# Настройте базу данных в settings.yaml
+# (по умолчанию уже настроена для SQLite)
 
-# Запустите миграции
-npm run prisma:migrate
+# Запустите миграции (если необходимо)
+npm run typeorm:run
 
-# Сгенерируйте Prisma client
-npm run prisma:generate
+# Или создайте новую миграцию
+npm run typeorm:generate -- src/migrations/NewMigration
 ```
 
 ### Вариант B: PostgreSQL
@@ -70,12 +70,10 @@ docker run --name postgres-dev \
 
 # Обновите backend/settings.yaml
 # Измените driver с 'sqlite' на 'postgresql'
-
-# Сгенерируйте .env файл
-npm run env:generate
+# Настройте параметры подключения в разделе network
 
 # Запустите миграции
-npm run prisma:migrate
+npm run typeorm:run
 ```
 
 ## ⚙️ Шаг 3: Конфигурация окружения
@@ -100,6 +98,14 @@ app:
       retryDelay: 2000
     sqlite_params:
       url: 'file:./storage/database/database.sqlite'
+    # Для PostgreSQL:
+    # network:
+    #   host: localhost
+    #   port: 5432
+    #   username: postgres
+    #   password: password
+    #   database: avatar_gen
+    #   ssl: false
   logging:
     level: 'debug' # для разработки
     verbose: true
@@ -149,7 +155,7 @@ npm run dev
 
 ```bash
 # Запуск всех сервисов в Docker
-./scripts/dev.sh sqlite
+./scripts/start.sh --dev
 ```
 
 ## 🔍 Шаг 5: Проверка работоспособности
@@ -192,7 +198,7 @@ code --install-extension ms-vscode.vscode-typescript-next
 code --install-extension bradlc.vscode-tailwindcss
 code --install-extension esbenp.prettier-vscode
 code --install-extension ms-vscode.vscode-eslint
-code --install-extension prisma.prisma
+code --install-extension ms-vscode.vscode-json
 ```
 
 Создайте `.vscode/settings.json`:
@@ -259,13 +265,16 @@ pnpm run type-check
 **Решение:**
 
 ```bash
-# Проверьте что БД запущена
+# Проверьте конфигурацию в settings.yaml
 cd backend
-npm run prisma:studio
+cat settings.yaml | grep -A 10 database
 
-# Пересоздайте БД
-npm run prisma:reset
-npm run prisma:migrate
+# Перезапустите миграции
+npm run typeorm:run
+
+# Или пересоздайте БД (удалите файл и перезапустите)
+rm -f storage/database/database.sqlite
+npm run start:dev
 ```
 
 ### Проблема: Порты заняты
@@ -319,8 +328,8 @@ pnpm run type-check   # Проверка типов
 # Backend специфичные
 cd backend
 npm run start:dev     # Backend dev сервер
-npm run prisma:studio # Prisma Studio GUI
-npm run prisma:migrate # Миграции БД
+npm run typeorm:run   # Запуск миграций
+npm run typeorm:generate -- src/migrations/NewMigration # Создание миграции
 npm run test:cov      # Тесты с покрытием
 
 # Frontend специфичные

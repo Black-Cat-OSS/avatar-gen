@@ -353,21 +353,37 @@ interface AvatarObject {
 
 ## 🗄️ База данных
 
-### Схема (Prisma)
+### Схема (TypeORM)
 
-```prisma
-model Avatar {
-  id           String   @id @default(uuid())
-  name         String
-  createdAt    DateTime @default(now())
-  version      String   @default("0.0.1")
-  filePath     String   @unique
-  primaryColor String?
-  foreignColor String?
-  colorScheme  String?
-  seed         String?
+```typescript
+@Entity('avatars')
+export class Avatar {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @@map("avatars")
+  @Column()
+  name: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Column({ default: '0.0.1' })
+  version: string;
+
+  @Column({ unique: true })
+  filePath: string;
+
+  @Column({ nullable: true })
+  primaryColor?: string;
+
+  @Column({ nullable: true })
+  foreignColor?: string;
+
+  @Column({ nullable: true })
+  colorScheme?: string;
+
+  @Column({ nullable: true })
+  seed?: string;
 }
 ```
 

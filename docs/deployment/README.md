@@ -337,7 +337,7 @@ docker compose -f docker/docker-compose.yml config --quiet
 docker compose -f docker/docker-compose.yml exec avatar-backend sh
 
 # Создать новый контейнер для выполнения команды
-docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run typeorm:run
 
 # Удалить все (контейнеры, сети, volumes)
 docker compose -f docker/docker-compose.yml down -v --remove-orphans

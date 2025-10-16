@@ -244,10 +244,10 @@ docker compose -f docker/docker-compose.yml --profile postgresql up -d
 
 ```bash
 # Миграция для SQLite
-docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run typeorm:run
 
 # Миграция для PostgreSQL
-docker compose -f docker/docker-compose.yml --profile postgresql run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml --profile postgresql run --rm avatar-backend npm run typeorm:run
 ```
 
 ### Изменение портов
@@ -405,7 +405,7 @@ Error: EACCES: permission denied
 
 ```bash
 # Дать права текущему пользователю
-sudo chown -R $USER:$USER backend/storage backend/prisma/storage
+sudo chown -R $USER:$USER backend/storage
 
 # Или запустить контейнер от текущего пользователя
 docker compose -f docker/docker-compose.yml run --user $(id -u):$(id -g) avatar-backend
@@ -611,7 +611,7 @@ docker compose -f docker/docker-compose.yml ps -a
 docker compose -f docker/docker-compose.yml exec avatar-backend sh
 
 # Создать новый контейнер для выполнения команды
-docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run prisma:migrate
+docker compose -f docker/docker-compose.yml run --rm avatar-backend npm run typeorm:run
 
 # Пересоздать контейнеры
 docker compose -f docker/docker-compose.yml up --force-recreate
