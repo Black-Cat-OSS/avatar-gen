@@ -202,7 +202,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           height="16"
           rx="4"
           fill="currentColor"
-          className="text-background/90"
+          className="text-background/95"
         />
 
         {/* Angle text in center */}
@@ -211,7 +211,8 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           x={centerX}
           y={centerY + 4}
           textAnchor="middle"
-          className="text-xs font-medium fill-current text-foreground"
+          className="text-xs font-bold fill-current text-foreground"
+          style={{ fill: 'hsl(var(--foreground))' }}
         >
           {angle}°
         </text>
