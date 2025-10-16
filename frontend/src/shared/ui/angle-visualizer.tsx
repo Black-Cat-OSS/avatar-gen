@@ -42,8 +42,10 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   // Detect theme
   useEffect(() => {
     const checkTheme = () => {
-      const isDarkTheme = document.documentElement.classList.contains('dark') ||
-        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const hasDarkClass = document.documentElement.classList.contains('dark');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDarkTheme = hasDarkClass || prefersDark;
+      console.log('Theme check:', { hasDarkClass, prefersDark, isDarkTheme });
       setIsDark(isDarkTheme);
     };
 
