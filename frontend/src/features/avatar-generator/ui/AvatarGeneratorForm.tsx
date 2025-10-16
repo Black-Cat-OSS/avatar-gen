@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useGenerateAvatar } from '@/shared/lib';
 import { Button } from '@/shared/ui';
 import { InputField } from '@/shared/ui';
+import { AngleVisualizer } from '@/shared/ui/angle-visualizer';
 import { avatarApi } from '@/shared/api';
 
 // Predefined color palettes
@@ -147,6 +148,7 @@ export const AvatarGeneratorForm = () => {
     colorScheme: 'default',
     seed: '',
     type: 'pixelize',
+    angle: 90,
   });
 
   // Generate initial seed on component mount
@@ -168,12 +170,13 @@ export const AvatarGeneratorForm = () => {
       colorScheme: formData.colorScheme !== 'default' ? formData.colorScheme : undefined,
       seed: formData.seed || undefined,
       type: formData.type || 'pixelize',
+      angle: formData.type === 'gradient' ? formData.angle : undefined,
     };
 
     generateAvatar.mutate(params);
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -376,7 +379,7 @@ export const AvatarGeneratorForm = () => {
           <label className="block text-sm font-medium text-foreground">
             {t('features.avatarGenerator.generatorType')}
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => handleInputChange('type', 'pixelize')}
@@ -421,8 +424,77 @@ export const AvatarGeneratorForm = () => {
                 </div>
               </div>
             </button>
+            <button
+              type="button"
+              onClick={() => handleInputChange('type', 'gradient')}
+              className={`p-3 rounded-lg border-2 transition-all ${
+                formData.type === 'gradient'
+                  ? 'shadow-lg ring-2 ring-offset-2 ring-primary/20'
+                  : 'border-border hover:border-primary/50 hover:shadow-md'
+              }`}
+              style={{
+                borderColor: formData.type === 'gradient' ? formData.primaryColor : undefined,
+                backgroundColor: formData.type === 'gradient' ? `${formData.primaryColor}15` : undefined,
+              }}
+            >
+              <div className="text-center">
+                <div className="text-sm font-medium text-foreground mb-1">
+                  {t('features.avatarGenerator.generatorTypes.gradient')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('features.avatarGenerator.generatorTypes.gradientDescription')}
+                </div>
+              </div>
+            </button>
           </div>
         </div>
+
+        {/* Angle Control - only for gradient */}
+        {formData.type === 'gradient' && (
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-foreground">
+              {t('features.avatarGenerator.angle')}
+            </label>
+            
+            {/* Interactive angle visualizer */}
+            <div className="flex justify-center">
+              <AngleVisualizer
+                angle={formData.angle}
+                onChange={(angle) => handleInputChange('angle', angle)}
+                size={120}
+              />
+            </div>
+            
+            {/* Slider for precise control */}
+            <div className="space-y-2">
+              <input
+                type="range"
+                min="0"
+                max="360"
+                value={formData.angle}
+                onChange={(e) => handleInputChange('angle', parseInt(e.target.value))}
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+              />
+              
+              {/* Number input for exact value */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="360"
+                  value={formData.angle}
+                  onChange={(e) => handleInputChange('angle', parseInt(e.target.value) || 0)}
+                  className="w-20 px-2 py-1 text-sm border border-border rounded bg-background text-foreground"
+                />
+                <span className="text-sm text-muted-foreground">°</span>
+              </div>
+            </div>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              {t('features.avatarGenerator.angleDescription')}
+            </p>
+          </div>
+        )}
 
         {/* Seed Generation */}
         <div className="space-y-2">

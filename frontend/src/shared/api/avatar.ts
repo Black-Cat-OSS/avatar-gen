@@ -33,6 +33,7 @@ export interface GenerateAvatarParams {
   colorScheme?: string;
   seed?: string;
   type?: string;
+  angle?: number;
 }
 
 export interface GenerateAvatarResponse {

@@ -197,8 +197,12 @@
         "pixelize": "Pixelize",
         "pixelizeDescription": "Classic pixel-based pattern",
         "wave": "Wave",
-        "waveDescription": "Smooth wave-based pattern"
-      }
+        "waveDescription": "Smooth wave-based pattern",
+        "gradient": "Gradient",
+        "gradientDescription": "Linear gradient pattern"
+      },
+      "angle": "Rotation angle",
+      "angleDescription": "Gradient direction (0-360°)"
     }
   },
   "login": {

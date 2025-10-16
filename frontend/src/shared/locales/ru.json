@@ -197,8 +197,12 @@
         "pixelize": "Пиксельный",
         "pixelizeDescription": "Классический пиксельный узор",
         "wave": "Волновой",
-        "waveDescription": "Плавный волновой узор"
-      }
+        "waveDescription": "Плавный волновой узор",
+        "gradient": "Градиент",
+        "gradientDescription": "Линейный градиентный узор"
+      },
+      "angle": "Угол поворота",
+      "angleDescription": "Направление градиента (0-360°)"
     }
   },
   "login": {
