@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 interface AngleVisualizerProps {
   /**
@@ -33,10 +33,37 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
   const textRef = useRef<SVGTextElement>(null);
   const rectRef = useRef<SVGRectElement>(null);
   const isDraggingRef = useRef(false);
+  const [isDark, setIsDark] = useState(false);
 
   const radius = size / 2 - 10;
   const centerX = size / 2;
   const centerY = size / 2;
+
+  // Detect theme
+  useEffect(() => {
+    const checkTheme = () => {
+      const isDarkTheme = document.documentElement.classList.contains('dark') ||
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDark(isDarkTheme);
+    };
+
+    checkTheme();
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkTheme);
+
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkTheme);
+    };
+  }, []);
 
   // Update visual elements directly in DOM without React re-render
   const updateVisualElements = (newAngle: number) => {
@@ -72,13 +99,21 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
       rectRef.current.setAttribute('y', rectY.toString());
       rectRef.current.setAttribute('width', textWidth.toString());
       rectRef.current.setAttribute('height', '16');
+      
+      // Set colors based on theme
+      rectRef.current.setAttribute('fill', isDark ? 'white' : 'black');
+    }
+
+    // Update text color based on theme
+    if (textRef.current) {
+      textRef.current.setAttribute('fill', isDark ? 'black' : 'white');
     }
   };
 
   // Update visuals when prop changes
   useEffect(() => {
     updateVisualElements(angle);
-  }, [angle]);
+  }, [angle, isDark]);
 
   // Cleanup global event listeners on unmount
   useEffect(() => {
@@ -201,7 +236,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           width="40"
           height="16"
           rx="4"
-          fill="hsl(var(--foreground))"
+          fill={isDark ? 'white' : 'black'}
           className="opacity-95"
         />
 
@@ -212,7 +247,7 @@ export const AngleVisualizer: React.FC<AngleVisualizerProps> = ({
           y={centerY + 4}
           textAnchor="middle"
           className="text-xs font-bold"
-          fill="hsl(var(--background))"
+          fill={isDark ? 'black' : 'white'}
         >
           {angle}°
         </text>
