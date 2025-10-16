@@ -191,7 +191,20 @@
       },
       "randomPalette": "Juhuslik palett",
       "generateSeed": "Genereeri fraas",
-      "currentPalette": "Praegune palett"
+      "currentPalette": "Praegune palett",
+      "generatorType": "Generaatori tüüp",
+      "generatorTypes": {
+        "pixelize": "Pikseliseeritud",
+        "pixelizeDescription": "Klassikaline pikselipõhine muster",
+        "wave": "Laine",
+        "waveDescription": "Sile lainepõhine muster",
+        "gradient": "Gradient",
+        "gradientDescription": "Lineaarne gradiendi muster"
+      },
+      "angle": "Pöördenurk",
+      "angleDescription": "Gradiendi suund (0-360°)",
+      "anglePresets": "Kiired eelseadistused",
+      "dragToRotate": "Lohista pööramiseks"
     }
   },
   "login": {

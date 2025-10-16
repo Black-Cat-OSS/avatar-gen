@@ -191,7 +191,20 @@
       },
       "randomPalette": "Zufällige Palette",
       "generateSeed": "Phrase generieren",
-      "currentPalette": "Aktuelle Palette"
+      "currentPalette": "Aktuelle Palette",
+      "generatorType": "Generator-Typ",
+      "generatorTypes": {
+        "pixelize": "Pixelisiert",
+        "pixelizeDescription": "Klassisches pixelbasiertes Muster",
+        "wave": "Welle",
+        "waveDescription": "Sanftes wellenbasiertes Muster",
+        "gradient": "Gradient",
+        "gradientDescription": "Lineares Gradientmuster"
+      },
+      "angle": "Rotationswinkel",
+      "angleDescription": "Gradientrichtung (0-360°)",
+      "anglePresets": "Schnelle Voreinstellungen",
+      "dragToRotate": "Ziehen zum Drehen"
     }
   },
   "login": {

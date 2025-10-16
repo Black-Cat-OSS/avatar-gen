@@ -191,7 +191,20 @@
       },
       "randomPalette": "Paleta aleatoria",
       "generateSeed": "Generar frase",
-      "currentPalette": "Paleta Actual"
+      "currentPalette": "Paleta Actual",
+      "generatorType": "Tipo de Generador",
+      "generatorTypes": {
+        "pixelize": "Pixelizado",
+        "pixelizeDescription": "Patrón clásico basado en píxeles",
+        "wave": "Onda",
+        "waveDescription": "Patrón suave basado en ondas",
+        "gradient": "Gradiente",
+        "gradientDescription": "Patrón de gradiente lineal"
+      },
+      "angle": "Ángulo de rotación",
+      "angleDescription": "Dirección del gradiente (0-360°)",
+      "anglePresets": "Configuraciones rápidas",
+      "dragToRotate": "Arrastra para rotar"
     }
   },
   "login": {
