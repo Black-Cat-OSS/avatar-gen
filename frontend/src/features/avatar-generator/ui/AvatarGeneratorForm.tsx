@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGenerateAvatar } from '@/shared/lib';
+import { useGenerateAvatar, useColorPalettes } from '@/shared/lib';
 import { Button } from '@/shared/ui';
 import { InputField } from '@/shared/ui';
 import { AngleVisualizer } from '@/shared/ui';
@@ -129,19 +129,11 @@ const generateMnemonicSeed = (): string => {
   return `${adjective}-${noun}-${number}`.substring(0, 32);
 };
 
-// Generate random color palette
-const generateRandomPalette = () => {
-  const paletteKeys = Object.keys(colorPalettes).filter(key => key !== 'default');
-  const randomKey = paletteKeys[Math.floor(Math.random() * paletteKeys.length)];
-  return {
-    key: randomKey,
-    ...colorPalettes[randomKey as keyof typeof colorPalettes],
-  };
-};
 
 export const AvatarGeneratorForm = () => {
   const { t } = useTranslation();
   const generateAvatar = useGenerateAvatar();
+  const colorPalettesQuery = useColorPalettes();
 
   const [formData, setFormData] = useState({
     primaryColor: '#3b82f6',
@@ -196,7 +188,11 @@ export const AvatarGeneratorForm = () => {
   };
 
   const handleRandomPalette = () => {
-    const randomPalette = generateRandomPalette();
+    if (!colorPalettesQuery.data?.palettes) return;
+    
+    const availablePalettes = colorPalettesQuery.data.palettes.filter(p => p.key !== 'default');
+    const randomPalette = availablePalettes[Math.floor(Math.random() * availablePalettes.length)];
+    
     setFormData(prev => ({
       ...prev,
       colorScheme: randomPalette.key,
@@ -213,9 +209,13 @@ export const AvatarGeneratorForm = () => {
   };
 
   const isCustomPalette = formData.colorScheme === 'default';
-  const currentPalette = colorPalettes[formData.colorScheme as keyof typeof colorPalettes];
+  const currentPalette = colorPalettesQuery.data?.palettes.find(p => p.key === formData.colorScheme);
 
-  const colorSchemes = [
+  // Используем палитры из API или fallback к статическим
+  const colorSchemes = colorPalettesQuery.data?.palettes?.map(palette => ({
+    value: palette.key,
+    label: t(`features.avatarGenerator.colorSchemes.${palette.key}`) || palette.name,
+  })) || [
     { value: 'default', label: t('features.avatarGenerator.colorSchemes.default') },
     { value: 'monochrome', label: t('features.avatarGenerator.colorSchemes.monochrome') },
     { value: 'vibrant', label: t('features.avatarGenerator.colorSchemes.vibrant') },
@@ -241,14 +241,28 @@ export const AvatarGeneratorForm = () => {
               size="sm"
               onClick={handleRandomPalette}
               className="text-xs"
+              disabled={colorPalettesQuery.isLoading}
             >
               {t('features.avatarGenerator.randomPalette')}
             </Button>
           </div>
 
+          {colorPalettesQuery.isLoading && (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground">Loading color palettes...</p>
+            </div>
+          )}
+
+          {colorPalettesQuery.isError && (
+            <div className="text-center py-4">
+              <p className="text-sm text-red-500">Failed to load color palettes</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {colorSchemes.map(scheme => {
-              const palette = colorPalettes[scheme.value as keyof typeof colorPalettes];
+              const palette = colorPalettesQuery.data?.palettes?.find(p => p.key === scheme.value) || 
+                             colorPalettes[scheme.value as keyof typeof colorPalettes];
               const isSelected = formData.colorScheme === scheme.value;
               return (
                 <button
@@ -457,8 +471,7 @@ export const AvatarGeneratorForm = () => {
               {t('features.avatarGenerator.angle')}
             </label>
             
-                <div className="flex items-center gap-1">
-                  {/* Angle presets */}
+              <div className="flex items-center gap-1">
                   <AnglePresets
                     currentAngle={formData.angle}
                     onAngleSelect={(angle) => handleInputChange('angle', angle)}

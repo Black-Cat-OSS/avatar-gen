@@ -104,4 +104,27 @@ export const avatarApi = {
     const response = await apiClient.delete<{ message: string }>(`/api/${id}`);
     return response.data;
   },
+
+  getColorPalettes: async (): Promise<{
+    palettes: Array<{
+      name: string;
+      primaryColor: string;
+      foreignColor: string;
+      key: string;
+    }>;
+  }> => {
+    const response = await apiClient.get<{
+      statusCode: number;
+      message: string;
+      data: {
+        palettes: Array<{
+          name: string;
+          primaryColor: string;
+          foreignColor: string;
+          key: string;
+        }>;
+      };
+    }>('/api/palettes');
+    return response.data.data;
+  },
 };

@@ -21,6 +21,7 @@ import {
   ListAvatarsDto,
 } from './dto/generate-avatar.dto';
 import { GenerateAvatarV2Dto } from './dto/generate-avatar-v2.dto';
+import { ColorPalettesResponseDto } from './dto/color-palette.dto';
 
 @ApiTags('Avatar')
 @Controller()
@@ -211,6 +212,32 @@ export class AvatarController {
           message: error.message,
         },
         status,
+      );
+    }
+  }
+
+  @Get('palettes')
+  @ApiOperation({ summary: 'Get available color palettes' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Color palettes retrieved successfully',
+    type: ColorPalettesResponseDto
+  })
+  async getColorPalettes() {
+    try {
+      const result = await this.avatarService.getColorPalettes();
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Color palettes retrieved successfully',
+        data: result,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

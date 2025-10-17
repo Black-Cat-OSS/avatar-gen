@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AngleVisualizer } from './angle-visualizer';
+import { AngleVisualizer } from '@/shared/ui';
 
 interface AnglePresetsProps {
   /**
