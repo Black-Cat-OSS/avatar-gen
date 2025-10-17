@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useGenerateAvatar } from '@/shared/lib';
 import { Button } from '@/shared/ui';
 import { InputField } from '@/shared/ui';
-import { AngleVisualizer } from '@/shared/ui/angle-visualizer';
+import { AngleVisualizer, AnglePresets } from '@/shared/ui';
 import { avatarApi } from '@/shared/api';
 
 // Predefined color palettes
@@ -456,34 +456,13 @@ export const AvatarGeneratorForm = () => {
               {t('features.avatarGenerator.angle')}
             </label>
             
-            <div className="flex items-center gap-1">
-              {/* Angle presets */}
-              <div className="flex flex-col gap-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {[0, 45, 90, 135, 180, 225, 270, 315].map((presetAngle) => (
-                    <button
-                      key={presetAngle}
-                      type="button"
-                      onClick={() => handleInputChange('angle', presetAngle)}
-                      className={`p-2 rounded border transition-all ${
-                        formData.angle === presetAngle
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <AngleVisualizer
-                        angle={presetAngle}
-                        onChange={() => {}} // Readonly
-                        size={70}
-                        readonly={true}
-                      />
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {t('features.avatarGenerator.anglePresets')}
-                </p>
-              </div>
+                <div className="flex items-center gap-1">
+                  {/* Angle presets */}
+                  <AnglePresets
+                    currentAngle={formData.angle}
+                    onAngleSelect={(angle) => handleInputChange('angle', angle)}
+                    size={70}
+                  />
               
               {/* Interactive angle visualizer */}
               <div className="flex flex-col items-center w-full">
