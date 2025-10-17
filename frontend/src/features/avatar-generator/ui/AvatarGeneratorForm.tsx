@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useGenerateAvatar } from '@/shared/lib';
 import { Button } from '@/shared/ui';
 import { InputField } from '@/shared/ui';
-import { AngleVisualizer, AnglePresets } from '@/shared/ui';
+import { AngleVisualizer } from '@/shared/ui';
+import { AnglePresets } from './angle-presets';
 import { avatarApi } from '@/shared/api';
 
 // Predefined color palettes

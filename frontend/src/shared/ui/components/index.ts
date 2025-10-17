@@ -12,4 +12,3 @@ export type { InputFieldProps, InputStatus } from './InputField';
 export { OverlayBlur } from './OverlayBlur';
 export type { OverlayBlurProps } from './OverlayBlur';
 export { AngleVisualizer } from '../angle-visualizer';
-export { AnglePresets } from '../angle-presets';
